@@ -79,7 +79,7 @@ return array (
     'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"}]',
   ),
   'google' => array (
-    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"YOUR_GOOGLE_CLIENT_ID_HERE"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"YOUR_GOOGLE_CLIENT_SECRET_HERE"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://yourdomain.com/account/login_google/"}]',
+    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"PLACEHOLDER_GOOGLE_CLIENT_ID"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"PLACEHOLDER_GOOGLE_CLIENT_SECRET"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://yourdomain.com/account/login_google/"}]',
   ),
   'email' => array (
     'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"contact@cmsfullform.com"},{"email_key":"mail_password","email_value":"dsfsdfdsfsdfdsf"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"contact@cmsfullform.com"},{"email_key":"mail_from_name","email_value":"CMS Full Form"}]',
