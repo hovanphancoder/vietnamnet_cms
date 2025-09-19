@@ -1,0 +1,120 @@
+<?php
+
+return array (
+  'site_locale' => array (
+    'value' => 'en_US',
+    'valuelang' => array (
+      'vi' => 'vi_VN',
+      'zh' => 'zh_CN',
+      'th' => 'th_TH',
+      'ko' => 'ko_KR',
+      'id' => 'vi_VN',
+    ),
+  ),
+  'rewrite_uri_lang' => array (
+    'value' => '0',
+  ),
+  'user_limit' => array (
+    'value' => '10',
+  ),
+  'site_date_format' => array (
+    'value' => 'DD/MM/YYYY',
+  ),
+  'site_url' => array (
+    'value' => 'https://cmsfullform.com',
+  ),
+  'site_desc' => array (
+    'value' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+    'valuelang' => array (
+      'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'th' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'ko' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+      'id' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+    ),
+  ),
+  'site_title' => array (
+    'value' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+    'valuelang' => array (
+      'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'th' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'ko' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+      'id' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+    ),
+  ),
+  'site_brand' => array (
+    'value' => 'Cms Full Form',
+    'valuelang' => array (
+      'vi' => 'Cms Full Form',
+      'zh' => 'Cms Full Form',
+      'th' => 'Cms Full Form',
+      'ko' => 'Cms Full Form',
+      'id' => 'Cms Full Form',
+    ),
+  ),
+  'seo_config' => array (
+    'value' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+    'valuelang' => array (
+      'vi' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+      'zh' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+      'th' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+      'ko' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+      'id' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
+    ),
+  ),
+  'url_rewrite' => array (
+    'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"},{"url_function":"FrontendController::index:terms-category:$1","middleware":[],"url_struct":"/posts/category/(:any)/"},{"url_function":"FrontendController::index:detail-$1:$2","middleware":[],"url_struct":"/(:any)/(:any)/"},{"url_function":"FrontendController::index:page-$1","middleware":[],"url_struct":"/(:any)/"},{"url_function":"FrontendController::index:page","middleware":[],"url_struct":"/page/(:any)/"},{"url_function":"FrontendController::index:search","middleware":[],"url_struct":"/search"}]',
+  ),
+  'cache' => array (
+    'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache_uri"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
+  ),
+  'cache_config' => array (
+    'value' => '[{"cache_function":"blog","cache_caching":true,"cache_mobile":true,"cache_login":true,"cache_level":"default","cache_type":"html","cache_clear_time":"0"}]',
+  ),
+  'cache_gzip' => array (
+    'value' => '5',
+  ),
+  'social' => array (
+    'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"}]',
+  ),
+  'google' => array (
+    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"YOUR_GOOGLE_CLIENT_ID"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"YOUR_GOOGLE_CLIENT_SECRET"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://vietnamnet2.vn/account/login_google/"}]',
+  ),
+  'email' => array (
+    'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"contact@cmsfullform.com"},{"email_key":"mail_password","email_value":"dsfsdfdsfsdfdsf"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"contact@cmsfullform.com"},{"email_key":"mail_from_name","email_value":"CMS Full Form"}]',
+  ),
+  'watermark_status' => array (
+    'value' => '1',
+  ),
+  'site_email' => array (
+    'value' => 'contact@cmsfullform.com',
+  ),
+  'site_logo' => array (
+    'value' => '',
+  ),
+  'img_default' => array (
+    'value' => '',
+  ),
+  'favicon' => array (
+    'value' => '',
+  ),
+  'watermark' => array (
+    'value' => '',
+  ),
+  'plugins_active' => array (
+    'value' => '[{"name":"reactix"}]',
+  ),
+  'themes_gamesid' => array (
+    'value' => '111',
+  ),
+  'themes_appsid' => array (
+    'value' => '112',
+  ),
+  'site_phone' => array (
+    'value' => '+84 345 567 900',
+  ),
+  'default_posttype' => array (
+    'value' => 'posts',
+  ),
+);

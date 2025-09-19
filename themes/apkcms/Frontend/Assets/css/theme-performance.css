@@ -1,0 +1,46 @@
+
+/* Theme Performance Optimizations */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lazy loading styles */
+img[data-src] {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+img.lazy-loading {
+    opacity: 0.5;
+    filter: blur(2px);
+}
+
+img.lazy-loaded {
+    opacity: 1;
+    filter: none;
+}
+
+/* Performance optimizations */
+.app-card, .game-card, .category-card {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Critical above-the-fold styles */
+.hero-section {
+    contain: layout style paint;
+}
+
+.navigation {
+    contain: layout style;
+}

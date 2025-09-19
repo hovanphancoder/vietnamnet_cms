@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OurCMS Template Hierarchy - Table View</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 300;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .table-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow-x: auto;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            border: none;
+            padding: 18px 15px;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        /* Add arrows between columns */
+        td:not(:last-child):not(.empty-cell)::after {
+            content: '→';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6366f1;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 10;
+            background: white;
+            padding: 0 4px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px white;
+        }
+        
+        /* Don't show arrows after empty cells or before merged cell */
+        .empty-cell::after,
+        td:nth-child(5)::after {
+            display: none;
+        }
+        
+        th {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Different colors for each priority column */
+        th:nth-child(1) { background: linear-gradient(135deg, #6b7280, #4b5563); } /* Page Type - Gray */
+        th:nth-child(2) { background: linear-gradient(135deg, #dc2626, #b91c1c); } /* 1st Priority - Red */
+        th:nth-child(3) { background: linear-gradient(135deg, #ea580c, #c2410c); } /* 2nd Priority - Orange */
+        th:nth-child(4) { background: linear-gradient(135deg, #ca8a04, #a16207); } /* 3rd Priority - Amber */
+        th:nth-child(5) { background: linear-gradient(135deg, #16a34a, #15803d); } /* 4th Priority - Green */
+        th:nth-child(6) { background: linear-gradient(135deg, #2563eb, #1d4ed8); } /* Ultimate Fallback - Blue */
+        
+        .page-type {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 600;
+            color: #495057;
+            border-left: 4px solid #6c757d;
+            font-size: 12px;
+            text-align: left !important;
+            padding-left: 20px;
+        }
+        
+        /* Column-based coloring for template cells */
+        td:nth-child(2):not(.empty-cell) { /* 1st Priority - Red */
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+        }
+        
+        td:nth-child(3):not(.empty-cell) { /* 2nd Priority - Orange */
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(234, 88, 12, 0.3);
+        }
+        
+        td:nth-child(4):not(.empty-cell) { /* 3rd Priority - Amber */
+            background: linear-gradient(135deg, #ca8a04, #a16207);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(202, 138, 4, 0.3);
+        }
+        
+        td:nth-child(5):not(.empty-cell) { /* 4th Priority - Green */
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);
+        }
+        
+        td:nth-child(6):not(.empty-cell) { /* Ultimate Fallback - Blue */
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+        
+        /* Legacy classes for backward compatibility */
+        .primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+        
+        .secondary {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+        }
+        
+        .variable {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(234, 88, 12, 0.3);
+        }
+        
+        .final {
+            background: linear-gradient(135deg, #ca8a04, #a16207);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(202, 138, 4, 0.3);
+        }
+        
+        .arrow {
+            font-size: 18px;
+            color: #6366f1;
+        }
+        
+        .note {
+            background: linear-gradient(135deg, #fff3cd, #fef3c7);
+            border: 1px solid #f59e0b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);
+        }
+        
+        .note h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .note p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: #78350f;
+        }
+        
+        .note p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        /* Merged cell styling */
+        td[rowspan] {
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 18px;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            background: linear-gradient(135deg, #1e40af, #3b82f6, #60a5fa);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 8px rgba(30, 64, 175, 0.4);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        td[rowspan]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+            border-radius: 8px;
+        }
+        
+        /* Empty cells */
+        .empty-cell {
+            background: #f8f9fa !important;
+            color: #adb5bd !important;
+            font-style: italic;
+        }
+        
+        /* Hover effects for template cells */
+        td:nth-child(2):not(.empty-cell):hover,
+        td:nth-child(3):not(.empty-cell):hover,
+        td:nth-child(4):not(.empty-cell):hover,
+        td:nth-child(5):not(.empty-cell):hover,
+        td:nth-child(6):not(.empty-cell):hover,
+        .primary:hover, .secondary:hover, .variable:hover, .final:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+        
+        /* Row hover effect */
+        tbody tr:hover {
+            background-color: rgba(79, 172, 254, 0.05);
+        }
+        
+        tbody tr:hover .page-type {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left-color: #2196f3;
+        }
+        
+        /* Add button styling */
+        .add-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+        
+        .add-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .close {
+            color: #9ca3af;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #374151;
+        }
+        
+        .success-message {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OurCMS Template Hierarchy - Structured Table</h1>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Page Type</th>
+                    <th>1st Priority</th>
+                    <th>2nd Priority</th>
+                    <th>3rd Priority</th>
+                    <th>4th Priority</th>
+                    <th>Ultimate Fallback</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Archive Templates -->
+                <tr>
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Author Archive')">Add</button> Author Archive</td>
+                    <td class="variable">author-$nicename.php</td>
+                    <td class="variable">author-$id.php</td>
+                    <td class="final">author.php</td>
+                    <td class="primary">archive.php</td>
+                    <td class="primary" rowspan="8">index.php</td>
+                </tr>
+                
+                
+                <tr>
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Custom Post Type Archive')">Add</button> Custom Post Type Archive</td>
+                    <td class="variable">archive-$posttype.php</td>
+                    <td class="primary">archive.php</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                </tr>
+                
+                <tr>
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Custom Taxonomy Archive')">Add</button> Custom Taxonomy Archive</td>
+                    <td class="variable">taxonomy-$taxonomy-$term.php</td>
+                    <td class="variable">taxonomy-$taxonomy.php</td>
+                    <td class="final">taxonomy.php</td>
+                    <td class="primary">archive.php</td>
+                </tr>
+                
+                
+                
+                <!-- Single Post Templates -->
+                <tr style="border-top: 3px solid #333;">
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Single Post')">Add</button> Single Post</td>
+                    <td class="variable">single-$posttype-$slug.php</td>
+                    <td class="variable">single-$posttype.php</td>
+                    <td class="final">single.php</td>
+                    <td class="primary">singular.php</td>
+                </tr>
+                
+                
+                <!-- Page Templates -->
+                <tr style="border-top: 3px solid #333;">
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Static Page')">Add</button> Static Page</td>
+                    <td class="variable">page-$slug.php</td>
+                    <td class="variable">page-$id.php</td>
+                    <td class="variable">page-$template.php</td>
+                    <td class="final">page.php</td>
+                </tr>
+                
+                <!-- Homepage Templates -->
+                <tr style="border-top: 3px solid #333;">
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Site Front Page')">Add</button> Site Front Page</td>
+                    <td class="primary">front-page.php</td>
+                    <td class="final">page.php</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                </tr>
+                
+                
+                <!-- Other Templates -->
+                <tr style="border-top: 3px solid #333;">
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Error 404')">Add</button> Error 404</td>
+                    <td class="final">404.php</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                </tr>
+                
+                <tr>
+                    <td class="page-type"><button class="add-btn" onclick="openModal('Search Results')">Add</button> Search Results</td>
+                    <td class="final">search.php</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                    <td class="empty-cell">-</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #dc2626, #b91c1c);"></div>
+                <span>1st Priority (Highest)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #ea580c, #c2410c);"></div>
+                <span>2nd Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #ca8a04, #a16207);"></div>
+                <span>3rd Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #16a34a, #15803d);"></div>
+                <span>4th Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);"></div>
+                <span>Ultimate Fallback (index.php)</span>
+            </div>
+        </div>
+        
+        <div class="note">
+            <h3>How to Read This Optimized Table:</h3>
+            <p><strong>Left to Right Priority:</strong> OurCMS checks templates from left to right. If the first template doesn't exist, it tries the next one, and so on.</p>
+            <p><strong>Variable Names:</strong> $slug, $id, $posttype, etc. are replaced with actual values (e.g., page-about.php, category-news.php)</p>
+            <p><strong>Ultimate Fallback:</strong> The merged <strong>index.php</strong> column shows that ALL page types eventually fall back to this template - it must always exist!</p>
+            <p><strong>Empty Cells (-):</strong> Indicates no additional fallback templates for that priority level.</p>
+            <p><strong>Optimizations:</strong> Removed repetitive arrows and merged common fallback templates for cleaner visualization.</p>
+        </div>
+    </div>
+
+    <!-- Template Generator Modal -->
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Create Template</h3>
+            <div id="modalMessage"></div>
+            
+            <form id="templateForm">
+                <div class="form-group">
+                    <label for="pageType">Page Type:</label>
+                    <input type="text" id="pageType" name="pageType" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="templateType">Template Type:</label>
+                    <select id="templateType" name="templateType" onchange="handleTemplateTypeChange()">
+                        <option value="">Select template type...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="customValueGroup" style="display: none;">
+                    <label for="customValue" id="customValueLabel">Custom Value:</label>
+                    <input type="text" id="customValue" name="customValue" placeholder="Enter value...">
+                    <small id="customValueHelp" style="color: #6b7280; font-size: 12px;"></small>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Add click functionality to show template info
+        document.querySelectorAll('td:not(.page-type):not(.empty-cell)').forEach(cell => {
+            if (cell.textContent.trim() !== '-' && cell.textContent.trim() !== '→') {
+                cell.style.cursor = 'pointer';
+                cell.addEventListener('click', function() {
+                    const template = this.textContent.trim();
+                    const pageType = this.parentElement.querySelector('.page-type').textContent;
+                    alert(`Template: ${template}\nPage Type: ${pageType}\n\nThis template handles: ${getTemplateDescription(template)}`);
+                });
+            }
+        });
+        
+        function getTemplateDescription(template) {
+            const descriptions = {
+                'index.php': 'The main template file - ultimate fallback for all page types',
+                'front-page.php': 'Custom homepage template',
+                'home.php': 'Blog posts index page',
+                'single.php': 'Individual blog posts',
+                'page.php': 'Static pages',
+                'archive.php': 'Archive pages (categories, tags, dates, etc.)',
+                'search.php': 'Search results page',
+                '404.php': 'Page not found errors',
+                'author.php': 'Author archive pages',
+                'category.php': 'Category archive pages',
+                'tag.php': 'Tag archive pages',
+                'taxonomy.php': 'Custom taxonomy archive pages',
+                'attachment.php': 'Attachment pages (images, documents, etc.)',
+                'singular.php': 'Any single post or page (fallback for single.php and page.php)'
+            };
+            
+            return descriptions[template] || 'Custom template with specific functionality';
+        }
+
+        // Template Generator Functions
+        let currentPageType = '';
+
+        // Template type configurations
+        const templateTypeConfigs = {
+            'Author Archive': [
+                { value: 'general', text: 'General author.php', needsValue: false },
+                { value: 'nicename', text: 'Specific author by nicename', needsValue: true, placeholder: 'author-nicename', help: 'Enter author nicename (e.g., john-doe)' },
+                { value: 'id', text: 'Specific author by ID', needsValue: true, placeholder: 'author-id', help: 'Enter author ID (e.g., 123)' }
+            ],
+            'Custom Post Type Archive': [
+                { value: 'general', text: 'General archive.php', needsValue: false },
+                { value: 'posttype', text: 'Specific post type archive', needsValue: true, placeholder: 'post-type-name', help: 'Enter post type name (e.g., products)' }
+            ],
+            'Custom Taxonomy Archive': [
+                { value: 'general', text: 'General taxonomy.php', needsValue: false },
+                { value: 'taxonomy', text: 'Specific taxonomy', needsValue: true, placeholder: 'taxonomy-name', help: 'Enter taxonomy name (e.g., product-category)' },
+                { value: 'taxonomy_term', text: 'Specific taxonomy and term', needsValue: true, placeholder: 'taxonomy/term', help: 'Enter taxonomy/term (e.g., product-category/electronics)' }
+            ],
+            'Single Post': [
+                { value: 'general', text: 'General single.php', needsValue: false },
+                { value: 'posttype', text: 'Specific post type', needsValue: true, placeholder: 'post-type', help: 'Enter post type (e.g., products)' },
+                { value: 'posttype_slug', text: 'Specific post type and slug', needsValue: true, placeholder: 'post-type/post-slug', help: 'Enter post-type/slug (e.g., products/my-product)' }
+            ],
+            'Static Page': [
+                { value: 'general', text: 'General page.php', needsValue: false },
+                { value: 'slug', text: 'Specific page by slug', needsValue: true, placeholder: 'page-slug', help: 'Enter page slug (e.g., about)' },
+                { value: 'id', text: 'Specific page by ID', needsValue: true, placeholder: 'page-id', help: 'Enter page ID (e.g., 123)' },
+                { value: 'template', text: 'Custom page template', needsValue: true, placeholder: 'template-name', help: 'Enter template name (e.g., contact-template)' }
+            ],
+            'Site Front Page': [
+                { value: 'general', text: 'Front page template', needsValue: false }
+            ],
+            'Error 404': [
+                { value: 'general', text: '404 error template', needsValue: false }
+            ],
+            'Search Results': [
+                { value: 'general', text: 'Search results template', needsValue: false }
+            ]
+        };
+
+        function openModal(pageType) {
+            currentPageType = pageType;
+            document.getElementById('pageType').value = pageType;
+            document.getElementById('modalMessage').innerHTML = '';
+            
+            // Populate template type options
+            const templateTypeSelect = document.getElementById('templateType');
+            templateTypeSelect.innerHTML = '<option value="">Select template type...</option>';
+            
+            const configs = templateTypeConfigs[pageType] || [];
+            configs.forEach(config => {
+                const option = document.createElement('option');
+                option.value = config.value;
+                option.textContent = config.text;
+                option.dataset.needsValue = config.needsValue;
+                option.dataset.placeholder = config.placeholder || '';
+                option.dataset.help = config.help || '';
+                templateTypeSelect.appendChild(option);
+            });
+            
+            // Reset form
+            document.getElementById('templateForm').reset();
+            document.getElementById('pageType').value = pageType;
+            document.getElementById('customValueGroup').style.display = 'none';
+            
+            // Show modal
+            document.getElementById('templateModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('templateModal').style.display = 'none';
+        }
+
+        function handleTemplateTypeChange() {
+            const select = document.getElementById('templateType');
+            const selectedOption = select.options[select.selectedIndex];
+            const customValueGroup = document.getElementById('customValueGroup');
+            const customValueInput = document.getElementById('customValue');
+            const customValueLabel = document.getElementById('customValueLabel');
+            const customValueHelp = document.getElementById('customValueHelp');
+            
+            if (selectedOption.dataset.needsValue === 'true') {
+                customValueGroup.style.display = 'block';
+                customValueInput.placeholder = selectedOption.dataset.placeholder || 'Enter value...';
+                customValueLabel.textContent = 'Custom Value:';
+                customValueHelp.textContent = selectedOption.dataset.help || '';
+                customValueInput.required = true;
+            } else {
+                customValueGroup.style.display = 'none';
+                customValueInput.required = false;
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('templateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                page_type: formData.get('pageType'),
+                template_type: formData.get('templateType'),
+                custom_value: formData.get('customValue') || ''
+            };
+            
+            try {
+                const response = await fetch('template.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const messageDiv = document.getElementById('modalMessage');
+                
+                if (result.success) {
+                    messageDiv.innerHTML = `
+                        <div class="success-message">
+                            <strong>Success!</strong> Template created successfully.<br>
+                            <strong>File:</strong> ${result.filename}<br>
+                            <strong>Path:</strong> ${result.path}
+                        </div>
+                    `;
+                    // Reset form after success
+                    setTimeout(() => {
+                        closeModal();
+                    }, 3000);
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error-message">
+                            <strong>Error:</strong> ${result.error}
+                            ${result.filename ? `<br><strong>File:</strong> ${result.filename}` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('modalMessage').innerHTML = `
+                    <div class="error-message">
+                        <strong>Error:</strong> Failed to create template. ${error.message}
+                    </div>
+                `;
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('templateModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>

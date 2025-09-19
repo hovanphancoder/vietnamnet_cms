@@ -1,0 +1,25 @@
+{
+    "name": "cmsfullform/cmsfullform",
+    "description": "CMS Full Form",
+    "license": "MIT",
+    "version": "1.0.1",
+    "autoload": {
+        "psr-4": {
+            "App\\": "application/",
+            "System\\": "system/",
+            "Plugins\\": "plugins/"
+        }
+    },
+    "authors": [
+        {
+            "name": "cmsfullform.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "firebase/php-jwt": "6.11",
+        "phpmailer/phpmailer": "^6.10",
+        "phpseclib/phpseclib": "3.0",
+        "respect/validation": "2.4"
+    }
+}

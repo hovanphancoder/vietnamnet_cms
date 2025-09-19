@@ -1,0 +1,70 @@
+<?php
+return [
+
+    // header and footer
+    'Features'                           => 'Tính năng',
+    'Library'                            => 'Thư viện',
+    'Blogs'                          => 'Tin tức',
+    'Themes'                             => 'Themes',
+    'Plugins'                            => 'Plugins',
+    'Documentation'                               => 'Hướng dẫn',
+    'Services'                           => 'Dịch vụ',
+    'Đăng nhập'                             => 'Đăng nhập',
+    'Bắt đầu'                       => 'Bắt đầu',
+
+    'Products'                        => 'Sản phẩm',
+    'Features'                        => 'Tính năng',
+    'Pricing'                         => 'Bảng giá',
+    'Download'                        => 'Tải về',
+    'Dùng thử trực tiếp'                            => 'Dùng thử trực tiếp',
+
+    'Resources'                       => 'Tài nguyên',
+    'Blog'                            => 'Blog',
+    'Tài liệu'                            => 'Tài liệu',
+    'Support'                         => 'Hỗ trợ',
+    'Câu hỏi thường gặp'                            => 'Câu hỏi thường gặp',
+    'Kết nối'                         => 'Kết nối',
+    'Theo dõi chúng tôi trên mạng xã hội để cập nhật tin tức mới nhất.'                       => 'Theo dõi chúng tôi trên mạng xã hội để cập nhật tin tức mới nhất.',
+    'Copyright © CMS Full Form.'                          => 'Bản quyền thuộc về CMS Full Form.',
+    'A next-generation AI-powered CMS solution, delivering unparalleled speed, flexibility, and security for your website.'                     => 'Giải pháp CMS thế hệ mới tích hợp AI, mang lại tốc độ, linh hoạt và bảo mật vượt trội cho website của bạn.',
+
+
+    // Kêu gọi hành động
+    'Ready to Experience the Difference?'                        => 'Sẵn sàng trải nghiệm sự khác biệt?',
+    'Join thousands of developers and businesses using CMS Full Form to build faster, stronger, and more secure websites.'                  => 'Tham gia cùng hàng ngàn lập trình viên và doanh nghiệp đang sử dụng CMS Full Form để xây dựng website nhanh hơn, mạnh hơn và an toàn hơn.',
+    'Download Now'                       => 'Tải ngay',
+    'View Documentation'                          => 'Xem tài liệu',
+
+    // Tìm kiếm
+    'Search for themes, plugins, blogs...'                     => 'Tìm kiếm themes, plugins, blogs...',
+    'Tìm kiếm'                   => 'Tìm kiếm',
+    'Kết quả tìm kiếm'                      => 'Kết quả tìm kiếm',
+    'search.results_for'                     => 'Kết quả tìm kiếm cho "%s"',
+    'Found %d results'                   => 'Tìm thấy %d kết quả',
+    'search.showing_results'                 => 'Hiển thị %d kết quả',
+    'All'                             => 'Tất cả',
+    'search.blogs'                           => 'Blogs',
+    'search.themes'                          => 'Themes',
+    'search.plugins'                         => 'Plugins',
+    'No results found'                => 'Không tìm thấy kết quả',
+    'search.no_results_message'              => 'Xin lỗi, chúng tôi không thể tìm thấy kết quả nào cho "%s". Hãy thử từ khóa khác hoặc duyệt qua các danh mục.',
+    'Back to Home'                       => 'Về trang chủ',
+    'search.suggestions_title'               => 'Cần giúp đỡ tìm kiếm?',
+    'search.popular_searches'                => 'Tìm kiếm phổ biến',
+    'Browse Categories'               => 'Duyệt danh mục',
+    'search.need_help'                       => 'Cần hỗ trợ?',
+    'search.contact_support'                 => 'Liên hệ hỗ trợ',
+    'Layout'                          => 'Giao diện',
+    'Grid View'                       => 'Xem dạng lưới',
+    'search.section_view'                    => 'Xem theo nhóm',
+    'search.found_in_themes'                 => 'Tìm thấy %d themes',
+    'search.found_in_plugins'                => 'Tìm thấy %d plugins',
+    'search.found_in_blogs'                  => 'Tìm thấy %d blogs',
+    'search.view_all_themes'                 => 'Xem tất cả themes',
+    'search.view_all_plugins'                => 'Xem tất cả plugins',
+    'search.view_all_blogs'                  => 'Xem tất cả blogs',
+    'search.view_theme'                      => 'Xem theme',
+    'search.view_plugin'                     => 'Xem plugin',
+    'search.read_more'                       => 'Đọc thêm',
+
+];

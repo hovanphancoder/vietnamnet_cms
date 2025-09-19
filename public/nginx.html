@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>FastCMS Nginx Generator</title>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+   <div id="app">
+       <div class="container mx-auto px-4 py-8">
+           <div class="bg-white shadow-lg rounded-lg p-6">
+               <h1 class="text-2xl font-bold mb-6">FastCMS Nginx Configuration Generator</h1>
+
+               <!-- Basic Settings -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Basic Settings</h2>
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div>
+                           <label class="flex items-center">
+                               <input type="checkbox" v-model="config.debug" class="form-checkbox">
+                               <span class="ml-2">Debug Mode</span>
+                           </label>
+                       </div>
+                       <div>
+                           <label class="block">Public_Html Path (Not Need Change)</label>
+                           <input type="text" v-model="config.cacheRoot" class="w-full p-2 border rounded">
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Cache Rules -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Cache Rules</h2>
+                   
+                   <!-- URI Rules -->
+                   <div class="mb-4">
+                       <h3 class="font-medium mb-2">URI Patterns</h3>
+                       <div class="flex space-x-2 mb-2">
+                           <input type="text" v-model="newUriRule.path" 
+                                  class="flex-1 p-2 border rounded"
+                                  placeholder="URI pattern (e.g. ^/api/)">
+                           <input type="text" v-model="newUriRule.description"
+                                  class="flex-1 p-2 border rounded"
+                                  placeholder="Description">
+                            <select v-model="newUriRule.condition" class="p-2 border rounded">
+                                <option value="=">= (Exact Match)</option>
+                                <option value="~">~ (Case-Sensitive Regex)</option>
+                                <option value="~*">~* (Case-Insensitive Regex)</option>
+                            </select>
+                           <label class="flex items-center px-2">
+                               <input type="checkbox" v-model="newUriRule.exclude" class="mr-2">
+                               Disable Cache?
+                           </label>
+                           <button @click="addUriRule" 
+                                   class="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
+                       </div>
+                       <div class="space-y-2">
+                           <div v-for="(rule, index) in config.cacheableUris" 
+                                :key="index"
+                                :class="['flex items-center justify-between p-2 rounded', 
+                                        rule.exclude ? 'bg-red-50' : 'bg-gray-100']">
+                               <div>
+                                   <span :class="{'line-through text-red-500': rule.exclude}">
+                                       {{rule.path}}
+                                   </span>
+                                   <span class="text-gray-600 text-sm ml-2">
+                                       {{rule.description}}
+                                   </span>
+                               </div>
+                               <button @click="removeUriRule(index)" 
+                                       class="text-red-500">&times;</button>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Query Params -->
+                   <div>
+                       <h3 class="font-medium mb-2">Cacheable Query Parameters</h3>
+                       <div class="flex space-x-2 mb-2">
+                           <input type="text" v-model="newQueryParam.key"
+                                  class="flex-1 p-2 border rounded"
+                                  placeholder="Parameter key">
+                           <input type="text" v-model="newQueryParam.description"
+                                  class="flex-1 p-2 border rounded" 
+                                  placeholder="Description">
+                           <button @click="addQueryParam"
+                                   class="px-4 py-2 bg-green-500 text-white rounded">Add</button>
+                       </div>
+                       <div class="space-y-2">
+                           <div v-for="(param, index) in config.cacheQueryParams"
+                                :key="index" 
+                                class="flex items-center justify-between bg-gray-100 p-2 rounded">
+                               <div>
+                                   <span>{{param.key}}</span>
+                                   <span class="text-gray-600 text-sm ml-2">
+                                       {{param.description}}
+                                   </span>
+                               </div>
+                               <button @click="removeQueryParam(index)"
+                                       class="text-red-500">&times;</button>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Cookie Management -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Cookie Management</h2>
+                   <div class="flex space-x-2 mb-4">
+                       <input type="text" v-model="newCookie" class="flex-1 p-2 border rounded" 
+                              placeholder="Enter cookie name">
+                       <button @click="addCookie" class="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
+                   </div>
+                   <div class="flex flex-wrap gap-2">
+                       <div v-for="(cookie, index) in config.cookieInvalidate" :key="index"
+                            class="bg-gray-100 rounded-full px-3 py-1 flex items-center">
+                           <span>{{ cookie }}</span>
+                           <button @click="removeCookie(index)" class="ml-2 text-red-500">&times;</button>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Mobile User Agents -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Mobile User Agents</h2>
+                   <div class="flex space-x-2 mb-4">
+                       <input type="text" v-model="newMobileAgent" class="flex-1 p-2 border rounded" 
+                              placeholder="Add mobile user agent pattern">
+                       <button @click="addMobileAgent" class="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
+                   </div>
+                   <div class="flex flex-wrap gap-2">
+                       <div v-for="(agent, index) in config.mobileUserAgents" :key="index"
+                            class="bg-gray-100 rounded-full px-3 py-1 flex items-center">
+                           <span>{{ agent }}</span>
+                           <button @click="removeMobileAgent(index)" class="ml-2 text-red-500">&times;</button>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Media Extensions -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Media Extensions</h2>
+                   <input type="text" v-model="config.mediaExtensions" class="w-full p-2 border rounded">
+               </div>
+
+               <!-- Cache Expirations -->
+               <div class="mb-6">
+                   <h2 class="text-xl font-semibold mb-4">Cache Expirations</h2>
+                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div>
+                           <label class="block">CSS Expiration</label>
+                           <input type="text" v-model="config.cssExpiration" class="w-full p-2 border rounded">
+                       </div>
+                       <div>
+                           <label class="block">JS Expiration</label>
+                           <input type="text" v-model="config.jsExpiration" class="w-full p-2 border rounded">
+                       </div>
+                       <div>
+                           <label class="block">Media Expiration</label>
+                           <input type="text" v-model="config.mediaExpiration" class="w-full p-2 border rounded">
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Generate Buttons -->
+               <div class="flex space-x-4">
+                   <button @click="generateNginxConfig" class="px-6 py-2 bg-blue-500 text-white rounded">
+                       Generate Nginx Config
+                   </button>
+               </div>
+
+               <!-- Output -->
+                <div v-if="config.generatedINI || config.generatedNginx" class="mt-6">
+                    <!-- Generated Nginx Config -->
+                    <div v-if="config.generatedNginx">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-semibold">Generated Nginx Config</h3>
+                            <button @click="copyToClipboard(config.generatedNginx)" 
+                                    class="text-blue-500 hover:text-blue-700">Copy</button>
+                        </div>
+                        <textarea class="w-full h-96 p-2 border rounded font-mono" readonly 
+                                v-model="config.generatedNginx"></textarea>
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div v-if="config.generatedNginx" class="mt-6">
+                        <h3 class="text-lg font-semibold mb-2">Hướng Dẫn Sử Dụng</h3>
+                        <ol class="list-inside space-y-4">
+                            <li>
+                                <p><strong>Bước 1:</strong> Save nội dung file trên về thư mục Nginx Config, ví dụ: <code>/etc/nginx/domain.dot.cache.conf</code></p>
+                            </li>
+                            <li>
+                                <p><strong>Bước 2:</strong> Mở file Nginx Config của domain, ví dụ: <code>/etc/nginx/conf.d/domain.dot.conf</code></p>
+                                Thêm đoạn sau vào trong phần <br /><pre class="bg-gray-100 p-2 rounded overflow-auto">server {
+    listen 443 ssl;
+    server_name domain.dot www.domain.dot; 
+    root "/www/wwwroot/domain.dot/public_html/public"; 
+    index index.html index.htm index.php;</pre><br />
+                                </p>
+                                Thêm vào phía sau đoạn mã này:
+                                <pre class="bg-gray-100 p-2 rounded overflow-auto">
+    # FastCMS Rewrite Cache Start
+    include "/etc/nginx/domain.dot.cache.conf";
+    # FastCMS Rewrite Cache End
+
+    #Rewrite URL & Upload FastCMS Start
+	location /uploads {
+		alias /home/okfindntWYw/okfind.net/public_html/writeable/uploads;
+		# Chỉ cho phép truy cập các file với đuôi mở rộng sau
+		location ~* \.(jpg|jpeg|png|gif|svg|webp|pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx|txt)$ {
+			allow all;
+		}
+		# Từ chối tất cả các file không khớp với đuôi mở rộng trên
+		location ~* \.*$ {
+			deny all;
+			return 403;
+		}
+		# Tùy chọn Off: Tắt liệt kê thư mục (chỉ cần bật khi thật sự cần thiết)
+		autoindex off;
+	}
+    location / { try_files $uri $uri/ /index.php$is_args$args; }
+    #Rewrite URL & Upload FastCMS End
+                                </pre>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+
+           </div>
+       </div>
+   </div>
+   <script>
+
+
+// Constants and initial state
+const { createApp, ref, reactive } = Vue;
+
+const DEFAULT_CONFIG = {
+   debug: false,
+   cacheRoot: '$document_root',
+   htmlCacheControl: 'no-cache, no-store, must-revalidate',
+   mobileUserAgents: [
+    'phone',
+    'windows\\s+phone', 
+    'ipod',
+    'ipad',
+    'blackberry',
+    '(?:android|bb\\d+|meego|silk|googlebot) .+? mobile',
+    'palm',
+    'windows\\s+ce',
+    'opera mini',
+    'avantgo', 
+    'mobilesafari',
+    'docomo',
+    'kaios'
+    ],
+   cookieInvalidate: [
+       'fastcms_logged',
+       'wp\\-postpass_'
+   ],
+   cacheableUris: [
+       {path: "/", description: "Homepage", condition: '='},
+       {path: "^/home/index/", description: "Categories path", condition: '~'},
+       {path: "^/api/", description: "API paths", condition: '~'},
+       {path: "^/api/v1/auth/", description: "Auth paths", condition: '~', exclude: true}
+   ],
+   cacheQueryParams: [
+       {key: "id", description: "ID parameter"},
+       {key: "page", description: "Page number"},
+       {key: "limit", description: "Results limit"},
+       {key: "sort", description: "Sort field"},
+       {key: "order", description: "Sort order"},
+       {key: "paged", description: "Page number (alt)"},
+       {key: "sortby", description: "Sort field (alt)"},
+       {key: "orderby", description: "Sort order (alt)"}
+   ],
+   mediaExtensions: 'ico|gif|jpe?g|png|svg|eot|otf|woff|woff2|ttf|ogg|webp',
+   cssExpiration: '30d',
+   jsExpiration: '30d', 
+   mediaExpiration: '30d',
+   generatedINI: '',
+   generatedNginx: ''
+};
+
+createApp({
+   setup() {
+       const config = reactive({...DEFAULT_CONFIG});
+       const newCookie = ref('');
+       const newMobileAgent = ref('');
+       const newUriRule = ref({
+           path: '',
+           description: '',
+           exclude: false
+       });
+       const newQueryParam = ref({
+           key: '',
+           description: ''
+       });
+
+       // Management methods
+       const addCookie = () => {
+           if (newCookie.value) {
+               config.cookieInvalidate.push(newCookie.value);
+               newCookie.value = '';
+           }
+       };
+
+       const removeCookie = (index) => {
+           config.cookieInvalidate.splice(index, 1);
+       };
+
+       const addMobileAgent = () => {
+           if (newMobileAgent.value) {
+               config.mobileUserAgents.push(newMobileAgent.value);
+               newMobileAgent.value = '';
+           }
+       };
+
+       const removeMobileAgent = (index) => {
+           config.mobileUserAgents.splice(index, 1);
+       };
+
+       const addUriRule = () => {
+           if (newUriRule.value.path) {
+               config.cacheableUris.push({...newUriRule.value});
+               newUriRule.value = {path: '', description: '', condition: '=' , exclude: false};
+           }
+       };
+
+       const removeUriRule = (index) => {
+           config.cacheableUris.splice(index, 1);
+       };
+
+       const addQueryParam = () => {
+           if (newQueryParam.value.key) {
+               config.cacheQueryParams.push({...newQueryParam.value});
+               newQueryParam.value = {key: '', description: ''};
+           }
+       };
+
+       const removeQueryParam = (index) => {
+           config.cacheQueryParams.splice(index, 1);
+       };
+
+        // Generate Nginx configuration  
+        const generateNginxConfig = () => {
+            let nginx = `###################################################################################################
+# Fastcms-Nginx
+# Fastcms-Nginx is a NGINX configuration to speedup your FastCMS website with the cache plugin FastCMS (From idie WP-Rocket)
+# Author: Alex Watson
+# Maintainer: FlashCms.net
+# URL: https://github.com/fastcms/nginx
+#
+# Tested with FastCMS version: 1.0.0
+# Tested with NGINX: 1.25.2 (mainline)
+#
+# Version 1.0.0
+#
+###################################################################################################
+# Add debug information into header
+set $fastcms_debug ${config.debug ? '1' : '0'};
+set $cache_root "${config.cacheRoot}";
+
+if ($document_root ~* "^(.*)/public$") {
+    set $cache_root "$1";
+}
+
+###################################################################################################
+# Do not alter these values
+#
+set $fastcms_bypass          1;      # Should NGINX bypass WordPress and call cache file directly ?
+set $fastcms_encryption      "";     # Is GZIP accepted by client ?
+set $fastcms_file            "";     # Filename to look for
+set $fastcms_is_bypassed     "MISS"; # Header text added to check if the bypass worked or not. X-Fastcms-Nginx-Serving-Static header usage
+set $fastcms_reason          "";     # Reason why cache file was not used
+set $fastcms_https_prefix    "";     # HTTPS prefix for cached files
+set $fastcms_mobile_prefix   "";     # Mobile prefix for mobile cache files
+set $fastcms_has_query_cache 0;      # Checks if query strings are cached
+set $fastcms_is_https        0;      # HTTPS check
+set $fastcms_support_webp    0;      # WebP support check
+set $fastcms_dynamic         "";     # Dynamic value to add to cached filename
+set $fastcms_device          "desktop";  # Device type (desktop or mobile)
+`;
+
+            // Phần tiếp theo của cấu hình sẽ được thêm ở phần sau
+            // PAGE CACHE
+            nginx += `
+
+###################################################################################################
+# PAGE CACHE
+#
+
+set $fastcms_uri_path "";
+if ($request_uri ~ "^([^?]*)(\\?.*)?$") {
+    set $fastcms_uri_path $1;
+}
+
+# Is Brotli accepted by client ?
+#if ($http_accept_encoding ~ br) {
+#	set $fastcms_encryption "";
+#}
+# Is GZIP accepted by client ?
+if ($http_accept_encoding ~ gzip) {
+    set $fastcms_encryption "_gzip";
+}
+
+# Is HTTPS request ?
+if ($https = "on") { set $fastcms_is_https 1; } 
+if ($http_x_forwarded_proto = "https") { set $fastcms_is_https 1; }
+if ($http_front_end_https = "on") { set $fastcms_is_https 1; }
+if ($http_x_forwarded_protocol = "https") { set $fastcms_is_https 1; }
+if ($http_x_forwarded_ssl = "on") { set $fastcms_is_https 1; }
+if ($http_x_url_scheme = "https") { set $fastcms_is_https 1; }
+if ($http_forwarded ~ /proto=https/) { set $fastcms_is_https 1; }
+
+if ($fastcms_is_https = "1") {
+    set $fastcms_https_prefix "-https";
+}
+
+# Check if request supports WebP ?
+if ($http_accept ~* "webp") {
+    set $fastcms_support_webp "1";
+}
+
+# Query strings to ignore
+set $fastcms_args "";
+
+# Query string to cache
+
+# File/URL to return IF we must bypass WordPress
+# Desktop: index.html
+# Gzip:    index.html_gzip
+# HTTPS:   index-https.html
+# Mobile:  index-mobile-https.html
+
+# Chuyển đổi query string thành thư mục nếu chỉ chứa các tham số được phép
+`;
+
+            // Thêm các điều kiện cache query params
+            if (config.cacheQueryParams.length > 0) {
+                // Sắp xếp cacheQueryParams theo key để đồng bộ với PHP
+                const sortedParams = config.cacheQueryParams.sort((a, b) => {
+                    const keyA = a.key.toLowerCase();
+                    const keyB = b.key.toLowerCase();
+                    if (keyA < keyB) return -1;
+                    if (keyA > keyB) return 1;
+                    return 0;
+                });
+                
+                nginx += `# Cacheable Query Parameters\n`;
+                config.cacheQueryParams.forEach(param => {
+                    nginx += `# Build cache folder Path for $_GET['${param.key}'] field! \n`;
+                    nginx += `if ($args ~* "(?:^|&)${param.key}=([^&]+)") {\n`;
+                    nginx += `    set $fastcms_args "\${fastcms_args}${param.key}/$1/";\n`;
+                    nginx += `}\n`;
+                });
+            } else {
+                nginx += `# No query strings to cache\n`;
+            }
+
+            nginx += `
+
+# Thiết lập đường dẫn cache với dạng thư mục đã chuyển đổi
+set $fastcms_pre_url "/writeable/cache/$http_host$fastcms_uri_path/$fastcms_args/";
+set $fastcms_pre_file "$cache_root/writeable/cache/$http_host$fastcms_uri_path/$fastcms_args/";
+
+# Mobile detection file path
+set $fastcms_mobile_detection "$fastcms_pre_file/.mobile-active";
+
+# Then check user agent with complete pattern matching
+if ($http_user_agent ~* "(${config.mobileUserAgents.join('|')})") {
+    set $fastcms_device "mobile";
+}
+
+# Set mobile prefix if mobile mode is activated
+if (-f "$fastcms_mobile_detection") {
+    set $fastcms_mobile_prefix "-mobile";
+}
+if ($fastcms_device != "mobile") {
+    set $fastcms_mobile_prefix "";
+}
+
+# Setting cache file struct path 
+set $fastcms_file_start "index$fastcms_mobile_prefix$fastcms_https_prefix";
+set $fastcms_url "$fastcms_pre_url$fastcms_file_start$fastcms_dynamic.html";
+set $fastcms_file "$fastcms_pre_file$fastcms_file_start$fastcms_dynamic.html";
+
+# Check if gzip version cached file is available
+if (-f "$fastcms_file$fastcms_encryption") {
+    set $fastcms_file "$fastcms_file$fastcms_encryption";
+    set $fastcms_url  "$fastcms_url$fastcms_encryption";
+}
+
+# Cookie check (thay wordpress cookies bằng fastcms cookie nếu bạn muốn)
+if ($http_cookie ~* "(${config.cookieInvalidate.join('|')})") {
+    set $fastcms_bypass 0;
+    set $fastcms_is_bypassed "BYPASS";
+    set $fastcms_reason "Cookie";
+}
+
+# Enter list URI you want caching Nginx
+set $should_cache "0";
+`;
+
+            // Thêm các điều kiện cho cacheableUris
+            config.cacheableUris.forEach(uri => {
+                if (uri.exclude) {
+                    nginx += `# Exclude URI pattern: ${uri.path}\n`;
+                    nginx += `if ($request_uri ${uri.condition} "${uri.path}") {\n`;
+                    nginx += `    set $should_cache "0";\n`;
+                    nginx += `}\n`;
+                } else {
+                    nginx += `# Include URI pattern: ${uri.path}\n`;
+                    nginx += `if ($request_uri ${uri.condition} "${uri.path}") {\n`;
+                    nginx += `    set $should_cache "1";\n`;
+                    nginx += `}\n`;
+                }
+            });
+
+            nginx += `
+# Combine conditions into a single string
+set $fastcms_cachelogin "${config.debug ? '1' : '0'}${config.cacheQueryParams.length > 0 ? '1' : '0'}";
+
+# Final decision using single if with combined string
+if ($fastcms_cachelogin = "11") {
+    set $fastcms_bypass 1;
+    set $fastcms_reason "$fastcms_url";
+}
+
+# Do not bypass if the cached file does not exist
+if (!-f "$fastcms_file") {
+    set $fastcms_bypass 0;
+    set $fastcms_is_bypassed "MISS";
+    set $fastcms_reason "Cached file not found";
+}
+
+# Do not bypass if it's a POST request
+if ($request_method = POST) {
+    set $fastcms_bypass 0;
+    set $fastcms_is_bypassed "BYPASS";
+    set $fastcms_reason "POST request";
+}
+
+# Maintenance mode
+if (-f "$cache_root/.maintenance") {
+    set $fastcms_bypass 0;
+    set $fastcms_is_bypassed "BYPASS";
+    set $fastcms_reason "Maintenance mode";
+}
+
+# If the bypass token is still on, let's bypass WordPress with the cached URL
+if ($fastcms_bypass = 1) {
+    set $fastcms_is_bypassed "HIT";
+    set $fastcms_reason "$fastcms_url";
+}
+
+# Clear variables if debug is not needed
+if ($fastcms_debug = 0) {
+    set $fastcms_reason "";
+    set $fastcms_file "";
+}
+
+# If bypass token still on, rewrite
+if ($fastcms_bypass = 1) {
+    rewrite .* "$fastcms_url" last;
+}
+
+###################################################################################################
+
+location /writeable/ {
+    root "$cache_root";
+    autoindex on;
+    index index$fastcms_mobile_prefix$fastcms_https_prefix$fastcms_dynamic.html_gzip index$fastcms_mobile_prefix$fastcms_https_prefix$fastcms_dynamic.html;
+}
+
+# Add header to HTML cached files
+location ~ /writeable/cache/.*html$ {
+    root "$cache_root";
+    etag on;
+    add_header Vary "Accept-Encoding, Cookie";
+    add_header Cache-Control "${config.htmlCacheControl}";
+    add_header X-Fastcms-Nginx-Serving-Static $fastcms_is_bypassed;
+    add_header X-Fastcms-Nginx-Reason $fastcms_reason;
+    add_header X-Fastcms-Nginx-File $fastcms_file;
+}
+
+# Do not gzip cached files that are already gzipped
+location ~ /writeable/cache/.*_gzip$ {
+    root "$cache_root";
+    etag on;
+    gzip off;
+    types {}
+    default_type text/html;
+    add_header Content-Encoding gzip;
+    add_header Vary "Accept-Encoding, Cookie";
+    add_header Cache-Control "${config.htmlCacheControl}";
+    add_header X-Fastcms-Nginx-Serving-Static $fastcms_is_bypassed;
+    add_header X-Fastcms-Nginx-Reason $fastcms_reason;
+    add_header X-Fastcms-Nginx-File $fastcms_file;
+}
+
+# Debug headers
+add_header X-Fastcms-Nginx-Reason $fastcms_reason;
+add_header X-Fastcms-Nginx-Serving-Static $fastcms_is_bypassed;
+add_header X-Fastcms-Nginx-File $fastcms_file;
+
+###################################################################################################
+# BROWSER CSS CACHE
+#
+location ~* \\.css$ {
+    etag on;
+    gzip_vary on;
+    expires ${config.cssExpiration};
+}
+
+###################################################################################################
+# BROWSER JS CACHE
+#
+location ~* \\.js$ {
+    etag on;
+    gzip_vary on;
+    expires ${config.jsExpiration};
+}
+
+###################################################################################################
+# BROWSER MEDIA CACHE
+#
+location ~* \\.(${config.mediaExtensions})$ {
+    etag on;
+    expires ${config.mediaExpiration};
+}
+`;
+
+            config.generatedNginx = nginx;
+        };
+
+        // Clipboard helper
+        const copyToClipboard = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            alert('Copied to clipboard!');
+        } catch (err) {
+            alert('Failed to copy to clipboard');
+            console.error(err);
+        }
+        };
+
+        return {
+            config,
+            newCookie,
+            newMobileAgent,
+            newUriRule,
+            newQueryParam,
+            addCookie,
+            removeCookie,
+            addMobileAgent,
+            removeMobileAgent,
+            addUriRule,
+            removeUriRule,
+            addQueryParam,
+            removeQueryParam,
+            generateNginxConfig,
+            copyToClipboard
+        };
+     }
+    }).mount('#app');
+   </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'field_type' => 'Field Type',
+    'option_group' => 'Option Group',
+    'select_option_group' => 'Select a group',
+    'enter_label' => 'Enter label',
+    'enter_name' => 'Enter name',
+    'save_file' => 'Save file',
+    'enter_min' => 'Enter min',
+    'enter_max' => 'Enter max',
+    'name_slug' => 'Name (Slug)',
+    'enter_description' => 'Enter description',
+    'default_value' => 'Default Value',
+    'enter_placeholder' => 'Placeholder',
+    'enter_default_value' => 'Enter default value',
+    'css_class_name' => 'CSS Class Name',
+    'enter_css_class_name' => 'Enter CSS class name',
+    'width_input' => 'Input width',
+    'add_field' => 'Add field',
+    'save_options' => 'Save options',
+    'option_edit_title' => 'Edit Option',
+    'choose_field_type' => 'Choose Field Type',
+    'add_option' => 'Add Option',
+    'add_field_to_repeater' => 'Add Field to Repeater',
+    'no_name' => 'No Name',
+    'option_field' => 'Option Field',
+    'fields_in_repeater' => 'Fields in Repeater',
+    'options_add_welcome' => 'Welcome to the Add Option Page',
+    'json_form_data' => 'JSON Form Data',
+
+];
