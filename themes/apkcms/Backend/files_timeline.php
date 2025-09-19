@@ -465,19 +465,6 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => $title ?? 'File
                             console.log('field_input.value:', field_input.value);
                             console.log('fileData:', fileData);
                         }
-                        
-                        // Gửi postMessage cho WYSIWYG và Image components
-                        const message = {
-                            type: 'fileSelected',
-                            field: field_input.value,
-                            data: fileData,
-                            wisy: wisy.value,
-                            multi: false
-                        };
-                        if(show_log) console.log('Message to parent:', message);
-                        window.parent.postMessage(message, '*');
-                        
-                        // Fallback: gọi global function
                         window.parent.setChosenImageInput(field_input.value, fileData);
                     } else if (multi.value && selectedFiles.length > 0) {
                         // Multi select: Gửi danh sách file
@@ -490,19 +477,10 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => $title ?? 'File
                             console.log('=== Multi Select without Token ===');
                             console.log('fileDataList:', fileDataList);
                         }
-                        
-                        // Gửi postMessage cho WYSIWYG và Image components
-                        const message = {
-                            type: 'fileSelected',
-                            field: field_input.value,
-                            data: fileDataList,
-                            wisy: wisy.value,
-                            multi: true
-                        };
-                        if(show_log) console.log('Message to parent:', message);
-                        window.parent.postMessage(message, '*');
-                        
-                        // Fallback: gọi global function
+                        if(show_log) {
+                            console.log('field_input.value:', field_input.value);
+                            console.log('fileDataList:', fileDataList);
+                        }
                         window.parent.setChosenImageInput(field_input.value, fileDataList, true);
                     }
                 }

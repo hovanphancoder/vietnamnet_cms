@@ -71,6 +71,24 @@ class OptionsController extends BackendController
                     continue;
                 }
 
+                switch ($option['type']){
+                    case 'Boolean':
+                      if ($value == 'false' || $value == 'False'){
+                        $value = 0;
+                      }else{
+                        $value = 1;
+                      }
+                    break;
+                    case 'Number':
+                      $optionOptional = json_decode($option['optional'], true);
+                      if (!empty($optionOptional) && isset($optionOptional['step']) && $optionOptional['step'] < 1){
+                        $value = (float)$value;
+                      }else{
+                        $value = (int)$value;
+                      }
+                    break;
+                  }
+
                 $optional = $option['optional'];
                 $optional = is_string($optional) ? json_decode($optional, true) : $optional;
                 $rules[$key] = $this->_rules_validate($optional);

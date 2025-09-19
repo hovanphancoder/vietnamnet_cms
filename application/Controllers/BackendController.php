@@ -37,7 +37,7 @@ class BackendController extends BaseController
             }
         }
         // Load 'backend' helper
-        load_helpers(['backend', 'database', 'languges']);
+        load_helpers(['backend', 'database', 'languages']);
         Flang::load('Backend/Global');
         //Flang::load('general', APP_LANG);
         $this->post_lang = S_GET('post_lang') ?? APP_LANG;

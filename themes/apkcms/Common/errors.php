@@ -5,7 +5,7 @@ use System\Libraries\Render;
 use App\Libraries\Fastlang as Flang;
 
 Flang::load('Errors', APP_LANG);
-load_helpers(['frontend', 'languges']);
+load_helpers(['frontend', 'languages']);
 
 // Extract controller info from trace if available
 $controllerInfo = '';

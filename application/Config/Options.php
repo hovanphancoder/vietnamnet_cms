@@ -8,7 +8,7 @@ return array (
       'zh' => 'zh_CN',
       'th' => 'th_TH',
       'ko' => 'ko_KR',
-      'id' => 'vi_VN',
+      'id' => 'id_ID',
     ),
   ),
   'rewrite_uri_lang' => array (
@@ -64,7 +64,7 @@ return array (
     ),
   ),
   'url_rewrite' => array (
-    'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"},{"url_function":"FrontendController::index:terms-category:$1","middleware":[],"url_struct":"/posts/category/(:any)/"},{"url_function":"FrontendController::index:detail-$1:$2","middleware":[],"url_struct":"/(:any)/(:any)/"},{"url_function":"FrontendController::index:page-$1","middleware":[],"url_struct":"/(:any)/"},{"url_function":"FrontendController::index:page","middleware":[],"url_struct":"/page/(:any)/"},{"url_function":"FrontendController::index:search","middleware":[],"url_struct":"/search"}]',
+    'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"},{"url_function":"FrontendController::index:page-library","middleware":[""],"url_struct":"/library/"},{"url_function":"FrontendController::index:detail-$1","middleware":[""],"url_struct":"/library/(:any)/(:any)/"},{"url_function":"FrontendController::index:page-library","middleware":[""],"url_struct":"/library/(:any)/"},{"url_function":"FrontendController::index:page-blogs","middleware":[""],"url_struct":"/blogs/"},{"url_function":"FrontendController::index:detail-blogs","middleware":[""],"url_struct":"/blogs/(:any)/"},{"url_function":"FrontendController::index:search","middleware":[""],"url_struct":"/search/"},{"url_function":"FrontendController::index:page-$1","middleware":[""],"url_struct":"/(:any)/"}]',
   ),
   'cache' => array (
     'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache_uri"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
@@ -79,7 +79,7 @@ return array (
     'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"}]',
   ),
   'google' => array (
-    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"YOUR_GOOGLE_CLIENT_ID"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"YOUR_GOOGLE_CLIENT_SECRET"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://vietnamnet2.vn/account/login_google/"}]',
+    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"634145915585-r00flbf39o0f338niopm0b5usfplgkpe.apps.googleusercontent.com"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"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"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://cmsfullform.com/account/login_google/"}]',
   ),
   'email' => array (
     'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"contact@cmsfullform.com"},{"email_key":"mail_password","email_value":"dsfsdfdsfsdfdsf"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"contact@cmsfullform.com"},{"email_key":"mail_from_name","email_value":"CMS Full Form"}]',
@@ -104,17 +104,5 @@ return array (
   ),
   'plugins_active' => array (
     'value' => '[{"name":"reactix"}]',
-  ),
-  'themes_gamesid' => array (
-    'value' => '111',
-  ),
-  'themes_appsid' => array (
-    'value' => '112',
-  ),
-  'site_phone' => array (
-    'value' => '+84 345 567 900',
-  ),
-  'default_posttype' => array (
-    'value' => 'posts',
   ),
 );

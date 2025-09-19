@@ -135,7 +135,17 @@ class TermsController extends BackendController {
       return $tree;
     }
     
-    public function add() {
+    public function add($id = null) {
+        // if()
+        // if($id) {
+        //     $data = $this->termsModel->getTermById($id);
+        // } else {
+        //     $data = [];
+        // }
+        // if(empty($data)) {
+        //     redirect(admin_url('terms/?posttype=' . $posttype . '&type=' . $type));
+        // }
+
         $name = S_POST('name');
         $type = S_POST('type');
         $posttype = S_POST('posttype');

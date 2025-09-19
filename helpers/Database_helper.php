@@ -76,9 +76,9 @@ if (!function_exists('get_posts')) {
 
         /* ---------- 1. Tên bảng ---------- */
         if (empty($lang)) {
-            $table       = table_posttype($args['posttype'], APP_LANG);              // fast_posts_stories
+            $table       = posttype_name($args['posttype'], APP_LANG);              // fast_posts_stories
         } else {
-            $table       = table_posttype($args['posttype'], $lang);              // fast_posts_stories
+            $table       = posttype_name($args['posttype'], $lang);              // fast_posts_stories
         }
         $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
         $termTable   = 'fast_terms';
@@ -199,7 +199,7 @@ if (!function_exists('get_post')) {
         }
 
         /* ---------- 1. Tên bảng ---------- */
-        $table       = table_posttype($args['posttype'], APP_LANG);              // fast_posts_stories
+        $table       = posttype_name($args['posttype'], APP_LANG);              // fast_posts_stories
         $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
         $termTable   = 'fast_terms';
 
@@ -242,7 +242,7 @@ if (!function_exists('getRelated')) {
     function getRelated($post, $postId, $limit = 4)
     {
         // Lấy tên bảng đúng với ngôn ngữ
-        $tableName = table_posttype($post, APP_LANG); // fast_posts_themes_en
+        $tableName = posttype_name($post, APP_LANG); // fast_posts_themes_en
         $relTableName = table_posttype_relationship($post); // fast_posts_themes_rel
         $relIds = (new FastModel($relTableName))->where('post_id', $postId)->pluck('rel_id');
         $postIds = (new FastModel($relTableName))->whereIn('rel_id', $relIds)->pluck('post_id');
@@ -325,7 +325,7 @@ if (!function_exists('updateViews')) {
     {
         try {
             // Get table name with language
-            $tableName = table_posttype($posttype, APP_LANG);
+            $tableName = posttype_name($posttype, APP_LANG);
 
             // Use FastModel to update views
             $model = new FastModel($tableName);
@@ -362,7 +362,7 @@ if (!function_exists('getAuthor')) {
 if (!function_exists('countAuthorThemesPlugins')) {
     function countAuthorThemesPlugins($posttype, $authorId)
     {
-        $tableName = table_posttype($posttype, APP_LANG);
+        $tableName = posttype_name($posttype, APP_LANG);
         $model = new FastModel($tableName);
         $count = $model->where('author', $authorId)->count();
         return $count;
@@ -373,13 +373,13 @@ if (!function_exists('searching')) {
     function searching($keyword = '')
     {
         $keyword = remove_accents($keyword);
-        $blogsModel = table_posttype('blogs', APP_LANG);
+        $blogsModel = posttype_name('blogs', APP_LANG);
         $model = new FastModel($blogsModel);
         $blogs = $model->where('title', 'like', '%' . $keyword . '%')->orWhere('seo_desc', 'like', '%' . $keyword . '%')->orderBy('created_at', 'DESC')->limit(8)->get();
-        $themesModel = table_posttype('themes', APP_LANG);
+        $themesModel = posttype_name('themes', APP_LANG);
         $model = new FastModel($themesModel);
         $themes = $model->where('title', 'like', '%' . $keyword . '%')->orWhere('seo_desc', 'like', '%' . $keyword . '%')->orderBy('created_at', 'DESC')->limit(8)->get();
-        $pluginsModel = table_posttype('plugins', APP_LANG);
+        $pluginsModel = posttype_name('plugins', APP_LANG);
         $model = new FastModel($pluginsModel);
         $plugins = $model->where('title', 'like', '%' . $keyword . '%')->orWhere('seo_desc', 'like', '%' . $keyword . '%')->orderBy('created_at', 'DESC')->limit(8)->get();
         return [

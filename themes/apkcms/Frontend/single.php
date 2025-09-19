@@ -68,8 +68,6 @@ get_template('_metas/meta_page', $meta_data);
                     <p class="color__gray">No content available for this page.</p>
                 <?php endif; ?>
             </div>
-
-           
         </div>
     </div>
 </section>

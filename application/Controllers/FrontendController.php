@@ -23,7 +23,7 @@ class FrontendController extends BaseController
         $cachedata = false;
         if(empty($cachedata)) {
 
-            load_helpers(['frontend', 'images', 'string', 'database', 'shortcode', 'languges']);
+            load_helpers(['frontend', 'images', 'string', 'database', 'shortcode', 'languages']);
             $this->cachingDefaultLevel = option('cache_gzip') ?? 0;
     
             //Render::asset('css', 'css/blaze-slider.css', ['area' => 'frontend', 'location' => 'head']);
@@ -158,6 +158,7 @@ class FrontendController extends BaseController
         $segmentCount = count($segments);
         $firstSegment = $segments[0];
 
+
         // 1. Search Results
         if ($firstSegment === 'search') {
             return $this->getSearchTemplate($segments);
@@ -173,12 +174,13 @@ class FrontendController extends BaseController
         }
         
         // 4. Check if first segment is a PAGE (regardless of segment count)
+        $posttype = str_replace('-', '_', $firstSegment);
         $page = get_post([
             'slug' => $firstSegment,
             'posttype' => 'pages',
             'active' => true
         ]);
-        if ($page) {
+        if ($page && $segmentCount < 2) {
             return $this->getPageTemplate($firstSegment, $page);
         }
 
@@ -192,12 +194,12 @@ class FrontendController extends BaseController
         }
         
         // 6. Check if first segment is a POSTTYPE (explicit posttype)
-        if (posttype_exists($firstSegment, APP_LANG)) {
+        if (posttype_exists($posttype, APP_LANG)) {
             // 6a. Taxonomy Archive (posttype/taxonomy/term-slug)
             if ($segmentCount >= 3) {
                 $taxonomy = $segments[1];
                 $termSlug = $segments[2];
-                return $this->getTaxonomyTemplate($firstSegment, $taxonomy, $termSlug);
+                return $this->getTaxonomyTemplate($posttype, $taxonomy, $termSlug);
             }
             
             // 6b. Single Post (posttype/slug)
@@ -205,17 +207,22 @@ class FrontendController extends BaseController
                 $slug = $segments[1];
                 $post = get_post([
                     'slug' => $slug,
-                    'posttype' => $firstSegment,
+                    'posttype' => $posttype,
                     'active' => true
                 ]);
                 
                 if ($post) {
-                    return $this->getSingleTemplate($firstSegment, $slug, $post);
+                    return $this->getSingleTemplate($posttype, $slug, $post);
                 }
+            }elseif ($page && $segmentCount >= 2) {
+                return $this->getPageTemplate($firstSegment, $page);
             }
             
             // 6c. Posttype Archive (posttype/)
-            return $this->getArchiveTemplate($firstSegment);
+            return $this->getArchiveTemplate($posttype);
+        }
+        if ($page && $segmentCount >= 2) {
+            return $this->getPageTemplate($firstSegment, $page);
         }
         
         // Fallback

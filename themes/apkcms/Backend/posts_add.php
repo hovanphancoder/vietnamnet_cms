@@ -5,23 +5,21 @@ use System\Libraries\Render;
 use System\Libraries\Session;
 
 global $me_info;
+
 $current_user = $me_info['id'];
 $languages = isset($posttype['languages']) && is_string($posttype['languages']) ? json_decode($posttype['languages'], true) : [];
 $posttype_encode = json_encode($posttype, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 if(!empty($post)) {
     $post_encode = json_encode($post, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 } else {
-    $post_encode = '[]';
+  $post_encode = '[]';
 }
 // Lấy danh sách ngôn ngữ từ config
 $type = S_GET('type') ?? '';
 $isEdit = !empty($post);
+$langHasPost = []; // Có thể lấy từ database nếu cần
 $currentLang = S_GET('post_lang') ?? APP_LANG_DF;
-if($isEdit) {
-  $created_at = $post['created_at'];
-} else {
-  $created_at = '';
-}
+
 // Breadcrumbs
 $breadcrumbs = array(
   [
@@ -142,20 +140,17 @@ Render::block('Backend\Header', ['layout'=>'default', 'title' => $isEdit ? __('E
                 <?php 
                     endif;
                     endforeach; ?>
-            </div> 
+            </div>
 
             <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between p-4 pt-0">
                 <!-- STATUS & TIME SECTION -->
                 <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1 w-full lg:w-auto">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                        <label for="last-updated-input" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Created at') ?>:</label>
-                        <input id="last-updated-input" name="created_at" type="datetime-local" 
-                               step="1"
+                        <label for="last-updated-input" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Update time') ?>:</label>
+                        <input id="last-updated-input" name="last_updated" type="datetime-local" 
                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[180px]" 
-                               value="<?= $created_at ?? '' ?>"
+                               value="<?= isset($post['updated_at']) ? date('Y-m-d\TH:i', strtotime($post['updated_at'])) : '' ?>"
                                />
-                        <!-- lần cuối cập nhật text note nhỏ-->
-                        <p class="text-sm text-muted-foreground whitespace-nowrap"><?= __('Last updated') ?>: <?= $created_at ?? '' ?></p>
                     </div>
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                         <label for="post-status" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Post status') ?>:</label>

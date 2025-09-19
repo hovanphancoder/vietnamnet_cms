@@ -310,6 +310,7 @@ if (is_null($currentLang)) {
                         $links[] = '<a href="' . htmlspecialchars($editUrl) . '" class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"><i data-lucide="square-pen" class="h-3 w-3"></i> &nbsp;'
                           . htmlspecialchars(strtoupper($lang)) . '</a>';
                       }
+                      //echo '<div class="flex flex-wrap gap-1">' . implode('', $links) . '</div>';
                     }
                     if (!empty($langs_not_post)) {
                       foreach ($langs_not_post as $lang) {
@@ -323,8 +324,8 @@ if (is_null($currentLang)) {
                         $links[] = '<a href="' . htmlspecialchars($cloneUrl) . '" class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold border-transparent bg-secondary text-secondary-foreground text-secondary hover:bg-secondary/90 transition-colors"><i data-lucide="plus" class="h-3 w-3"></i> &nbsp;'
                           . htmlspecialchars(strtoupper($lang)) . '</a>';
                       }
+                      echo '<div class="flex flex-wrap gap-1">' . implode('', $links) . '</div>';
                     }
-                    echo '<div class="flex flex-wrap gap-1">' . implode('', $links) . '</div>';
                     ?>
                   </td>
                   <td class="px-4 py-1 align-middle text-center">

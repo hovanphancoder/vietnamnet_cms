@@ -5,7 +5,7 @@ use System\Libraries\Render;
 use App\Libraries\Fastlang as Flang;
 
 Flang::load('404', APP_LANG);
-load_helpers(['languges']);
+load_helpers(['languages']);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo APP_LANG; ?>">

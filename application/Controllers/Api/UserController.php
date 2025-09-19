@@ -44,7 +44,7 @@ class UserController extends ApiController
             return $this->error('Unauthorized', [], 401);
         }
         $posttype = 'user_chapter_progress';
-        $table = table_posttype($posttype);
+        $table = posttype_name($posttype);
         $this->FastModel = new FastModel($table);
         $qb = $this->FastModel->newQuery();
         // count where user_id = $user['id']
@@ -67,8 +67,8 @@ class UserController extends ApiController
 
         $posttype = 'user_chapter_progress';
         $posttype_stories = 'stories';
-        $user_chapter_progress_table = table_posttype($posttype);
-        $stories_table = table_posttype($posttype_stories);
+        $user_chapter_progress_table = posttype_name($posttype);
+        $stories_table = posttype_name($posttype_stories);
         
         // 1. Get story_id list from user_chapter_progress
         $progressModel = new FastModel($user_chapter_progress_table);

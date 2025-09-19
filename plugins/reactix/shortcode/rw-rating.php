@@ -2,7 +2,7 @@
 // load database_helper
 use App\Models\FastModel;
 add_shortcode('rw-rating', function ($posttype, $post_id) {
-    $table = table_posttype('comment');
+    $table = posttype_name('comment');
     $commentModel = new FastModel($table);
 
     // Get 10 parent comments (par_comment = 0)

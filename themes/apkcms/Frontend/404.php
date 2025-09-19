@@ -16,8 +16,6 @@ use App\Blocks\Schema\Templates\WebPage;
 Flang::load('CMS', APP_LANG);
 Flang::load('404', APP_LANG);
 
-load_helpers(['frontend', 'languages']);
-
 // Load CSS và JS cho trang 404
 Render::asset('css', '/themes/cmsfullform/Frontend/assets/css/404_styles.css', ['area' => 'frontend', 'location' => 'head']);
 Render::asset('js', '/themes/cmsfullform/Frontend/assets/js/404.js', ['area' => 'frontend', 'location' => 'footer']);

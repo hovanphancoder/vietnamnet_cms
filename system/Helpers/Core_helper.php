@@ -383,6 +383,23 @@ if (!function_exists('option_set')) {
             }
             $global_options[$key]['value'] = $value;
         }
+        
+        // Cleanup: Remove valuelang keys that are not in APP_LANGUAGES
+        $codeLanguages = array_keys(APP_LANGUAGES);
+        foreach ($global_options as $optionKey => &$optionData) {
+            if (isset($optionData['valuelang']) && is_array($optionData['valuelang'])) {
+                foreach ($optionData['valuelang'] as $langKey => $langValue) {
+                    if (!in_array($langKey, $codeLanguages) || $langKey == APP_LANG_DF) {
+                        unset($optionData['valuelang'][$langKey]);
+                    }
+                }
+                // If valuelang becomes empty, remove it
+                if (empty($optionData['valuelang'])) {
+                    unset($optionData['valuelang']);
+                }
+            }
+        }
+        
         // Export array an toàn
         $arrayCode = var_export($global_options, true);
         // Đưa array con lên cùng dòng với key

@@ -7,7 +7,7 @@ class TermsModel extends BaseModel {
     protected $table = 'fast_terms';
 
     // Columns that are fillable (can be added or modified)
-    protected $fillable = ['name', 'slug', 'description', 'type', 'posttype', 'parent', 'lang', 'id_main'];
+    protected $fillable = ['name', 'slug', 'description', 'type', 'posttype', 'parent', 'lang', 'id_main', 'status'];
 
     // Columns that are guarded (cannot be modified)
     protected $guarded = ['id', 'created_at', 'updated_at'];
@@ -67,6 +67,11 @@ class TermsModel extends BaseModel {
                 'type' => 'int unsigned',
                 'null' => true,
                 'default' => 0
+            ],
+            'status' => [
+                'type' => 'enum(\'active\', \'inactive\')',
+                'null' => false,
+                'default' => 'active'
             ],
             'created_at' => [
                 'type' => 'datetime',

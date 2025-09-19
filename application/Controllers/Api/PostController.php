@@ -74,7 +74,7 @@ class PostController extends ApiController
             }
 
             // check if post exists
-            $table = table_posttype($posttype);
+            $table = posttype_name($posttype);
             $postModel = new FastModel($table);
             $post = $postModel->where('id', $post_id)->first();
 
@@ -105,7 +105,7 @@ class PostController extends ApiController
             // add comment
             $title = 'Comment on ' . $post['title'];
             $slug = url_slug($title);
-            $table = table_posttype('comment');
+            $table = posttype_name('comment');
             $commentModel = new FastModel($table);
             // only insert if content is not empty
             if (!empty($content)) {
@@ -155,7 +155,7 @@ class PostController extends ApiController
             } 
 
             // Check if story exists
-            $table = table_posttype($posttype);
+            $table = posttype_name($posttype);
             $postModel = new FastModel($table);
             $post = $postModel->where('id', $id)->first();
             if (!$post) {
@@ -164,7 +164,7 @@ class PostController extends ApiController
 
             // Process in process_user_stories table
             $posttype_process_user_stories = 'user_chapter_progress';
-            $table_process_user_stories = table_posttype($posttype_process_user_stories);
+            $table_process_user_stories = posttype_name($posttype_process_user_stories);
             $process_user_storiesModel = new FastModel($table_process_user_stories);
             $process_user_stories = $process_user_storiesModel->where('user_id', $user['id'])->where('post_id', $id)->first();
             switch ($action) {
@@ -240,7 +240,7 @@ class PostController extends ApiController
             }
 
             // get saved and liked stories
-            $table = table_posttype('user_chapter_progress');
+            $table = posttype_name('user_chapter_progress');
             $processModel = new FastModel($table);
             $process = $processModel->where('user_id', $user['id'])->where('post_id', $id)->where('posttype', $posttype)->first();
             if (!$process) {
@@ -257,7 +257,7 @@ class PostController extends ApiController
     public function like_comment($id = 0) {
         try {
             // check if comment exists
-            $table = table_posttype('comment');
+            $table = posttype_name('comment');
             $commentModel = new FastModel($table);
             $comment = $commentModel->where('id', $id)->first();
             if (!$comment) {

@@ -22,7 +22,7 @@ class ReactixController extends ApiController
     public function get_comment($posttype = '', $post_id = 0, $paged = 1) {
         try {
             // get comment
-            $table = table_posttype('comment');
+            $table = posttype_name('comment');
             $commentModel = new FastModel($table);
             
             // Get parent comments (par_comment = 0)
@@ -84,7 +84,7 @@ class ReactixController extends ApiController
             }
 
             // check if post exists
-            $table = table_posttype($posttype);
+            $table = posttype_name($posttype);
             $postModel = new FastModel($table);
             $post = $postModel->where('id', $post_id)->first();
 
@@ -115,7 +115,7 @@ class ReactixController extends ApiController
             // add comment
             $title = 'Comment on ' . $post['title'];
             $slug = url_slug($title);
-            $table = table_posttype('comment');
+            $table = posttype_name('comment');
             $commentModel = new FastModel($table);
             // only insert if content is not empty
             if (!empty($content)) {
@@ -148,7 +148,7 @@ class ReactixController extends ApiController
     public function like_comment($id = 0) {
         try {
             // check if comment exists
-            $table = table_posttype('comment');
+            $table = posttype_name('comment');
             $commentModel = new FastModel($table);
             $comment = $commentModel->where('id', $id)->first();
             if (!$comment) {
