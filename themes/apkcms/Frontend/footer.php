@@ -41,48 +41,46 @@ use App\Models\FastModel;
                 <!-- Navigation Menu -->
                 <div class="p-4">
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- Left Column -->
-                        <div class="space-y-2">
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Chính trị</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Kinh doanh</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thể thao</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thế giới</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Văn hóa – Giải trí</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Công nghệ</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Ô tô xe máy</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Bất động sản</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Tuần Việt Nam</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Công nghiệp hỗ trợ</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thị trường tiêu dùng</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Nông thôn mới</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Nội dung chuyên đề</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Talks</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ sơ</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Video</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Podcast</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Lịch vạn niên</a>
-                        </div>
+                        <?php if (!empty($GLOBALS['categories'])): ?>
+                            <?php 
+                            $categories = $GLOBALS['categories'];
+                            $half = ceil(count($categories) / 2);
+                            $left_categories = array_slice($categories, 0, $half);
+                            $right_categories = array_slice($categories, $half);
+                            ?>
+                            
+                            <!-- Left Column -->
+                            <div class="space-y-2">
+                                <?php foreach ($left_categories as $category): ?>
+                                    <a href="/category/<?= $category['slug'] ?>.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                                        <?= htmlspecialchars($category['name']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
 
-                        <!-- Right Column -->
-                        <div class="space-y-2">
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thời sự</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Dân tộc và Tôn giáo</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Giáo dục</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Đời sống</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Sức khỏe</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Pháp luật</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Du lịch</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Bạn đọc</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Toàn văn</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Bảo vệ người tiêu dùng</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Giảm nghèo bền vững</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Dân tộc thiểu số và miền núi</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">English</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Đính chính</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Ảnh</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Multimedia</a>
-                            <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">24h qua</a>
-                        </div>
+                            <!-- Right Column -->
+                            <div class="space-y-2">
+                                <?php foreach ($right_categories as $category): ?>
+                                    <a href="/category/<?= $category['slug'] ?>.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                                        <?= htmlspecialchars($category['name']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <!-- Fallback menu if no categories -->
+                            <div class="space-y-2">
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Chính trị</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Kinh doanh</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thể thao</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Công nghệ</a>
+                            </div>
+                            <div class="space-y-2">
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thời sự</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Giáo dục</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Đời sống</a>
+                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Sức khỏe</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -151,8 +149,9 @@ use App\Models\FastModel;
     </footer>
 
     <!-- JavaScript Files -->
-    <script src="js/main.js"></script>
-    <script src="js/index.js"></script>
+    <script src="/themes/apkcms/Frontend/Assets/js/script.js"></script>
+    <script src="/themes/apkcms/Frontend/Assets/js/index.js"></script>
+    <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script>
 
 </body>
 

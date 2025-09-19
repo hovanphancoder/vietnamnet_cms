@@ -3,6 +3,12 @@ use App\Models\FastModel;
 require_once __DIR__ . '/functions.php';
 
 $current_page = get_current_page();
+
+
+$all_categories = get_categories('posts','category');
+$GLOBALS['categories'] = $all_categories;
+var_dump($GLOBALS['categories']);
+
 ?>
 <!DOCTYPE html>
 <html lang="<?= lang_code() ?>">
@@ -22,12 +28,12 @@ $current_page = get_current_page();
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="<?= $page_class ?>">
+<body class="">
 
   
 
-      <!-- Main Navigation Bar -->
-      <header class="bg-white border-b border-gray-200 fixed left-0 top-0 w-full z-40">
+    <!-- Main Navigation Bar -->
+    <header class="bg-white border-b border-gray-200 fixed left-0 top-0 w-full z-40">
         <!-- Top Header Bar -->
         <div class="bg-white border-b border-gray-200  ">
             <div class="container max-w-[1140px] mx-auto px-4">
@@ -114,124 +120,28 @@ $current_page = get_current_page();
 
                     <!-- Navigation Menu -->
                     <nav class="hidden lg:flex items-center space-x-2 text-sm font-medium whitespace-nowrap overflow-x-auto">
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2d67ad] whitespace-nowrap text-sm font-bold">Chính trị</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thời sự</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Kinh doanh</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Dân tộc và Tôn giáo</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thể thao</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Giáo dục</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thế giới</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Đời sống</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Văn hóa - Giải trí</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Sức khỏe</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Công nghệ</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Pháp luật</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Xe</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Bất động sản</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Du lịch</a>
-                        <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Bạn đọc</a>
+                        <?php if (!empty($GLOBALS['categories'])): ?>
+                            <?php foreach ($GLOBALS['categories'] as $index => $category): ?>
+                                <a href="/category/<?= $category['slug'] ?>.html" 
+                                   class="text-gray-800 hover:text-[#447ec5] <?= $index === 0 ? 'color-[#2d67ad]' : 'color-[#2a2a2a]' ?> whitespace-nowrap text-sm font-bold">
+                                    <?= htmlspecialchars($category['name']) ?>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <!-- Fallback menu if no categories -->
+                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2d67ad] whitespace-nowrap text-sm font-bold">Chính trị</a>
+                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thời sự</a>
+                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Kinh doanh</a>
+                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thể thao</a>
+                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Công nghệ</a>
+                        <?php endif; ?>
                     </nav>
-                    <!-- <button class="text-gray-700 hover:text-[#2d67ad]">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button> -->
+                   
                 </div>
 
-                <!-- Right Side - Mobile Menu -->
-                <!-- <div class="lg:hidden">
-                    <button class="text-gray-700 hover:text-[#2d67ad]">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div> -->
             </div>
         </div>
 
-
-        <!-- Mobile Hamburger Menu -->
-        <!-- <div class="mainHamburger hidden fixed inset-0 bg-white z-50" style="height: calc(-1px + 100vh);">
-            <div class="mainHamburger__head p-4 border-b">
-                <div class="vnn-logo flex items-center justify-between">
-                    <button type="button" class="btn-hamburger-close">
-                        <span class="icon-hamburger">×</span>
-                    </button>
-                    <a href="/en" title="Vietnamnet global">
-                        <img src="https://static.vnncdn.net/v1/icon/VietnamNet_bridge.svg" alt="VietNamNet Global" class="h-8">
-                    </a>
-                </div>
-            </div>
-
-     
-            <div class="main-search p-4 border-b">
-                <form action="/tim-kiem" method="get">
-                    <div class="relative">
-                        <input name="q" type="text" placeholder="Type keywords...." class="w-full px-4 py-2 border border-gray-300 rounded">
-                        <button class="btn-search absolute right-2 top-2" type="submit">
-                            <img src="https://static.vnncdn.net/v1/icon/search.png" alt="search icon" class="w-5 h-5">
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-          
-            <div class="main-menu p-4">
-                <div class="hamburger__left mb-6">
-                    <div class="header_submenu-main">
-                        <div class="header_submenu-search mb-4">
-                            <form target="_top" action="/tim-kiem">
-                                <div class="relative">
-                                    <input type="text" name="q" placeholder="Tìm kiếm..." class="w-full px-4 py-2 border border-gray-300 rounded">
-                                    <button type="submit" class="absolute right-2 top-2">
-                                        <img src="https://static.vnncdn.net/v1/icon/search.png" alt="search.png" class="w-5 h-5">
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="header_submenu-button text-xs text-gray-600 space-y-1">
-                            <ul>
-                                <li>© Copyright of Vietnamnet Global.</li>
-                                <li>Tel: 024 3772 7988 Fax: (024) 37722734</li>
-                                <li>Email: evnn@vietnamnet.vn</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="hamburger__right">
-                    <ul class="hamburger__list-right notosans-bold space-y-3 mb-4">
-                        <li><a href="/talkshow" class="text-gray-700 hover:text-red-600">Talkshow</a></li>
-                        <li><a href="/ho-so" class="text-gray-700 hover:text-red-600">Hồ sơ</a></li>
-                        <li><a href="/anh" class="text-gray-700 hover:text-red-600">Ảnh</a></li>
-                        <li><a href="/video" class="text-gray-700 hover:text-red-600">Video</a></li>
-                        <li><a href="/multimedia" class="text-gray-700 hover:text-red-600">Multimedia</a></li>
-                        <li class="item-podcast">
-                            <a href="/podcast" title="podcast" class="flex items-center space-x-2 text-gray-700 hover:text-red-600">
-                                <img src="https://static.vnncdn.net/v1/icon/podcast-icon.svg" alt="podcast icon" class="w-5 h-5">
-                                <span>Podcast</span>
-                            </a>
-                        </li>
-                    </ul>
-
-                    <ul class="hamburger__list-right notosans-bold space-y-3 mb-4">
-                        <li><a href="/tuyen-bai" class="text-gray-700 hover:text-red-600">Tuyến bài</a></li>
-                        <li><a href="/su-kien" class="text-gray-700 hover:text-red-600">Sự kiện nóng</a></li>
-                    </ul>
-
-                    <ul class="hamburger__list-right space-y-3 mb-6">
-                        <li><a title="Tuyển dụng" href="/tuyen-dung" class="text-gray-700 hover:text-red-600">Tuyển dụng</a></li>
-                        <li><a title="Liên hệ tòa soạn" href="/thong-tin-toa-soan" class="text-gray-700 hover:text-red-600">Liên hệ tòa soạn</a></li>
-                        <li><a title="Liên hệ quảng cáo" target="_blank" href="https://vads.vn/" class="text-gray-700 hover:text-red-600">Liên hệ quảng cáo</a></li>
-                    </ul>
-
-                    <a class="download-app flex items-center space-x-2 text-gray-700 hover:text-red-600" href="/download-app">
-                        <img src="https://static.vnncdn.net/v1/icon/tai-app.svg" alt="download app" class="w-5 h-5">
-                        <span>Download app</span>
-                    </a>
-                </div>
-            </div>
-        </div> -->
     </header>
 
     <!-- Main Content -->
