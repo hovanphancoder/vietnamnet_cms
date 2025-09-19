@@ -832,3 +832,84 @@ if (!function_exists('is_page')) {
         }
     }
 }
+
+/**
+ * Generate category link with proper URL format
+ * Tạo link category với format URL đúng
+ * 
+ * @param string $slug Slug của category
+ * @param string $posttype Loại posttype (posts, news, etc.)
+ * @return string URL đầy đủ của category
+ */
+if (!function_exists('link_cat')) {
+    function link_cat($slug, $posttype = 'posts')
+    {
+        // Đảm bảo slug không rỗng
+        if (empty($slug)) {
+            return '#';
+        }
+        
+        // Loại bỏ ký tự đặc biệt và chuẩn hóa slug
+        $slug = trim($slug, '/');
+        $slug = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
+        
+        // Tạo URL với format chuẩn
+        $url = "/{$slug}/";
+        
+        return $url;
+    }
+}
+
+/**
+ * Generate post link with proper URL format
+ * Tạo link post với format URL đúng
+ * 
+ * @param string $slug Slug của post
+ * @param string $posttype Loại posttype (posts, news, etc.)
+ * @return string URL đầy đủ của post
+ */
+if (!function_exists('link_post')) {
+    function link_post($slug, $posttype = 'posts')
+    {
+        // Đảm bảo slug không rỗng
+        if (empty($slug)) {
+            return '#';
+        }
+        
+        // Loại bỏ ký tự đặc biệt và chuẩn hóa slug
+        $slug = trim($slug, '/');
+        $slug = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
+        
+        // Tạo URL với format chuẩn
+        $url = "/{$posttype}/{$slug}/";
+        
+        return $url;
+    }
+}
+
+/**
+ * Generate rewrite link with proper URL format
+ * Tạo link rewrite với format URL đúng
+ * 
+ * @param string $slug Slug của rewrite
+ * @param string $type Loại rewrite (page, custom, etc.)
+ * @return string URL đầy đủ của rewrite
+ */
+if (!function_exists('link_rewrite')) {
+    function link_rewrite($slug, $type = 'page')
+    {
+        // Đảm bảo slug không rỗng
+        if (empty($slug)) {
+            return '#';
+        }
+        
+        // Loại bỏ ký tự đặc biệt và chuẩn hóa slug
+        $slug = trim($slug, '/');
+        $slug = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
+        
+        // Tạo URL với format chuẩn
+        $url = "/{$slug}/";
+        
+        return $url;
+    }
+}

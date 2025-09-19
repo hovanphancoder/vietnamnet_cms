@@ -52,7 +52,7 @@ use App\Models\FastModel;
                             <!-- Left Column -->
                             <div class="space-y-2">
                                 <?php foreach ($left_categories as $category): ?>
-                                    <a href="/category/<?= $category['slug'] ?>.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                                    <a href="<?= link_cat($category['slug']) ?>" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
                                         <?= htmlspecialchars($category['name']) ?>
                                     </a>
                                 <?php endforeach; ?>
@@ -61,7 +61,7 @@ use App\Models\FastModel;
                             <!-- Right Column -->
                             <div class="space-y-2">
                                 <?php foreach ($right_categories as $category): ?>
-                                    <a href="/category/<?= $category['slug'] ?>.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                                    <a href="<?= link_cat($category['slug']) ?>" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
                                         <?= htmlspecialchars($category['name']) ?>
                                     </a>
                                 <?php endforeach; ?>

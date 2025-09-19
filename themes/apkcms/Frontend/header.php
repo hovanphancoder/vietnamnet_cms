@@ -7,7 +7,7 @@ $current_page = get_current_page();
 
 $all_categories = get_categories('posts','category');
 $GLOBALS['categories'] = $all_categories;
-var_dump($GLOBALS['categories']);
+// var_dump($GLOBALS['categories']);
 
 ?>
 <!DOCTYPE html>
@@ -122,18 +122,13 @@ var_dump($GLOBALS['categories']);
                     <nav class="hidden lg:flex items-center space-x-2 text-sm font-medium whitespace-nowrap overflow-x-auto">
                         <?php if (!empty($GLOBALS['categories'])): ?>
                             <?php foreach ($GLOBALS['categories'] as $index => $category): ?>
-                                <a href="/category/<?= $category['slug'] ?>.html" 
+                                <a href="<?= link_cat($category['slug']) ?>" 
                                    class="text-gray-800 hover:text-[#447ec5] <?= $index === 0 ? 'color-[#2d67ad]' : 'color-[#2a2a2a]' ?> whitespace-nowrap text-sm font-bold">
                                     <?= htmlspecialchars($category['name']) ?>
                                 </a>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <!-- Fallback menu if no categories -->
-                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2d67ad] whitespace-nowrap text-sm font-bold">Chính trị</a>
-                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thời sự</a>
-                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Kinh doanh</a>
-                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Thể thao</a>
-                            <a href="/category.html" class="text-gray-800 hover:text-[#447ec5] color-[#2a2a2a] whitespace-nowrap text-sm font-bold">Công nghệ</a>
+                           
                         <?php endif; ?>
                     </nav>
                    
