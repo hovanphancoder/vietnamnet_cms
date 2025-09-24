@@ -3,17 +3,39 @@ if (!defined('PATH_ROOT')) {
     exit('No direct access allowed.');
 }
 
-if (!function_exists('auth_url')){
-    function auth_url($path = '') {
-        global $base_url;
-        if (empty($base_url)){
-            $app_url = config('app');
-            $base_url = !empty($app_url['app_url']) ? $app_url['app_url'] : '/';
-            unset($app_url);
+if (!function_exists('auth_url')) {
+    function auth_url($path = '')
+    {
+        $path = trim($path, '/');
+        switch ($path) {
+            case 'login':
+                return base_url('account/login');
+                break;
+            case 'register':
+                return base_url('account/register');
+                break;
+            case 'forgot':
+                return base_url('account/forgot');
+                break;
+            case 'reset':
+                return base_url('account/forgot');
+                break;
+            case 'logout':
+                return base_url('account/logout');
+                break;
+            case 'google':
+                return base_url('account/login_google');
+                break;
+            case 'profile':
+                return base_url('account/me');
+                break;
+            default:
+                return base_url('account/' . $path);
+                break;
         }
-        return rtrim($base_url, '/') . '/account/' . trim($path, '/').'/';
     }
 }
+
 if (!function_exists('api_url')){
     function api_url($path = '') {
         global $base_url;

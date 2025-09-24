@@ -22,9 +22,8 @@ class AuthController extends BackendController
     public function __construct()
     {
         parent::__construct();
-        load_helpers(['backend']);
         $this->usersModel = new UsersModel();
-        Flang::load('auth', APP_LANG);
+        Flang::load('Common/Auth');
 
         Render::asset('css', 'css/new_style.css', ['area' => 'backend', 'location' => 'head']);
         Render::asset('css', 'css/font-inter.css', ['area' => 'backend', 'location' => 'head']);
@@ -67,11 +66,11 @@ class AuthController extends BackendController
             $rules = [
                 'username' => [
                     'rules' => [Validate::alnum("@._"), Validate::length(5, 150)],
-                    'messages' => [Flang::_e('username_invalid'), Flang::_e('username_length', 5, 30)]
+                    'messages' => [Flang::_e('Username can only contain letters, numbers, @, ., and _'), Flang::_e('Username must be between %d and %d characters', 5, 30)]
                 ],
                 'password' => [
                     'rules' => [Validate::length(5, null)],
-                    'messages' => [Flang::_e('password_length', 6)]
+                    'messages' => [Flang::_e('Password must be at least %d characters long', 6)]
                 ]
             ];
             $validator = new Validate();
@@ -85,7 +84,7 @@ class AuthController extends BackendController
         }
 
         // Display login page: If no login request, or validation failed
-        $this->data('title', Flang::_e('login_welcome'));
+        $this->data('title', Flang::_e('Welcome Back - Sign In'));
         $this->data('csrf_token', Session::csrf_token(600)); //security token for login only exists for 10 minutes.
 
         echo Render::html('Common/Auth/login', $this->data);
@@ -103,7 +102,7 @@ class AuthController extends BackendController
         // echo Security::hashPassword($input['password']);die;
         if ($user && Security::verifyPassword($input['password'], $user['password'])) {
             if ($user['status'] !== 'active') {
-                Session::flash('error', Flang::_e('users_noactive', $input['username']));
+                Session::flash('error', Flang::_e('Account "%s" is not active. Please check your email for activation link.', $input['username']));
                 redirect(auth_url('login'));
                 exit();
             }
@@ -136,7 +135,7 @@ class AuthController extends BackendController
 
             redirect(admin_url('/'));
         } else {
-            Session::flash('error', Flang::_e('login_failed', $input['username']) );
+            Session::flash('error', Flang::_e('Login failed for username: %s', $input['username']) );
             redirect(auth_url('login'));
         }
     }
@@ -183,8 +182,8 @@ class AuthController extends BackendController
                         Validate::length(5, 40)
                     ],
                     'messages' => [
-                        Flang::_e('username_invalid'),
-                        Flang::_e('username_length', 5, 40)
+                        Flang::_e('Username can only contain letters, numbers, and _'),
+                        Flang::_e('Username must be between %d and %d characters', 5, 40)
                     ]
                 ],
                 'fullname' => [
@@ -192,7 +191,7 @@ class AuthController extends BackendController
                         Validate::length(5, 60)
                     ],
                     'messages' => [
-                        Flang::_e('fullname_length', 5, 60)
+                        Flang::_e('Full name must be between %d and %d characters', 5, 60)
                     ]
                 ],
                 'email' => [
@@ -201,8 +200,8 @@ class AuthController extends BackendController
                         Validate::length(5, 150)
                     ],
                     'messages' => [
-                        Flang::_e('email_invalid'),
-                        Flang::_e('email_length', 5, 150)
+                        Flang::_e('Please enter a valid email address'),
+                        Flang::_e('Email must be between %d and %d characters', 5, 150)
                     ]
                 ],
                 'phone' => [
@@ -211,8 +210,8 @@ class AuthController extends BackendController
                         Validate::length(5, 30)
                     ],
                     'messages' => [
-                        Flang::_e('phone_invalid'),
-                        Flang::_e('phone_length', 5, 30)
+                        Flang::_e('Please enter a valid phone number'),
+                        Flang::_e('Phone number must be between %d and %d characters', 5, 30)
                     ]
                 ],
                 'password' => [
@@ -220,7 +219,7 @@ class AuthController extends BackendController
                         Validate::length(5, 60),
                     ],
                     'messages' => [
-                        Flang::_e('password_length', 5, 60),
+                        Flang::_e('Password must be between %d and %d characters', 5, 60),
                     ]
                 ],
                 'password_repeat' => [
@@ -228,7 +227,7 @@ class AuthController extends BackendController
                         Validate::equals($input['password'])
                     ],
                     'messages' => [
-                        Flang::_e('password_repeat_invalid', $input['password_repeat'])
+                        Flang::_e('Password confirmation does not match')
                     ]
                 ],
             ];
@@ -241,13 +240,13 @@ class AuthController extends BackendController
                 $errors = [];
                 if ($this->usersModel->getUserByUsername($input['username'])) {
                     $errors['username'] = array(
-                        Flang::_e('username_double', $input['username'])
+                        Flang::_e('Username "%s" is already taken', $input['username'])
                     );
                     $isExists = true;
                 }
                 if ($this->usersModel->getUserByEmail($input['email'])) {
                     $errors['email'] = array(
-                        Flang::_e('email_double', $input['email'])
+                        Flang::_e('Email "%s" is already registered', $input['email'])
                     );
                     $isExists = true;
                 }
@@ -267,7 +266,7 @@ class AuthController extends BackendController
         }
         
         // Display login page: If no login request, or validation failed
-        $this->data('title', Flang::_e('register_welcome'));
+        $this->data('title', Flang::_e('Create New Account'));
         $this->data('csrf_token', Session::csrf_token(600)); //security token for login only exists for 10 minutes.
 
         echo Render::html('Common/Auth/register', $this->data);
@@ -292,12 +291,12 @@ class AuthController extends BackendController
         if ($user_id) {
             // Send activation email
             $activationLink = auth_url('activation/' . $user_id . '/' . $activationCode.'/');
-            //$emailContent = Render::component('Common/Email/activation', ['username' => $input['username'], 'activation_link' => $activationLink]);
-            //echo $emailContent;die;
-            $this->mailer = new Fastmail();
-            $this->mailer->send($input['email'], Flang::_e('active_account'), 'activation', ['username' => $input['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
+            $emailContent = Render::component('Common/Email/activation', ['username' => $input['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
             
-            Session::flash('success', Flang::_e('regsiter_success'));
+            $this->mailer = new Fastmail();
+            $this->mailer->send($input['email'], Flang::_e('Account Activation'), $emailContent);
+            
+            Session::flash('success', Flang::_e('Registration successful'));
             $this->data('csrf_token', Session::csrf_token(600));
 
             Events::run('Backend\\UserRegisterEvent', $user_id);
@@ -305,7 +304,7 @@ class AuthController extends BackendController
             redirect(auth_url("activation/{$user_id}/"));
 
         } else {
-            Session::flash('error', Flang::_e('register_error'));
+            Session::flash('error', Flang::_e('Failed to register account'));
             redirect(auth_url('register'));
         }
     }
@@ -315,12 +314,12 @@ class AuthController extends BackendController
         // Get user information from ID
         $user = $this->usersModel->getUserById($user_id);
         if (!$user) {
-            Session::flash('error', Flang::_e('acccount_does_exist'));
+            Session::flash('error', Flang::_e('Account does not exist'));
             redirect(auth_url('login'));
             return;
         }
         if ($user['status'] != 'inactive'){
-            Session::flash('success', Flang::_e('account_active'));
+            Session::flash('success', Flang::_e('Account is already active'));
             redirect(auth_url('login'));
             return;
         }
@@ -335,7 +334,7 @@ class AuthController extends BackendController
         }
 
         if ($user_active_expires < time()){
-            $this->data('error', Flang::_e('token_out_time'));
+            $this->data('error', Flang::_e('Activation code has expired'));
             return $this->_activation_form($user_id);
         } 
 
@@ -346,7 +345,7 @@ class AuthController extends BackendController
                 // Activate account
                 return $this->_activation($user_id);
             } else {
-                $this->data('error', Flang::_e('token_invalid'));
+                $this->data('error', Flang::_e('Invalid activation code'));
                 return $this->_activation_form($user_id);
             }
         }
@@ -359,7 +358,7 @@ class AuthController extends BackendController
                 // Activate account
                 $this->_activation($user_id);
             } else {
-                $this->data('error', Flang::_e('token_invalid'));
+                $this->data('error', Flang::_e('Invalid activation code'));
                 $this->_activation_form($user_id);
             }
         } else {
@@ -367,64 +366,65 @@ class AuthController extends BackendController
             $this->_activation_form($user_id);
         }
     }
-    
-    //Forgot Password
+        //Forgot Password - handles both email input and password reset
     public function forgot($user_id = '', $token = ''){
-        if (empty($user_id) || empty($token)){
-            if(HAS_POST('email')) {
-                $input = [ 
-                    'email' => S_POST('email')
-                ];
-                $rules = [
-                    'email' => [
-                        'rules' => [
-                            Validate::email(),
-                            Validate::length(5, 150)
-                        ],
-                        'messages' => [
-                            Flang::_e('email_invalid'),
-                            Flang::_e('email_length', 5, 150)
-                        ]
+        // Case 1: User is requesting password reset (has user_id and token)
+        if (!empty($user_id) && !empty($token)) {
+            $user = $this->usersModel->getUserById($user_id);
+            if (!$user) {
+                Session::flash('error', Flang::_e('Account does not exist'));
+                redirect(auth_url('forgot'));
+                return;
+            }
+            return $this->_forgot_password($user, $token);
+        }
+        
+        // Case 2: User is submitting email for password reset
+        if(HAS_POST('email')) {
+            $csrf_token = S_POST('csrf_token') ?? '';
+            if (!Session::csrf_verify($csrf_token)){
+                Session::flash('error', Flang::_e('csrf_failed') );
+                redirect(auth_url('forgot'));
+            }
+            $input = [ 
+                'email' => S_POST('email')
+            ];
+            $rules = [
+                'email' => [
+                    'rules' => [
+                        Validate::email(),
+                        Validate::length(5, 150)
                     ],
-                ];
-                $validator = new Validate();
-                if (!$validator->check($input, $rules)) {
-                    $errors = $validator->getErrors();
+                    'messages' => [
+                        Flang::_e('Please enter a valid email address'),
+                        Flang::_e('Email must be between %d and %d characters', 5, 150)
+                    ]
+                ],
+            ];
+            $validator = new Validate();
+            if (!$validator->check($input, $rules)) {
+                $errors = $validator->getErrors();
+                $this->data('errors', $errors);     
+            }else{
+                $user = $this->usersModel->getUserByEmail($input['email']);
+                if (!$user) {
+                    $errors['email'] = array(
+                        Flang::_e('User with email "%s" not found', $input['email'])
+                    );
                     $this->data('errors', $errors);     
-                }else{
-                    $user = $this->usersModel->getUserByEmail($input['email']);
-                    if (!$user) {
-                        $errors['email'] = array(
-                            Flang::_e('email_exist', $input['email'])
-                        );
-                        $this->data('errors', $errors);     
-                    }else {
-                        $user_optional = @json_decode($user['optional'], true);
-                        $this->_forgot_send($user);
-                    }
+                }else {
+                    $this->_forgot_send($user);
                 }
             }
-
-            $this->data('csrf_token', Session::csrf_token(600));
-            $this->data('title', Flang::_e('forgotpassw_welcome'));
-            
-            echo Render::html('Common/Auth/forgot-password', $this->data);
-        }else{
-            $user_id = clean_input($user_id);
-            $user = $this->usersModel->getUserById($user_id);
-            if (!$user){
-                $errors['email'] = array(
-                    Flang::_e('user_exist')
-                );
-                $this->data('errors', $errors);
-                $this->data('title', Flang::_e('forgotpassw_welcome'));
-
-                echo Render::html('Backend/Auth/forgot_password', $this->data);
-            }else{
-                return $this->_forgot_password($user, $token);
-            }
         }
+
+        // Case 3: Display forgot password form (no POST data, no user_id/token)
+        $this->data('csrf_token', Session::csrf_token(600));
+        $this->data('title', Flang::_e('Forgot Password'));
+        
+        echo Render::html('Common/Auth/forgot-password', $this->data);
     }
+
 
     private function _forgot_password($user, $token) {
         $user_id = $user['id'];
@@ -433,58 +433,63 @@ class AuthController extends BackendController
         $token_db = $user_optional['token_reset_password'] ?? '';
         $token_expires = $user_optional['token_reset_password_expires'] ?? 0;
         
+        $error = '';
         if($token !== $token_db) {
-            $error = Flang::_e('token_fotgot_invalid');
+            $error = Flang::_e('Invalid reset token');
         }
         if($token_expires <= time()){
-            $error = Flang::_e('token_fotgot_out_time');
+            $error = Flang::_e('Reset token has expired');
         }
         if (!empty($error)){
             $this->data('error', $error);
-            $this->data('title', Flang::_e('forgotpassw_welcome'));
-            $this->render('auth', 'Backend/Auth/forgot_password');
+            $this->data('title', Flang::_e('Forgot Password'));
+            $this->data('csrf_token', Session::csrf_token(600));
+            echo Render::html('Common/Auth/forgot-password', $this->data);
         }else{
             if(HAS_POST('password')) {
-                $input = [
-                    'password' => S_POST('password'),
-                ];
-                $rules = [
+                $csrf_token = S_POST('csrf_token') ?? '';
+                if (!Session::csrf_verify($csrf_token)){
+                    $this->data('error', Flang::_e('csrf_failed'));
+                } else {
+                    $input = [
+                        'password' => S_POST('password'),
+                    ];
+                    $rules = [
                     'password' => [
                         'rules' => [
                             Validate::length(5, 60),
                         ],
                         'messages' => [
-                            Flang::_e('password_length', 5, 60),
+                            Flang::_e('Password must be between %d and %d characters', 5, 60),
                         ]
                     ]
-                ];
-                $validator = new Validate();
-                if (!$validator->check($input, $rules)) {
-                    $errors = $validator->getErrors();
-                    $this->data('errors', $errors);
-                }else {
-                    $input['password'] = Security::hashPassword($input['password']);
-                    if (isset($user_optional['token_reset_password'])){
-                        unset($user_optional['token_reset_password']);
+                    ];
+                    $validator = new Validate();
+                    if (!$validator->check($input, $rules)) {
+                        $errors = $validator->getErrors();
+                        $this->data('errors', $errors);
+                    }else {
+                        $input['password'] = Security::hashPassword($input['password']);
+                        if (isset($user_optional['token_reset_password'])){
+                            unset($user_optional['token_reset_password']);
+                        }
+                        if (isset($user_optional['token_reset_password_expires'])){
+                            unset($user_optional['token_reset_password_expires']);
+                        }
+                        $input['optional'] = json_encode($user_optional); //remove ma reset sau khi set passs.
+                        $this->usersModel->updateUser($user_id, $input);                    
+                        
+                        Session::flash('success', Flang::_e('Password reset successful'));
+                        redirect(auth_url('login'));
+                        return;
                     }
-                    if (isset($user_optional['token_reset_password_expires'])){
-                        unset($user_optional['token_reset_password_expires']);
-                    }
-                    $input['optional'] = json_encode($user_optional); //remove ma reset sau khi set passs.
-                    $this->usersModel->updateUser($user_id, $input);                    
-                    
-                    $success = Flang::_e('reset_password_success');
-                    $this->data('success', $success);
-                    $this->data('csrf_token', Session::csrf_token(600));
-                    $this->data('title', Flang::_e('login_welcome'));
-
-                    Events::run('Backend\\UserForgotPasswordEvent', $user_id);
-                    
-                    $this->render('auth', 'Backend/Auth/login');
                 }
             }
-            $this->data('title', Flang::_e('update_password_welcome'));
-            $this->render('auth', 'Backend/Auth/forgot_setpassword');
+            $this->data('title', Flang::_e('Update Password'));
+            $this->data('csrf_token', Session::csrf_token(600));
+            $this->data('user_id', $user_id);
+            $this->data('token', $token);
+            echo Render::html('Common/Auth/forgot-setpassword', $this->data);
         }
     }   
 
@@ -560,9 +565,11 @@ class AuthController extends BackendController
 
         // Gửi email mã kích hoạt mới
         $activationLink = auth_url('activation/' . $user_id . '/' . $activationCode.'/');
+        $emailContent = Render::component('Common/Email/activation', ['username' => $user['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
+        
         $this->mailer = new Fastmail();
-        $this->mailer->send($user['email'], Flang::_e('code_active_account'), 'activation', ['username' => $user['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
-        Session::flash('success', Flang::_e('active_send_email'));
+        $this->mailer->send($user['email'], Flang::_e('New Activation Code'), $emailContent);
+        Session::flash('success', Flang::_e('Activation code sent to your email'));
         Events::run('Backend\\UserActivationResendEvent', $user);
 
         redirect(auth_url('activation/' . $user_id));
@@ -583,14 +590,16 @@ class AuthController extends BackendController
         $this->usersModel->updateUser($user_id, ['optional'=>json_encode($user_optional)]);
 
         // Construct reset link 
-        $reset_link = base_url('account/forgot/' . $user_id . '/' . $token);
+        $reset_link = auth_url('forgot/'.$user_id . '/' . $token) ;
         // Gửi email link reset password
+        $emailContent = Render::component('Common/Email/reset_password', ['username' => $user['username'], 'reset_link' => $reset_link]);
+        
         $this->mailer = new Fastmail();
-        $this->mailer->send($user['email'], Flang::_e('title_email_link_reset'), 'reset_password', ['username' => $user['username'], 'reset_link' => $reset_link]);
+        $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent);
 
         Events::run('Backend\\UserForgotSendEvent', $user);
 
-        Session::flash('success', Flang::_e('link_reset_password') .$user['email']);
+        Session::flash('success', Flang::_e('Password reset link sent to your email') . ': ' .$user['email']);
     }   
 
     /**
@@ -600,7 +609,7 @@ class AuthController extends BackendController
     {
         $this->data('csrf_token', Session::csrf_token(600)); //token security login chi ton tai 10 phut.
         
-        $this->data('title', Flang::_e('active_welcome'));
+        $this->data('title', Flang::_e('Account Activation'));
 
         $this->data('user_id', $user_id);
         $this->render('auth', 'Backend/Auth/activation');
@@ -615,7 +624,7 @@ class AuthController extends BackendController
 
         Events::run('Backend\\UserActivationEvent', $user_id);
     
-        Session::flash('success', Flang::_e('active_email_success'));
+        Session::flash('success', Flang::_e('Account activated successfully'));
         redirect(auth_url('login'));
     }
 
@@ -650,7 +659,7 @@ class AuthController extends BackendController
                         Validate::length(3, 30)
                     ],
                     'messages' => [
-                        Flang::_e('fullname_length', 3, 50)
+                        Flang::_e('Full name must be between %d and %d characters', 3, 50)
                     ]
                 ],
                 'phone' => [
@@ -658,7 +667,7 @@ class AuthController extends BackendController
                         Validate::length(null, 30)
                     ],
                     'messages' => [
-                        Flang::_e('phone_length', 0, 30)
+                        Flang::_e('Phone number must be between %d and %d characters', 0, 30)
                     ]
                 ],
                 'telegram' => [
@@ -666,7 +675,7 @@ class AuthController extends BackendController
                         Validate::length(null, 100)
                     ],
                     'messages' => [
-                        Flang::_e('telegram_length', 0, 100)
+                        Flang::_e('Telegram username must be between %d and %d characters', 0, 100)
                     ]
                 ],
                 'skype' => [
@@ -674,7 +683,7 @@ class AuthController extends BackendController
                         Validate::length(null, 100)
                     ],
                     'messages' => [
-                        Flang::_e('skype_length', 0, 100)
+                        Flang::_e('Skype username must be between %d and %d characters', 0, 100)
                     ]
                 ],
                 'whatsapp' => [
@@ -682,7 +691,7 @@ class AuthController extends BackendController
                         Validate::length(null, 30)
                     ],
                     'messages' => [
-                        Flang::_e('whatsapp_length', 0, 30)
+                        Flang::_e('WhatsApp number must be between %d and %d characters', 0, 30)
                     ]
                 ]
             ];
@@ -693,7 +702,7 @@ class AuthController extends BackendController
                 $errors = $validator->getErrors();
                 $this->data('errors', $errors);
             }else{
-                $this->data('success', Flang::_e('profile_updated'));
+                $this->data('success', Flang::_e('Profile updated successfully'));
                 $this->usersModel->updateUser($user_id, $input);
                 $user = array_merge($user, $input);
             }
@@ -702,7 +711,7 @@ class AuthController extends BackendController
         $this->data('me', $user);
         
         // // Hiển thị trang đăng nhập: Nếu ko có request login, or validate that bai
-        $this->data('title', Flang::_e('profile_welcome'));
+        $this->data('title', Flang::_e('Profile Settings'));
         $this->data('csrf_token', Session::csrf_token(600)); //token security login chi ton tai 10 phut.
         
         
