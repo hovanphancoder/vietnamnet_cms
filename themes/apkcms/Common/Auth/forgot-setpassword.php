@@ -9,56 +9,8 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('u
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
     <div class="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
 
-        <!-- Left Panel - Branding -->
-        <div class="relative hidden h-full flex-col p-10 pb-24 text-slate-800 lg:flex overflow-hidden">
-            <!-- Modern gradient background -->
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600"></div>
-
-            <!-- Decorative elements -->
-            <div class="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <div class="absolute bottom-20 right-10 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-            <div class="absolute top-1/2 right-20 w-16 h-16 bg-white/5 rounded-full blur-lg"></div>
-
-            <!-- Header -->
-            <div class="relative z-20 flex items-center text-lg font-semibold text-white">
-                <a class="flex items-center gap-3 hover:opacity-80 transition-opacity" href="/">
-                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                            <rect width="7" height="9" x="3" y="3" rx="1"></rect>
-                            <rect width="7" height="5" x="14" y="3" rx="1"></rect>
-                            <rect width="7" height="9" x="14" y="12" rx="1"></rect>
-                            <rect width="7" height="5" x="3" y="16" rx="1"></rect>
-                        </svg>
-                    </div>
-                    <span class="text-xl font-bold"><?php __e('cms_name') ?></span>
-                </a>
-            </div>
-
-            <!-- Main content -->
-            <div class="relative z-20 flex-1 flex flex-col justify-center">
-                <div class="space-y-8">
-                    <!-- Logo -->
-                    <div class="text-center">
-                        <?= _img(
-                            theme_assets('images/logo/logo-icon.png'),
-                            'Logo CMS',
-                            false,
-                            'mx-auto mb-6 h-32 w-32 object-contain drop-shadow-lg'
-                        ) ?>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="text-center">
-                        <h1 class="text-3xl font-bold text-white mb-4 leading-tight">
-                            Reset Your Password
-                        </h1>
-                        <p class="text-xl text-blue-100 leading-relaxed max-w-md mx-auto">
-                            Enter your new password to complete the reset process
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+         <!-- Left Panel - Branding -->
+         <?php echo Render::html('Common/Auth/auth-left'); ?>
 
         <!-- Right Panel - Reset Password Form -->
         <div class="flex items-center h-full justify-center p-8 bg-white/80 backdrop-blur-sm">
