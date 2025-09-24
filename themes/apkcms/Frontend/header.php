@@ -3,7 +3,7 @@ use App\Models\FastModel;
 require_once __DIR__ . '/functions.php';
 
 $current_page = get_current_page();
-var_dump($current_page);
+// var_dump($current_page);
 
 $all_categories = get_categories('posts','category');
 $GLOBALS['categories'] = $all_categories;

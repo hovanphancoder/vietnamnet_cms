@@ -367,7 +367,8 @@ class AuthController extends BackendController
             $this->_activation_form($user_id);
         }
     }
-        //Forgot Password
+    
+    //Forgot Password
     public function forgot($user_id = '', $token = ''){
         if (empty($user_id) || empty($token)){
             if(HAS_POST('email')) {
@@ -582,7 +583,7 @@ class AuthController extends BackendController
         $this->usersModel->updateUser($user_id, ['optional'=>json_encode($user_optional)]);
 
         // Construct reset link 
-        $reset_link = auth_url('forgot_password/' . $user_id . '/' . $token .'/');
+        $reset_link = base_url('account/forgot/' . $user_id . '/' . $token);
         // Gửi email link reset password
         $this->mailer = new Fastmail();
         $this->mailer->send($user['email'], Flang::_e('title_email_link_reset'), 'reset_password', ['username' => $user['username'], 'reset_link' => $reset_link]);

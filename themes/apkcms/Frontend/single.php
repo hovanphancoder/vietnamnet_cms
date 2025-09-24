@@ -36,7 +36,7 @@ $meta_data = [
     ]
 ];
 
-get_template('_metas/meta_page', $meta_data);
+get_template('_metas/meta_single', $meta_data);
 
 
 

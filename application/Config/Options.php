@@ -12,19 +12,19 @@ return array (
     ),
   ),
   'rewrite_uri_lang' => array (
-    'value' => '0',
+    'value' => 1,
   ),
   'user_limit' => array (
-    'value' => '10',
+    'value' => 10,
   ),
   'site_date_format' => array (
     'value' => 'DD/MM/YYYY',
   ),
   'site_url' => array (
-    'value' => 'https://cmsfullform.com',
+    'value' => 'https://vietnamnet2.vn',
   ),
   'site_desc' => array (
-    'value' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+    'value' => 'NewsPortal - Trang tin tức Việt Nam cập nhật 24/7 với những thông tin mới nhất về thời sự, kinh tế, xã hội, thể thao, công nghệ và đời sống.',
     'valuelang' => array (
       'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
       'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
@@ -34,7 +34,7 @@ return array (
     ),
   ),
   'site_title' => array (
-    'value' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
+    'value' => 'NewsPortal - Tin tức Việt Nam',
     'valuelang' => array (
       'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
       'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
@@ -64,7 +64,7 @@ return array (
     ),
   ),
   'url_rewrite' => array (
-    'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"},{"url_function":"FrontendController::index:page-library","middleware":[""],"url_struct":"/library/"},{"url_function":"FrontendController::index:detail-$1","middleware":[""],"url_struct":"/library/(:any)/(:any)/"},{"url_function":"FrontendController::index:page-library","middleware":[""],"url_struct":"/library/(:any)/"},{"url_function":"FrontendController::index:page-blogs","middleware":[""],"url_struct":"/blogs/"},{"url_function":"FrontendController::index:detail-blogs","middleware":[""],"url_struct":"/blogs/(:any)/"},{"url_function":"FrontendController::index:search","middleware":[""],"url_struct":"/search/"},{"url_function":"FrontendController::index:page-$1","middleware":[""],"url_struct":"/(:any)/"}]',
+    'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"}]',
   ),
   'cache' => array (
     'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache_uri"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
@@ -73,19 +73,19 @@ return array (
     'value' => '[{"cache_function":"blog","cache_caching":true,"cache_mobile":true,"cache_login":true,"cache_level":"default","cache_type":"html","cache_clear_time":"0"}]',
   ),
   'cache_gzip' => array (
-    'value' => '5',
+    'value' => 5,
   ),
   'social' => array (
     'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"}]',
   ),
   'google' => array (
-    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"PLACEHOLDER_GOOGLE_CLIENT_ID"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"PLACEHOLDER_GOOGLE_CLIENT_SECRET"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://yourdomain.com/account/login_google/"}]',
+    'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"634145915585-r00flbf39o0f338niopm0b5usfplgkpe.apps.googleusercontent.com"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"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"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://cmsfullform.com/account/login_google/"}]',
   ),
   'email' => array (
-    'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"contact@cmsfullform.com"},{"email_key":"mail_password","email_value":"dsfsdfdsfsdfdsf"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"contact@cmsfullform.com"},{"email_key":"mail_from_name","email_value":"CMS Full Form"}]',
+    'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_password","email_value":"wonf fbhr omhk pyww"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_from_name","email_value":"phancoder"}]',
   ),
   'watermark_status' => array (
-    'value' => '1',
+    'value' => 1,
   ),
   'site_email' => array (
     'value' => 'contact@cmsfullform.com',
@@ -104,5 +104,8 @@ return array (
   ),
   'plugins_active' => array (
     'value' => '[{"name":"reactix"}]',
+  ),
+  'default_posttype' => array (
+    'value' => 'posts',
   ),
 );

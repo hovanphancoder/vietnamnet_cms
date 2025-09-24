@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="vi" dir="ltr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CMS Movie - Hệ thống quản lý phim tự động</title>
+    <meta name="description" content="CMS Movie - Hệ thống quản lý phim tự động với công cụ API Crawler từ nguồn oPhim, kkPhim. Quản lý phim, thể loại, diễn viên một cách dễ dàng." />
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @layer utilities {
+            .scrollbar-none {
+                scrollbar-width: none;
+            }
+            .scrollbar-none::-webkit-scrollbar {
+                display: none;
+            }
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))"
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))"
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))"
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))"
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))"
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))"
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))"
+                        }
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-background text-foreground" x-data="{ 
+    activeTab: 'features',
+    isMenuOpen: false
+}" x-cloak>
+    
+    <!-- CSS Variables -->
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+        
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 84% 4.9%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 94.1%;
+        }
+    </style>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div class="container mx-auto px-4">
+            <div class="flex h-16 items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                        <i data-lucide="film" class="h-5 w-5 text-primary-foreground"></i>
+                    </div>
+                    <span class="text-xl font-bold">CMS Movie</span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="#features" @click="activeTab = 'features'" :class="activeTab === 'features' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'" class="transition-colors">Tính năng</a>
+                    <a href="#api" @click="activeTab = 'api'" :class="activeTab === 'api' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'" class="transition-colors">API Crawler</a>
+                    <a href="#demo" @click="activeTab = 'demo'" :class="activeTab === 'demo' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'" class="transition-colors">Demo</a>
+                    <a href="#pricing" @click="activeTab = 'pricing'" :class="activeTab === 'pricing' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'" class="transition-colors">Bảng giá</a>
+                </nav>
+
+                <!-- CTA Button -->
+                <div class="flex items-center space-x-4">
+                    <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                        <i data-lucide="download" class="h-4 w-4 mr-2"></i>
+                        Tải ngay
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button @click="isMenuOpen = !isMenuOpen" class="md:hidden p-2">
+                        <i data-lucide="menu" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div x-show="isMenuOpen" x-transition class="md:hidden border-t py-4">
+                <nav class="flex flex-col space-y-4">
+                    <a href="#features" @click="activeTab = 'features'; isMenuOpen = false" :class="activeTab === 'features' ? 'text-primary' : 'text-muted-foreground'" class="transition-colors">Tính năng</a>
+                    <a href="#api" @click="activeTab = 'api'; isMenuOpen = false" :class="activeTab === 'api' ? 'text-primary' : 'text-muted-foreground'" class="transition-colors">API Crawler</a>
+                    <a href="#demo" @click="activeTab = 'demo'; isMenuOpen = false" :class="activeTab === 'demo' ? 'text-primary' : 'text-muted-foreground'" class="transition-colors">Demo</a>
+                    <a href="#pricing" @click="activeTab = 'pricing'; isMenuOpen = false" :class="activeTab === 'pricing' ? 'text-primary' : 'text-muted-foreground'" class="transition-colors">Bảng giá</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    CMS Movie
+                </h1>
+                <p class="text-xl md:text-2xl text-muted-foreground mb-8">
+                    Hệ thống quản lý phim tự động với công cụ API Crawler thông minh
+                </p>
+                <p class="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+                    Tự động crawl dữ liệu phim từ các nguồn oPhim, kkPhim. Quản lý phim, thể loại, diễn viên một cách dễ dàng với giao diện hiện đại.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 py-3 text-base">
+                        <i data-lucide="play" class="h-5 w-5 mr-2"></i>
+                        Xem Demo
+                    </button>
+                    <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 px-8 py-3 text-base">
+                        <i data-lucide="github" class="h-5 w-5 mr-2"></i>
+                        GitHub
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Tính năng nổi bật</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    CMS Movie được trang bị đầy đủ các tính năng hiện đại để quản lý phim một cách chuyên nghiệp
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="zap" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Auto Crawler</h3>
+                    <p class="text-muted-foreground">
+                        Tự động crawl dữ liệu phim từ oPhim, kkPhim với API thông minh. Cập nhật thông tin phim, diễn viên, thể loại tự động.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="film" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Quản lý phim</h3>
+                    <p class="text-muted-foreground">
+                        Quản lý toàn bộ thông tin phim: tiêu đề, mô tả, poster, trailer, đánh giá, năm sản xuất và nhiều hơn nữa.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="users" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Quản lý diễn viên</h3>
+                    <p class="text-muted-foreground">
+                        Hệ thống quản lý diễn viên, đạo diễn với thông tin chi tiết, hình ảnh và lịch sử phim đã tham gia.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="tags" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Phân loại thông minh</h3>
+                    <p class="text-muted-foreground">
+                        Tự động phân loại phim theo thể loại, quốc gia, năm sản xuất. Hỗ trợ tìm kiếm và lọc nâng cao.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="smartphone" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Responsive Design</h3>
+                    <p class="text-muted-foreground">
+                        Giao diện thân thiện với mọi thiết bị. Tối ưu cho desktop, tablet và mobile với trải nghiệm mượt mà.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-card rounded-xl border p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                        <i data-lucide="shield" class="h-6 w-6 text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Bảo mật cao</h3>
+                    <p class="text-muted-foreground">
+                        Hệ thống bảo mật đa lớp với mã hóa dữ liệu, xác thực người dùng và phân quyền chi tiết.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Crawler Section -->
+    <section id="api" class="py-20 bg-muted/30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">API Crawler Thông minh</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Tích hợp API từ các nguồn phim uy tín để tự động cập nhật dữ liệu
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">Nguồn dữ liệu đa dạng</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
+                                <i data-lucide="check" class="h-5 w-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">oPhim API</h4>
+                                <p class="text-muted-foreground">Crawl dữ liệu phim Việt Nam và quốc tế từ nguồn oPhim với độ chính xác cao.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
+                                <i data-lucide="check" class="h-5 w-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">kkPhim API</h4>
+                                <p class="text-muted-foreground">Tích hợp API kkPhim để lấy thông tin phim Hàn Quốc, Trung Quốc và châu Á.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
+                                <i data-lucide="check" class="h-5 w-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Tự động cập nhật</h4>
+                                <p class="text-muted-foreground">Hệ thống tự động cập nhật dữ liệu theo lịch trình, đảm bảo thông tin luôn mới nhất.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-xl border p-6">
+                    <h4 class="font-semibold mb-4">Ví dụ API Response</h4>
+                    <div class="bg-muted rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                        <pre>{
+  "id": "12345",
+  "title": "Avengers: Endgame",
+  "year": 2019,
+  "genre": ["Action", "Adventure", "Drama"],
+  "director": "Anthony Russo",
+  "cast": ["Robert Downey Jr.", "Chris Evans"],
+  "rating": 8.4,
+  "poster": "https://example.com/poster.jpg",
+  "trailer": "https://youtube.com/watch?v=...",
+  "description": "After the devastating events...",
+  "status": "completed"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Xem Demo</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Trải nghiệm giao diện và tính năng của CMS Movie
+                </p>
+            </div>
+
+            <div class="bg-card rounded-xl border p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6">Giao diện quản trị</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="monitor" class="h-5 w-5 text-primary"></i>
+                                <span>Dashboard tổng quan với thống kê chi tiết</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="list" class="h-5 w-5 text-primary"></i>
+                                <span>Danh sách phim với tìm kiếm và lọc nâng cao</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="edit" class="h-5 w-5 text-primary"></i>
+                                <span>Chỉnh sửa thông tin phim trực quan</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="settings" class="h-5 w-5 text-primary"></i>
+                                <span>Cấu hình API và tự động hóa</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-muted rounded-lg p-6 flex items-center justify-center">
+                        <div class="text-center">
+                            <i data-lucide="play-circle" class="h-16 w-16 text-primary mx-auto mb-4"></i>
+                            <p class="text-muted-foreground">Video Demo sẽ được cập nhật sớm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-muted/30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Bảng giá</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Chọn gói phù hợp với nhu cầu của bạn
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Basic Plan -->
+                <div class="bg-card rounded-xl border p-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-semibold mb-2">Basic</h3>
+                        <div class="text-3xl font-bold mb-2">Miễn phí</div>
+                        <p class="text-muted-foreground">Phù hợp cho dự án nhỏ</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Quản lý tối đa 100 phim</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>API Crawler cơ bản</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Giao diện responsive</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="x" class="h-4 w-4 text-red-500"></i>
+                            <span class="text-muted-foreground">Hỗ trợ 24/7</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md font-medium transition-colors">
+                        Bắt đầu miễn phí
+                    </button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="bg-card rounded-xl border-2 border-primary p-6 relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">Phổ biến</span>
+                    </div>
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-semibold mb-2">Pro</h3>
+                        <div class="text-3xl font-bold mb-2">299.000đ</div>
+                        <p class="text-muted-foreground">/tháng</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Quản lý không giới hạn phim</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>API Crawler đầy đủ</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Tự động cập nhật dữ liệu</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Hỗ trợ email</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md font-medium transition-colors">
+                        Chọn Pro
+                    </button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="bg-card rounded-xl border p-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-semibold mb-2">Enterprise</h3>
+                        <div class="text-3xl font-bold mb-2">Liên hệ</div>
+                        <p class="text-muted-foreground">Tùy chỉnh theo yêu cầu</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Tất cả tính năng Pro</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Tùy chỉnh giao diện</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>API riêng</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i data-lucide="check" class="h-4 w-4 text-green-500"></i>
+                            <span>Hỗ trợ 24/7</span>
+                        </li>
+                    </ul>
+                    <button class="w-full border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md font-medium transition-colors">
+                        Liên hệ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="bg-primary rounded-2xl p-12 text-center text-primary-foreground">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Sẵn sàng bắt đầu?</h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Tải ngay CMS Movie và trải nghiệm hệ thống quản lý phim chuyên nghiệp
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 px-8 py-3 rounded-md font-medium transition-colors">
+                        <i data-lucide="download" class="h-5 w-5 mr-2 inline"></i>
+                        Tải ngay miễn phí
+                    </button>
+                    <button class="border border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8 py-3 rounded-md font-medium transition-colors">
+                        <i data-lucide="message-circle" class="h-5 w-5 mr-2 inline"></i>
+                        Liên hệ tư vấn
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-muted/30 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                            <i data-lucide="film" class="h-5 w-5 text-primary-foreground"></i>
+                        </div>
+                        <span class="text-xl font-bold">CMS Movie</span>
+                    </div>
+                    <p class="text-muted-foreground">
+                        Hệ thống quản lý phim tự động với công cụ API Crawler thông minh.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Sản phẩm</h4>
+                    <ul class="space-y-2 text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Tính năng</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">API Crawler</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Demo</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Bảng giá</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2 text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Tài liệu</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Hướng dẫn</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Liên hệ</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Liên kết</h4>
+                    <ul class="space-y-2 text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">GitHub</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Discord</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Twitter</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Facebook</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t mt-8 pt-8 text-center text-muted-foreground">
+                <p>&copy; 2024 CMS Movie. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
