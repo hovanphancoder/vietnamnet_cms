@@ -2,19 +2,19 @@
 return [
 
 
-    'cms_name' => 'CMS Full Form',
-    'cms_description' => 'Giải pháp CMS thế hệ mới tích hợp AI, mang lại tốc độ, linh hoạt và bảo mật vượt trội cho website của bạn.',
+    'CMS Name' => 'CMS Full Form',
+    'CMS Description' => 'Giải pháp CMS thế hệ mới tích hợp AI, mang lại tốc độ, linh hoạt và bảo mật vượt trội cho website của bạn.',
     
     // Register
     'content_management_quote' => 'Quản lý nội dung mạnh mẽ, trực quan và hiệu quả. Nâng tầm website của bạn với CMS Full Form.',
-    'outstanding_features_title' => 'Tính năng Vượt trội',
-    'outstanding_features_description' => 'Công cụ đa dạng, tùy biến linh hoạt.',
-    'optimized_speed_title' => 'Tốc độ Tối ưu',
-    'optimized_speed_description' => 'Trải nghiệm mượt mà, hiệu suất cao.',
-    'premium_security_title' => 'Bảo mật Cao cấp',
-    'premium_security_description' => 'An toàn dữ liệu, đáng tin cậy.',
-    'intuitive_interface_title' => 'Giao diện Trực quan',
-    'intuitive_interface_description' => 'Dễ sử dụng, quản lý hiệu quả.',
+    'Outstanding Features Title' => 'Tính năng Vượt trội',
+    'Outstanding Features Description' => 'Công cụ đa dạng, tùy biến linh hoạt.',
+    'Optimized Speed Title' => 'Tốc độ Tối ưu',
+    'Optimized Speed Description' => 'Trải nghiệm mượt mà, hiệu suất cao.',
+    'Premium Security Title' => 'Bảo mật Cao cấp',
+    'Premium Security Description' => 'An toàn dữ liệu, đáng tin cậy.',
+    'Intuitive Interface Title' => 'Giao diện Trực quan',
+    'Intuitive Interface Description' => 'Dễ sử dụng, quản lý hiệu quả.',
     'create_admin_account' => 'Tạo Tài khoản Quản trị',
     'login_if_account_exists' => 'đăng nhập nếu bạn đã có tài khoản',
     'register_with_google' => 'Đăng ký bằng Google',
@@ -64,6 +64,8 @@ return [
     'send_instructions' => 'Khôi phục mật khẩu',
     'back_to_login' => 'Quay lại Đăng nhập',
     'or'                                => 'hoặc',
-
-
+    
+    // Auth Left Panel
+    'CMS Logo' => 'Logo CMS',
+    'Welcome to Modern CMS' => 'Chào mừng đến với CMS Hiện đại',
 ];

@@ -3,20 +3,20 @@ return [
 
    
 
-    'cms_name' => 'CMS Full Form',
-    'cms_description' => 'Next-generation CMS solution with AI integration, delivering exceptional speed, flexibility, and security for your website.',
+    'CMS Name' => 'CMS Full Form',
+    'CMS Description' => 'Next-generation CMS solution with AI integration, delivering exceptional speed, flexibility, and security for your website.',
 
   
     //register
     'content_management_quote' => 'Powerful, intuitive, and efficient content management. Elevate your website with CMS Full Form.',
-    'outstanding_features_title' => 'Outstanding Features',
-    'outstanding_features_description' => 'Diverse tools, flexible customization.',
-    'optimized_speed_title' => 'Optimized Speed',
-    'optimized_speed_description' => 'Smooth experience, high performance.',
-    'premium_security_title' => 'Premium Security',
-    'premium_security_description' => 'Secure data, reliable.',
-    'intuitive_interface_title' => 'Intuitive Interface',
-    'intuitive_interface_description' => 'Easy to use, efficient management.',
+    'Outstanding Features Title' => 'Outstanding Features',
+    'Outstanding Features Description' => 'Diverse tools, flexible customization.',
+    'Optimized Speed Title' => 'Optimized Speed',
+    'Optimized Speed Description' => 'Smooth experience, high performance.',
+    'Premium Security Title' => 'Premium Security',
+    'Premium Security Description' => 'Secure data, reliable.',
+    'Intuitive Interface Title' => 'Intuitive Interface',
+    'Intuitive Interface Description' => 'Easy to use, efficient management.',
     'create_admin_account' => 'Create Admin Account',
     'login_if_account_exists' => 'log in if you have an account',
     'register_with_google' => 'Register with Google',
@@ -66,4 +66,8 @@ return [
     'send_instructions' => 'Send Instructions',
     'back_to_login' => 'Back to Login',
     'or' => 'or',
+    
+    // Auth Left Panel
+    'CMS Logo' => 'CMS Logo',
+    'Welcome to Modern CMS' => 'Welcome to Modern CMS',
 ];

@@ -18,7 +18,7 @@
                             <rect width="7" height="5" x="3" y="16" rx="1"></rect>
                         </svg>
                     </div>
-                    <span class="text-xl font-bold"><?php __e('cms_name') ?></span>
+                    <span class="text-xl font-bold"><?php __e('CMS Name') ?></span>
                 </a>
             </div>
 
@@ -38,10 +38,10 @@
                     <!-- Description -->
                     <div class="text-center">
                         <h1 class="text-3xl font-bold text-white mb-4 leading-tight">
-                            Welcome to Modern CMS
+                            <?php __e('Welcome to Modern CMS') ?>
                         </h1>
                         <p class="text-xl text-blue-100 leading-relaxed max-w-md mx-auto">
-                            <?php __e('cms_description') ?>
+                            <?php __e('CMS Description') ?>
                         </p>
                     </div>
                 </div>
@@ -57,8 +57,8 @@
                             <path d="M2 9h20"></path>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('outstanding_features_title') ?></h3>
-                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('outstanding_features_description') ?></p>
+                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('Outstanding Features Title') ?></h3>
+                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('Outstanding Features Description') ?></p>
                 </div>
 
                 <div class="group flex flex-col items-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300">
@@ -67,8 +67,8 @@
                             <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('optimized_speed_title') ?></h3>
-                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('optimized_speed_description') ?></p>
+                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('Optimized Speed Title') ?></h3>
+                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('Optimized Speed Description') ?></p>
                 </div>
 
                 <div class="group flex flex-col items-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300">
@@ -78,8 +78,8 @@
                             <path d="m9 12 2 2 4-4"></path>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('premium_security_title') ?></h3>
-                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('premium_security_description') ?></p>
+                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('Premium Security Title') ?></h3>
+                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('Premium Security Description') ?></p>
                 </div>
 
                 <div class="group flex flex-col items-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300">
@@ -91,8 +91,8 @@
                             <rect width="7" height="5" x="3" y="16" rx="1"></rect>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('intuitive_interface_title') ?></h3>
-                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('intuitive_interface_description') ?></p>
+                    <h3 class="font-semibold text-white text-sm mb-1"><?php __e('Intuitive Interface Title') ?></h3>
+                    <p class="text-xs text-center text-blue-100 leading-relaxed"><?php __e('Intuitive Interface Description') ?></p>
                 </div>
             </div>
         </div>
