@@ -16,7 +16,13 @@ class Fastmail
     {
         // Get email config from config file if no custom config provided
         $option_email = option('email');
-        $option_email = array_column($option_email, 'email_value', 'email_key');
+        // Check if $option_email is array before using array_column
+        if (is_array($option_email)) {
+            $option_email = array_column($option_email, 'email_value', 'email_key');
+        } else {
+            // If it's not array, set default empty array
+            $option_email = [];
+        }
         $this->config = !empty($config) ? $config : $option_email;
         $this->theme = config('theme'); // Get current theme from config
         $this->mailer = new PHPMailer(true); // Create an instance of PHPMailer
