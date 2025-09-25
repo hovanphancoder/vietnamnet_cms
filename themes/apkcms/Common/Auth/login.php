@@ -17,11 +17,11 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
             <div class="w-full max-w-sm space-y-8">
                 <!-- Header -->
                 <div class="text-center space-y-2">
-                    <h2 class="text-3xl font-bold text-slate-900"><?php __e('login_to_cms') ?></h2>
+                    <h2 class="text-3xl font-bold text-slate-900"><?php __e('Login To CMS') ?></h2>
                     <p class="text-slate-600">
                         <?php __e('or') ?>
                         <a class="font-medium text-blue-600 hover:text-blue-500 transition-colors" href="<?php echo auth_url('register'); ?>">
-                            <?php __e('create_new_account') ?>
+                            <?php __e('Create New Account') ?>
                         </a>
                     </p>
                 </div>
@@ -37,7 +37,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                             </div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-medium text-red-800">
-                                    <?php __e('please_correct_errors'); ?>
+                                    <?php __e('Please Correct Errors'); ?>
                                 </h3>
                                 <div class="mt-2 text-sm text-red-700">
                                     <ul class="list-disc pl-5 space-y-1">
@@ -81,7 +81,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
                         </svg>
                         <span class="font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
-                            <?php __e('login_with_google') ?>
+                            <?php __e('Login With Google') ?>
                         </span>
                     </button>
                 </a>
@@ -92,7 +92,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                         <div class="w-full border-t border-slate-200"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-4 bg-white text-slate-500"><?php __e('or_login_with') ?></span>
+                        <span class="px-4 bg-white text-slate-500"><?php __e('Or Login With') ?></span>
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                     <!-- Email Input -->
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-slate-700" for="username">
-                            <?php __e('email_or_username_placeholder') ?>
+                            <?php __e('Email Or Username Placeholder') ?>
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -118,7 +118,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                                 id="username"
                                 name="username"
                                 class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-slate-400"
-                                placeholder="<?php __e('email_or_username_placeholder') ?>"
+                                placeholder="<?php __e('Email Or Username Placeholder') ?>"
                                 value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>"
                                 required>
                         </div>
@@ -132,7 +132,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                     <!-- Password Input -->
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-slate-700" for="password">
-                            <?php __e('password_label') ?>
+                            <?php __e('Password Label') ?>
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -146,7 +146,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                                 id="password"
                                 name="password"
                                 class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-slate-400"
-                                placeholder="<?php __e('password_label') ?>"
+                                placeholder="<?php __e('Password Label') ?>"
                                 required>
                         </div>
                         <?php if (isset($errors['password'])): ?>
@@ -167,11 +167,11 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('l
                                 <?php echo (isset($_POST['remember']) && $_POST['remember'] == 'on') ? 'checked' : ''; ?>
                                 class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-2">
                             <label for="remember" class="text-sm text-slate-700 cursor-pointer">
-                                <?php __e('remember_me') ?>
+                                <?php __e('Remember Me') ?>
                             </label>
                         </div>
                         <a class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors" href="<?php echo auth_url('forgot'); ?>">
-                            <?php __e('forgot_password') ?>
+                            <?php __e('Forgot Password') ?>
                         </a>
                     </div>
 

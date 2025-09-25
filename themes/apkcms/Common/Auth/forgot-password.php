@@ -4,13 +4,13 @@ namespace System\Libraries;
 
 use App\Libraries\Fastlang;
 
-Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('forgot_password')]);
+Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('Forgot Password')]);
 ?>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
     <div class="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
 
-           <!-- Left Panel - Branding -->
-           <?php echo Render::html('Common/Auth/auth-left'); ?>
+        <!-- Left Panel - Branding -->
+        <?php echo Render::html('Common/Auth/auth-left'); ?>
 
         <!-- Right Panel - Login Form -->
         <div class="flex items-center h-full justify-center p-8 bg-white/80 backdrop-blur-sm">

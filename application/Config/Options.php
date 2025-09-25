@@ -82,7 +82,7 @@ return array (
     'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"634145915585-r00flbf39o0f338niopm0b5usfplgkpe.apps.googleusercontent.com"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"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"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://cmsfullform.com/account/login_google/"}]',
   ),
   'email' => array (
-    'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_password","email_value":"wonf fbhr omhk pyww"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_from_name","email_value":"phancoder"}]',
+    'value' => '[{"email_key":"mail_mailer","email_value":"smtp"},{"email_key":"mail_host","email_value":"smtp.gmail.com"},{"email_key":"mail_port","email_value":"587"},{"email_key":"mail_username","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_password","email_value":"kuwy oujj baqk fswy"},{"email_key":"mail_encryption","email_value":"tls"},{"email_key":"mail_charset","email_value":"UTF-8"},{"email_key":"mail_from_address","email_value":"hovanphancoder@gmail.com"},{"email_key":"mail_from_name","email_value":"phancoder"}]',
   ),
   'watermark_status' => array (
     'value' => 1,

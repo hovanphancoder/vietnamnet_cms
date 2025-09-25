@@ -51,11 +51,11 @@ return [
     
     // Error messages
     'CSRF token verification failed' => 'CSRF token verification failed',
-    'Login failed for username: %s' => 'Login failed for username: %s',
-    'Account "%s" is not active. Please check your email for activation link.' => 'Account "%s" is not active. Please check your email for activation link.',
-    'Username "%s" is already taken' => 'Username "%s" is already taken',
-    'Email "%s" is already registered' => 'Email "%s" is already registered',
-    'User with email "%s" not found' => 'User with email "%s" not found',
+    'Login failed for username: %1%' => 'Login failed for username: %1%',
+    'Account %1% is not active. Please check your email for activation link.' => 'Account %1% is not active. Please check your email for activation link.',
+    'Username %1% is already taken' => 'Username %1% is already taken',
+    'Email %1% is already registered' => 'Email %1% is already registered',
+    'User with email %1% not found' => 'User with email %1% not found',
     'Invalid activation code' => 'Invalid activation code',
     'Activation code has expired' => 'Activation code has expired',
     'Invalid reset token' => 'Invalid reset token',
@@ -65,15 +65,15 @@ return [
     
     // Validation messages
     'Username can only contain letters, numbers, @, ., and _' => 'Username can only contain letters, numbers, @, ., and _',
-    'Username must be between %d and %d characters' => 'Username must be between %d and %d characters',
-    'Password must be at least %d characters long' => 'Password must be at least %d characters long',
-    'Password must be between %d and %d characters' => 'Password must be between %d and %d characters',
+    'Username must be between %1% and %2% characters' => 'Username must be between %1% and %2% characters',
+    'Password must be at least %1% characters long' => 'Password must be at least %1% characters long',
+    'Password must be between %1% and %2% characters' => 'Password must be between %1% and %2% characters',
     'Password confirmation does not match' => 'Password confirmation does not match',
     'Please enter a valid email address' => 'Please enter a valid email address',
-    'Email must be between %d and %d characters' => 'Email must be between %d and %d characters',
-    'Full name must be between %d and %d characters' => 'Full name must be between %d and %d characters',
+    'Email must be between %1% and %2% characters' => 'Email must be between %1% and %2% characters',
+    'Full name must be between %1% and %2% characters' => 'Full name must be between %1% and %2% characters',
     'Please enter a valid phone number' => 'Please enter a valid phone number',
-    'Phone number must be between %d and %d characters' => 'Phone number must be between %d and %d characters',
+    'Phone number must be between %1% and %2% characters' => 'Phone number must be between %1% and %2% characters',
     'Please enter a valid activation code' => 'Please enter a valid activation code',
     
     // Instructions
@@ -91,7 +91,7 @@ return [
     'Click the button below to activate your account' => 'Click the button below to activate your account',
     'Click the button below to reset your password' => 'Click the button below to reset your password',
     'If you did not request this, please ignore this email' => 'If you did not request this, please ignore this email',
-    'Your activation code is: %s' => 'Your activation code is: %s',
+    'Your activation code is: %1%' => 'Your activation code is: %1%',
     
     // Status
     'Active' => 'Active',
@@ -109,7 +109,7 @@ return [
     'Enter your Telegram username' => 'Enter your Telegram username',
     'Enter your Skype username' => 'Enter your Skype username',
     'Enter your WhatsApp number' => 'Enter your WhatsApp number',
-    'Telegram username must be between %d and %d characters' => 'Telegram username must be between %d and %d characters',
-    'Skype username must be between %d and %d characters' => 'Skype username must be between %d and %d characters',
-    'WhatsApp number must be between %d and %d characters' => 'WhatsApp number must be between %d and %d characters',
+    'Telegram username must be between %1% and %2% characters' => 'Telegram username must be between %1% and %2% characters',
+    'Skype username must be between %1% and %2% characters' => 'Skype username must be between %1% and %2% characters',
+    'WhatsApp number must be between %1% and %2% characters' => 'WhatsApp number must be between %1% and %2% characters',
 ];

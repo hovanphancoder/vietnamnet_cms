@@ -18,11 +18,11 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
             <div class="w-full max-w-sm space-y-8">
                 <!-- Header -->
                 <div class="text-center space-y-2">
-                    <h2 class="text-3xl font-bold text-gray-900"><?php __e('create_admin_account') ?></h2>
+                    <h2 class="text-3xl font-bold text-gray-900"><?php __e('Create Admin Account') ?></h2>
                     <p class="text-gray-600 text-sm">
                         <?php __e('or') ?>
                         <a class="font-semibold text-blue-600 hover:text-blue-500 transition-colors" href="<?= auth_url('login') ?>">
-                            <?php __e('login_if_account_exists') ?>
+                            <?php __e('Login If Account Exists') ?>
                         </a>
                     </p>
                 </div>
@@ -36,7 +36,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
                     </svg>
                     <span class="font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
-                        <?php __e('register_with_google') ?>
+                        <?php __e('Register With Google') ?>
                     </span>
                 </button>
 
@@ -46,7 +46,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                         <div class="w-full border-t border-gray-200"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-4 bg-white text-gray-500 font-medium"><?php __e('or_continue_with') ?></span>
+                        <span class="px-4 bg-white text-gray-500 font-medium"><?php __e('Or Continue With') ?></span>
                     </div>
                 </div>
 
@@ -65,7 +65,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             id="fullname"
                             name="fullname"
                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium"
-                            placeholder="<?php __e('full_name_placeholder') ?>"
+                            placeholder="<?php __e('Full Name Placeholder') ?>"
                             required>
                     </div>
 
@@ -82,7 +82,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             id="username"
                             name="username"
                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium"
-                            placeholder="<?php __e('username_placeholder') ?>"
+                            placeholder="<?php __e('Username Placeholder') ?>"
                             required>
                     </div>
 
@@ -99,7 +99,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             id="email"
                             name="email"
                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium"
-                            placeholder="<?php __e('email_address_placeholder') ?>"
+                            placeholder="<?php __e('Email Address Placeholder') ?>"
                             required>
                     </div>
 
@@ -116,7 +116,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             id="password"
                             name="password"
                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium"
-                            placeholder="<?php __e('password_placeholder') ?>"
+                            placeholder="<?php __e('Password Placeholder') ?>"
                             required>
                     </div>
 
@@ -133,7 +133,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             id="confirmPassword"
                             name="confirmPassword"
                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium"
-                            placeholder="<?php __e('confirm_password_placeholder') ?>"
+                            placeholder="<?php __e('Confirm Password Placeholder') ?>"
                             required>
                     </div>
 
@@ -153,7 +153,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             </label>
                         </div>
                         <label for="terms" class="text-sm text-gray-700 leading-5 cursor-pointer font-medium">
-                            <?php __e('terms_and_privacy_agreement') ?>
+                            <?php __e('Terms And Privacy Agreement') ?>
                         </label>
                     </div>
 
@@ -168,7 +168,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                             <line x1="19" x2="19" y1="8" y2="14"></line>
                             <line x1="22" x2="16" y1="11" y2="11"></line>
                         </svg>
-                        <?php __e('register_button') ?>
+                        <?php __e('Register Button') ?>
                     </button>
                 </form>
 
@@ -180,7 +180,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('r
                         class="w-full flex items-center justify-between px-4 py-3 border border-gray-200 rounded-2xl bg-white hover:bg-gray-50 hover:border-blue-300 transition-all duration-300 cursor-pointer">
                         <span id="selectedLanguageDisplay" class="flex items-center space-x-2">
                             <span class="text-lg">🇻🇳</span>
-                            <span class="text-gray-700 font-medium"><?php __e('vietnamese_language') ?></span>
+                            <span class="text-gray-700 font-medium"><?php __e('Vietnamese Language') ?></span>
                         </span>
                         <svg id="chevronIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transition-transform duration-200">
                             <path d="m6 9 6 6 6-6"></path>

@@ -51,11 +51,11 @@ return [
     
     // Error messages
     'CSRF token verification failed' => 'Xác thực CSRF token thất bại',
-    'Login failed for username: %s' => 'Đăng nhập thất bại cho tên đăng nhập: %s',
-    'Account "%s" is not active. Please check your email for activation link.' => 'Tài khoản "%s" chưa được kích hoạt. Vui lòng kiểm tra email để lấy link kích hoạt.',
-    'Username "%s" is already taken' => 'Tên đăng nhập "%s" đã được sử dụng',
-    'Email "%s" is already registered' => 'Email "%s" đã được đăng ký',
-    'User with email "%s" not found' => 'Không tìm thấy người dùng với email "%s"',
+    'Login failed for username: %1%' => 'Đăng nhập thất bại cho tên đăng nhập: %1%',
+    'Account %1% is not active. Please check your email for activation link.' => 'Tài khoản %1% chưa được kích hoạt. Vui lòng kiểm tra email để lấy link kích hoạt.',
+    'Username %1% is already taken' => 'Tên đăng nhập %1% đã được sử dụng',
+    'Email %1% is already registered' => 'Email %1% đã được đăng ký',
+    'User with email %1% not found' => 'Không tìm thấy người dùng với email: %1%',
     'Invalid activation code' => 'Mã kích hoạt không hợp lệ',
     'Activation code has expired' => 'Mã kích hoạt đã hết hạn',
     'Invalid reset token' => 'Token đặt lại không hợp lệ',
@@ -65,15 +65,15 @@ return [
     
     // Validation messages
     'Username can only contain letters, numbers, @, ., and _' => 'Tên đăng nhập chỉ được chứa chữ cái, số, @, ., và _',
-    'Username must be between %d and %d characters' => 'Tên đăng nhập phải từ %d đến %d ký tự',
-    'Password must be at least %d characters long' => 'Mật khẩu phải có ít nhất %d ký tự',
-    'Password must be between %d and %d characters' => 'Mật khẩu phải từ %d đến %d ký tự',
+    'Username must be between %1% and %2% characters' => 'Tên đăng nhập phải từ %1% đến %2% ký tự',
+    'Password must be at least %1% characters long' => 'Mật khẩu phải có ít nhất %1% ký tự',
+    'Password must be between %1% and %2% characters' => 'Mật khẩu phải từ %1% đến %2% ký tự',
     'Password confirmation does not match' => 'Xác nhận mật khẩu không khớp',
     'Please enter a valid email address' => 'Vui lòng nhập địa chỉ email hợp lệ',
-    'Email must be between %d and %d characters' => 'Email phải từ %d đến %d ký tự',
-    'Full name must be between %d and %d characters' => 'Họ và tên phải từ %d đến %d ký tự',
+    'Email must be between %1% and %2% characters' => 'Email phải từ %1% đến %2% ký tự',
+    'Full name must be between %1% and %2% characters' => 'Họ và tên phải từ %1% đến %2% ký tự',
     'Please enter a valid phone number' => 'Vui lòng nhập số điện thoại hợp lệ',
-    'Phone number must be between %d and %d characters' => 'Số điện thoại phải từ %d đến %d ký tự',
+    'Phone number must be between %1% and %2% characters' => 'Số điện thoại phải từ %1% đến %2% ký tự',
     'Please enter a valid activation code' => 'Vui lòng nhập mã kích hoạt hợp lệ',
     
     // Instructions
@@ -91,7 +91,7 @@ return [
     'Click the button below to activate your account' => 'Nhấn nút bên dưới để kích hoạt tài khoản',
     'Click the button below to reset your password' => 'Nhấn nút bên dưới để đặt lại mật khẩu',
     'If you did not request this, please ignore this email' => 'Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này',
-    'Your activation code is: %s' => 'Mã kích hoạt của bạn là: %s',
+    'Your activation code is: %1%' => 'Mã kích hoạt của bạn là: %1%',
     
     // Status
     'Active' => 'Hoạt động',
@@ -109,7 +109,7 @@ return [
     'Enter your Telegram username' => 'Nhập tên người dùng Telegram',
     'Enter your Skype username' => 'Nhập tên người dùng Skype',
     'Enter your WhatsApp number' => 'Nhập số WhatsApp',
-    'Telegram username must be between %d and %d characters' => 'Tên người dùng Telegram phải từ %d đến %d ký tự',
-    'Skype username must be between %d and %d characters' => 'Tên người dùng Skype phải từ %d đến %d ký tự',
-    'WhatsApp number must be between %d and %d characters' => 'Số WhatsApp phải từ %d đến %d ký tự',
+    'Telegram username must be between %1% and %2% characters' => 'Tên người dùng Telegram phải từ %1% đến %2% ký tự',
+    'Skype username must be between %1% and %2% characters' => 'Tên người dùng Skype phải từ %1% đến %2% ký tự',
+    'WhatsApp number must be between %1% and %2% characters' => 'Số WhatsApp phải từ %1% đến %2% ký tự',
 ];

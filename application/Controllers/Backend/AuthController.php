@@ -25,13 +25,13 @@ class AuthController extends BackendController
         $this->usersModel = new UsersModel();
         Flang::load('Common/Auth');
 
-        Render::asset('css', 'css/new_style.css', ['area' => 'backend', 'location' => 'head']);
-        Render::asset('css', 'css/font-inter.css', ['area' => 'backend', 'location' => 'head']);
+        // Render::asset('css', 'css/new_style.css', ['area' => 'backend', 'location' => 'head']);
+        // Render::asset('css', 'css/font-inter.css', ['area' => 'backend', 'location' => 'head']);
 
         Render::asset('js', 'js/jfast.1.2.3.js', ['area' => 'backend', 'location' => 'footer']);
-        Render::asset('js', 'js/feather.min.js', ['area' => 'backend', 'location' => 'footer']);
-        Render::asset('js', 'js/theme.js', ['area' => 'backend', 'location' => 'footer']);
-        Render::asset('js', 'js/script.js', ['area' => 'backend', 'location' => 'footer']);
+        // Render::asset('js', 'js/feather.min.js', ['area' => 'backend', 'location' => 'footer']);
+        // Render::asset('js', 'js/theme.js', ['area' => 'backend', 'location' => 'footer']);
+        // Render::asset('js', 'js/script.js', ['area' => 'backend', 'location' => 'footer']);
 
     }
 
@@ -66,11 +66,11 @@ class AuthController extends BackendController
             $rules = [
                 'username' => [
                     'rules' => [Validate::alnum("@._"), Validate::length(5, 150)],
-                    'messages' => [Flang::_e('Username can only contain letters, numbers, @, ., and _'), Flang::_e('Username must be between %d and %d characters', 5, 30)]
+                    'messages' => [Flang::_e('Username can only contain letters, numbers, @, ., and _'), Flang::_e('Username must be between %1% and %2% characters', 5, 30)]
                 ],
                 'password' => [
                     'rules' => [Validate::length(5, null)],
-                    'messages' => [Flang::_e('Password must be at least %d characters long', 6)]
+                    'messages' => [Flang::_e('Password must be at least %1% characters long', 6)]
                 ]
             ];
             $validator = new Validate();
@@ -102,7 +102,7 @@ class AuthController extends BackendController
         // echo Security::hashPassword($input['password']);die;
         if ($user && Security::verifyPassword($input['password'], $user['password'])) {
             if ($user['status'] !== 'active') {
-                Session::flash('error', Flang::_e('Account "%s" is not active. Please check your email for activation link.', $input['username']));
+                Session::flash('error', Flang::_e('Account %1% is not active. Please check your email for activation link.', $input['username']));
                 redirect(auth_url('login'));
                 exit();
             }
@@ -135,7 +135,7 @@ class AuthController extends BackendController
 
             redirect(admin_url('/'));
         } else {
-            Session::flash('error', Flang::_e('Login failed for username: %s', $input['username']) );
+            Session::flash('error', Flang::_e('Login failed for username: %1%', $input['username']) );
             redirect(auth_url('login'));
         }
     }
@@ -183,7 +183,7 @@ class AuthController extends BackendController
                     ],
                     'messages' => [
                         Flang::_e('Username can only contain letters, numbers, and _'),
-                        Flang::_e('Username must be between %d and %d characters', 5, 40)
+                        Flang::_e('Username must be between %1% and %2% characters', 5, 40)
                     ]
                 ],
                 'fullname' => [
@@ -191,7 +191,7 @@ class AuthController extends BackendController
                         Validate::length(5, 60)
                     ],
                     'messages' => [
-                        Flang::_e('Full name must be between %d and %d characters', 5, 60)
+                        Flang::_e('Full name must be between %1% and %2% characters', 5, 60)
                     ]
                 ],
                 'email' => [
@@ -201,7 +201,7 @@ class AuthController extends BackendController
                     ],
                     'messages' => [
                         Flang::_e('Please enter a valid email address'),
-                        Flang::_e('Email must be between %d and %d characters', 5, 150)
+                        Flang::_e('Email must be between %1% and %2% characters', 5, 150)
                     ]
                 ],
                 'phone' => [
@@ -211,7 +211,7 @@ class AuthController extends BackendController
                     ],
                     'messages' => [
                         Flang::_e('Please enter a valid phone number'),
-                        Flang::_e('Phone number must be between %d and %d characters', 5, 30)
+                        Flang::_e('Phone number must be between %1% and %2% characters', 5, 30)
                     ]
                 ],
                 'password' => [
@@ -219,7 +219,7 @@ class AuthController extends BackendController
                         Validate::length(5, 60),
                     ],
                     'messages' => [
-                        Flang::_e('Password must be between %d and %d characters', 5, 60),
+                        Flang::_e('Password must be between %1% and %2% characters', 5, 60),
                     ]
                 ],
                 'password_repeat' => [
@@ -240,13 +240,13 @@ class AuthController extends BackendController
                 $errors = [];
                 if ($this->usersModel->getUserByUsername($input['username'])) {
                     $errors['username'] = array(
-                        Flang::_e('Username "%s" is already taken', $input['username'])
+                        Flang::_e('Username %1% is already taken', $input['username'])
                     );
                     $isExists = true;
                 }
                 if ($this->usersModel->getUserByEmail($input['email'])) {
                     $errors['email'] = array(
-                        Flang::_e('Email "%s" is already registered', $input['email'])
+                        Flang::_e('Email %1% is already registered', $input['email'])
                     );
                     $isExists = true;
                 }
@@ -397,7 +397,7 @@ class AuthController extends BackendController
                     ],
                     'messages' => [
                         Flang::_e('Please enter a valid email address'),
-                        Flang::_e('Email must be between %d and %d characters', 5, 150)
+                        Flang::_e('Email must be between %1% and %2% characters', 5, 150)
                     ]
                 ],
             ];
@@ -409,7 +409,7 @@ class AuthController extends BackendController
                 $user = $this->usersModel->getUserByEmail($input['email']);
                 if (!$user) {
                     $errors['email'] = array(
-                        Flang::_e('User with email "%s" not found', $input['email'])
+                        Flang::_e('User with email %1% not found', $input['email'])
                     );
                     $this->data('errors', $errors);     
                 }else {
@@ -460,7 +460,7 @@ class AuthController extends BackendController
                             Validate::length(5, 60),
                         ],
                         'messages' => [
-                            Flang::_e('Password must be between %d and %d characters', 5, 60),
+                            Flang::_e('Password must be between %1% and %2% characters', 5, 60),
                         ]
                     ]
                     ];
@@ -596,6 +596,7 @@ class AuthController extends BackendController
         
         $this->mailer = new Fastmail();
         $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent);
+        // $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent, ['smtpDebug' => 2]);
 
         Events::run('Backend\\UserForgotSendEvent', $user);
 
@@ -659,7 +660,7 @@ class AuthController extends BackendController
                         Validate::length(3, 30)
                     ],
                     'messages' => [
-                        Flang::_e('Full name must be between %d and %d characters', 3, 50)
+                        Flang::_e('Full name must be between %1% and %2% characters', 3, 50)
                     ]
                 ],
                 'phone' => [
@@ -667,7 +668,7 @@ class AuthController extends BackendController
                         Validate::length(null, 30)
                     ],
                     'messages' => [
-                        Flang::_e('Phone number must be between %d and %d characters', 0, 30)
+                        Flang::_e('Phone number must be between %1% and %2% characters', 0, 30)
                     ]
                 ],
                 'telegram' => [
@@ -675,7 +676,7 @@ class AuthController extends BackendController
                         Validate::length(null, 100)
                     ],
                     'messages' => [
-                        Flang::_e('Telegram username must be between %d and %d characters', 0, 100)
+                        Flang::_e('Telegram username must be between %1% and %2% characters', 0, 100)
                     ]
                 ],
                 'skype' => [
@@ -683,7 +684,7 @@ class AuthController extends BackendController
                         Validate::length(null, 100)
                     ],
                     'messages' => [
-                        Flang::_e('Skype username must be between %d and %d characters', 0, 100)
+                        Flang::_e('Skype username must be between %1% and %2% characters', 0, 100)
                     ]
                 ],
                 'whatsapp' => [
@@ -691,7 +692,7 @@ class AuthController extends BackendController
                         Validate::length(null, 30)
                     ],
                     'messages' => [
-                        Flang::_e('WhatsApp number must be between %d and %d characters', 0, 30)
+                        Flang::_e('WhatsApp number must be between %1% and %2% characters', 0, 30)
                     ]
                 ]
             ];
