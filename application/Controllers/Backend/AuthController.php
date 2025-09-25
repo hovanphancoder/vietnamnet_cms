@@ -158,9 +158,13 @@ class AuthController extends BackendController
     // Register new account
     public function register()
     {
+       
         //Validate step if there's a register request.
         if (HAS_POST('username')){
+            
+       
             $csrf_token = S_POST('csrf_token') ?? '';
+         
             if (!Session::csrf_verify($csrf_token)){
                 Session::flash('error', Flang::_e('csrf_failed') );
                 redirect(auth_url('register'));
@@ -294,7 +298,7 @@ class AuthController extends BackendController
             $emailContent = Render::component('Common/Email/activation', ['username' => $input['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
             
             $this->mailer = new Fastmail();
-            $this->mailer->send($input['email'], Flang::_e('Account Activation'), $emailContent);
+            $this->mailer->send($input['email'], Flang::_e('Account Activation'), $emailContent, ['smtpDebug' => 2]);
             
             Session::flash('success', Flang::_e('Registration successful'));
             $this->data('csrf_token', Session::csrf_token(600));
@@ -366,7 +370,8 @@ class AuthController extends BackendController
             $this->_activation_form($user_id);
         }
     }
-        //Forgot Password - handles both email input and password reset
+    
+    //Forgot Password - handles both email input and password reset
     public function forgot($user_id = '', $token = ''){
         // Case 1: User is requesting password reset (has user_id and token)
         if (!empty($user_id) && !empty($token)) {
@@ -376,7 +381,23 @@ class AuthController extends BackendController
                 redirect(auth_url('forgot'));
                 return;
             }
+            // If token is 'code', show password reset form directly
+            if ($token === 'code') {
+                return $this->_forgot_password($user, 'code');
+            }
+            // For regular token, show password reset form with code verification
             return $this->_forgot_password($user, $token);
+        }
+        
+        // Case 1.5: User is requesting password reset with code (has user_id but no token)
+        if (!empty($user_id) && empty($token)) {
+            $user = $this->usersModel->getUserById($user_id);
+            if (!$user) {
+                Session::flash('error', Flang::_e('Account does not exist'));
+                redirect(auth_url('forgot'));
+                return;
+            }
+            return $this->_forgot_password_with_code($user);
         }
         
         // Case 2: User is submitting email for password reset
@@ -430,27 +451,93 @@ class AuthController extends BackendController
         $user_id = $user['id'];
         $user_optional = @json_decode($user['optional'], true);
 
-        $token_db = $user_optional['token_reset_password'] ?? '';
-        $token_expires = $user_optional['token_reset_password_expires'] ?? 0;
-        
         $error = '';
-        if($token !== $token_db) {
-            $error = Flang::_e('Invalid reset token');
+        
+        // Validate token if it's not 'code'
+        if ($token !== 'code') {
+            $token_db = $user_optional['token_reset_password'] ?? '';
+            $token_expires = $user_optional['token_reset_password_expires'] ?? 0;
+            
+            if($token !== $token_db) {
+                $error = Flang::_e('Invalid reset token');
+            }
+            if($token_expires <= time()){
+                $error = Flang::_e('Reset token has expired');
+            }
         }
-        if($token_expires <= time()){
-            $error = Flang::_e('Reset token has expired');
-        }
+        
+        // Always require code verification for password reset
+        // Always show the password reset form with code input
+        
         if (!empty($error)){
             $this->data('error', $error);
             $this->data('title', Flang::_e('Forgot Password'));
             $this->data('csrf_token', Session::csrf_token(600));
             echo Render::html('Common/Auth/forgot-password', $this->data);
         }else{
+            // Debug: Check if form is being submitted
+            error_log("=== FORGOT PASSWORD DEBUG ===");
+            error_log("User ID: " . $user_id);
+            error_log("Token: " . $token);
+            error_log("Checking for POST password: " . (HAS_POST('password') ? 'YES' : 'NO'));
+            error_log("POST data: " . print_r($_POST, true));
+            error_log("=============================");
+            
+            // Force error log to be written
+            error_log("FORCE LOG TEST - " . date('Y-m-d H:i:s'));
+            
             if(HAS_POST('password')) {
+                error_log("*** FORM SUBMITTED - PROCESSING PASSWORD RESET ***");
                 $csrf_token = S_POST('csrf_token') ?? '';
+                error_log("CSRF token: " . $csrf_token);
                 if (!Session::csrf_verify($csrf_token)){
+                    error_log("CSRF verification failed");
                     $this->data('error', Flang::_e('csrf_failed'));
                 } else {
+                    error_log("CSRF verification passed");
+                    // Always require code verification for password reset
+                    $input_code = S_POST('reset_code') ?? '';
+                    $reset_code_db = $user_optional['reset_password_code'] ?? '';
+                    $reset_code_expires = $user_optional['reset_password_code_expires'] ?? 0;
+                    
+                    error_log("=== CODE VERIFICATION DEBUG ===");
+                    error_log("Input code: '" . $input_code . "'");
+                    error_log("DB code: '" . $reset_code_db . "'");
+                    error_log("Codes match: " . ($reset_code_db === $input_code ? 'YES' : 'NO'));
+                    
+                    // Debug: Log the codes for debugging
+                    error_log("Input code: " . $input_code);
+                    error_log("DB code: " . $reset_code_db);
+                    error_log("Code expires: " . $reset_code_expires);
+                    error_log("Current time: " . time());
+                    
+                    // Debug: Check conditions
+                    error_log("Is code expired? " . ($reset_code_expires <= time() ? 'YES' : 'NO'));
+                    error_log("Is reset_code_db empty? " . (empty($reset_code_db) ? 'YES' : 'NO'));
+                    error_log("Do codes match? " . ($reset_code_db === $input_code ? 'YES' : 'NO'));
+                    
+                    if($reset_code_expires <= time()){
+                        error_log("Code expired - showing error message");
+                        $this->data('error', Flang::_e('Reset code has expired'));
+                        $this->data('title', Flang::_e('Update Password'));
+                        $this->data('csrf_token', Session::csrf_token(600));
+                        $this->data('user_id', $user_id);
+                        $this->data('token', $token);
+                        echo Render::html('Common/Auth/forgot-setpassword', $this->data);
+                        return;
+                    }elseif (empty($reset_code_db) || $reset_code_db !== $input_code) {
+                        error_log("Code mismatch - showing error message");
+                        $error_message = Flang::_e('Invalid reset code. Please check your email for the correct code.');
+                        error_log("Error message: " . $error_message);
+                        $this->data('error', $error_message);
+                        $this->data('title', Flang::_e('Update Password'));
+                        $this->data('csrf_token', Session::csrf_token(600));
+                        $this->data('user_id', $user_id);
+                        $this->data('token', $token);
+                        error_log("About to render forgot-setpassword template");
+                        echo Render::html('Common/Auth/forgot-setpassword', $this->data);
+                        return;
+                    }
                     $input = [
                         'password' => S_POST('password'),
                     ];
@@ -467,8 +554,10 @@ class AuthController extends BackendController
                     $validator = new Validate();
                     if (!$validator->check($input, $rules)) {
                         $errors = $validator->getErrors();
+                        error_log("Validation errors: " . print_r($errors, true));
                         $this->data('errors', $errors);
                     }else {
+                        error_log("Password validation passed");
                         $input['password'] = Security::hashPassword($input['password']);
                         if (isset($user_optional['token_reset_password'])){
                             unset($user_optional['token_reset_password']);
@@ -476,15 +565,27 @@ class AuthController extends BackendController
                         if (isset($user_optional['token_reset_password_expires'])){
                             unset($user_optional['token_reset_password_expires']);
                         }
+                        // Also remove reset code after successful password reset
+                        if (isset($user_optional['reset_password_code'])){
+                            unset($user_optional['reset_password_code']);
+                        }
+                        if (isset($user_optional['reset_password_code_expires'])){
+                            unset($user_optional['reset_password_code_expires']);
+                        }
                         $input['optional'] = json_encode($user_optional); //remove ma reset sau khi set passs.
                         $this->usersModel->updateUser($user_id, $input);                    
                         
                         Session::flash('success', Flang::_e('Password reset successful'));
+                        error_log("Password reset successful, redirecting to login");
                         redirect(auth_url('login'));
                         return;
                     }
                 }
+            } else {
+                error_log("No POST password data received");
             }
+            // Always show the password reset form with code input
+            error_log("Displaying password reset form");
             $this->data('title', Flang::_e('Update Password'));
             $this->data('csrf_token', Session::csrf_token(600));
             $this->data('user_id', $user_id);
@@ -492,6 +593,46 @@ class AuthController extends BackendController
             echo Render::html('Common/Auth/forgot-setpassword', $this->data);
         }
     }   
+
+    private function _forgot_password_with_code($user) {
+        $user_id = $user['id'];
+        $user_optional = @json_decode($user['optional'], true);
+
+        $reset_code_db = $user_optional['reset_password_code'] ?? '';
+        $reset_code_expires = $user_optional['reset_password_code_expires'] ?? 0;
+        
+        $error = '';
+        if($reset_code_expires <= time()){
+            $error = Flang::_e('Reset code has expired');
+        }
+        if (!empty($error)){
+            $this->data('error', $error);
+            $this->data('title', Flang::_e('Forgot Password'));
+            $this->data('csrf_token', Session::csrf_token(600));
+            echo Render::html('Common/Auth/forgot-password', $this->data);
+        }else{
+            if(HAS_POST('reset_code')) {
+                $csrf_token = S_POST('csrf_token') ?? '';
+                if (!Session::csrf_verify($csrf_token)){
+                    $this->data('error', Flang::_e('csrf_failed'));
+                }else{
+                    $input_code = S_POST('reset_code');
+                    if (!empty($reset_code_db) && $reset_code_db === $input_code) {
+                        // Code is valid, redirect to password reset form
+                        redirect(auth_url('forgot/' . $user_id . '/code'));
+                        return;
+                    } else {
+                        $this->data('error', Flang::_e('Invalid reset code'));
+                    }
+                }
+            }
+            
+            $this->data('title', Flang::_e('Enter Reset Code'));
+            $this->data('csrf_token', Session::csrf_token(600));
+            $this->data('user_id', $user_id);
+            echo Render::html('Common/Auth/forgot-code', $this->data);
+        }
+    }
 
     public function login_google(){
         
@@ -574,25 +715,36 @@ class AuthController extends BackendController
 
         redirect(auth_url('activation/' . $user_id));
     }   
+    
     // send email forgot password
     private function _forgot_send($user)
     {
         $user_id = $user['id'];
         // tạo token forgot password
         $token = strtolower(random_string(32));
-        // Tạo mã kích hoạt 6 ký tự cho người dùng nhập vào
+        // Tạo mã kích hoạt 6 số cho người dùng nhập vào
+        $resetCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT); // Tạo mã gồm 6 số
+        
         $user_optional = @json_decode($user['optional'], true);
         if (empty($user_optional)){
             $user_optional = [];
         }
         $user_optional['token_reset_password'] = $token;
         $user_optional['token_reset_password_expires'] = time()+86400;
+        // Thêm mã code reset password
+        $user_optional['reset_password_code'] = $resetCode;
+        $user_optional['reset_password_code_expires'] = time()+86400;
         $this->usersModel->updateUser($user_id, ['optional'=>json_encode($user_optional)]);
 
         // Construct reset link 
         $reset_link = auth_url('forgot/'.$user_id . '/' . $token) ;
-        // Gửi email link reset password
-        $emailContent = Render::component('Common/Email/reset_password', ['username' => $user['username'], 'reset_link' => $reset_link]);
+        // Gửi email link reset password và code
+        $emailContent = Render::component('Common/Email/reset_password', [
+            'username' => $user['username'], 
+            'reset_link' => $reset_link,
+            'reset_code' => $resetCode,
+            'user_id' => $user_id
+        ]);
         
         $this->mailer = new Fastmail();
         $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent);
@@ -600,7 +752,7 @@ class AuthController extends BackendController
 
         Events::run('Backend\\UserForgotSendEvent', $user);
 
-        Session::flash('success', Flang::_e('Password reset link sent to your email') . ': ' .$user['email']);
+        Session::flash('success', Flang::_e('Password reset link and code sent to your email') . ': ' .$user['email']);
     }   
 
     /**

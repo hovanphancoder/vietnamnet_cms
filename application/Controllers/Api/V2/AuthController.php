@@ -19,7 +19,8 @@ class AuthController extends ApiController
     public function __construct()
     {
         parent::__construct();
-        Flang::load('auth', LANG);
+        // Flang::load('auth', LANG);
+        Flang::load('auth', APP_LANG);
         $this->usersModel = new UsersModel();
     }
 
@@ -237,8 +238,10 @@ class AuthController extends ApiController
                     $mailer->send($input['email'], Flang::_e('active_account'), 'activation', [
                         'username' => $input['username'],
                         'activation_link' => $activationLink,
-                        'activation_no' => $activationNo
+                        'activation_no' => $activationNo,
+                        'smtpDebug' => 2
                     ]);
+
                     $input['id'] = $user_id;
 
                     $config_security = config('security');

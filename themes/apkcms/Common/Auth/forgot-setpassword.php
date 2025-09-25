@@ -19,7 +19,7 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('u
                 <div class="text-center space-y-2">
                     <h2 class="text-3xl font-bold text-gray-900"><?php __e('Update Password') ?></h2>
                     <p class="text-gray-600 text-sm">
-                        Enter your new password below
+                        Enter the verification code and your new password below
                     </p>
                 </div>
             
@@ -34,7 +34,13 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('u
                         <p><?php echo $success; ?></p>
                     </div>
                 <?php endif; ?>
-                <!-- Show errors -->
+                <!-- Show errors from data -->
+                <?php if (!empty($data['error'])): ?>
+                    <div class="text-red-500 mt-2 text-sm">
+                        <p><?php echo $data['error']; ?></p>
+                    </div>
+                <?php endif; ?>
+                <!-- Show validation errors -->
                 <?php if (!empty($errors)): ?>
                     <div class="text-red-500 mt-2 text-sm">
                         <?php foreach ($errors as $key => $err): ?>
@@ -47,6 +53,23 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('u
                 <form method="post" action="" class="space-y-5">
                     <!-- CSRF Token -->
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>" />
+                    
+                    <!-- Reset Code Input (always show) -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <input
+                            type="text" name="reset_code"
+                            class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 text-sm font-medium text-center"
+                            placeholder="Enter 6-digit verification code"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            required>
+                    </div>
                     
                     <!-- New Password Input -->
                     <div class="relative">
@@ -96,6 +119,18 @@ Render::block('Backend\Head', ['layout' => 'default', 'title' => Fastlang::_e('u
         </div>
     </div>
 </div>
+
+<script>
+// Auto-format input to numbers only and limit to 6 digits
+document.addEventListener('DOMContentLoaded', function() {
+    const resetCodeInput = document.querySelector('input[name="reset_code"]');
+    if (resetCodeInput) {
+        resetCodeInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 6);
+        });
+    }
+});
+</script>
 
 <?php
 Render::block('Backend\Footer', ['layout' => 'default']);
