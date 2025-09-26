@@ -20,13 +20,13 @@ $this->routes->get('admin/files/(:any)', 'Backend\FilesController::$1', [\App\Mi
 $this->routes->post('admin/files/(:any)', 'Backend\FilesController::$1', [\App\Middleware\AuthMiddleware::class]);
 
 // authen backend
-$this->routes->get('account/(:any)/(:any)/(:any)', 'Backend\AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->post('account/(:any)/(:any)/(:any)', 'Backend\AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->get('account/(:any)/(:any)', 'Backend\AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->post('account/(:any)/(:any)', 'Backend\AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->get('account/logout', 'Backend\AuthController::logout', [\App\Middleware\AuthMiddleware::class]);
-$this->routes->get('account/profile', 'Backend\AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
-$this->routes->post('account/profile', 'Backend\AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('account/(:any)/(:any)/(:any)', 'AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('account/(:any)/(:any)/(:any)', 'AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('account/(:any)/(:any)', 'AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('account/(:any)/(:any)', 'AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('account/logout', 'AuthController::logout', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('account/profile', 'AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->post('account/profile', 'AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
 
 
 $this->routes->get('account/login_google/', 'Backend\AuthController::login_google', [\App\Middleware\NoauthMiddleware::class]);

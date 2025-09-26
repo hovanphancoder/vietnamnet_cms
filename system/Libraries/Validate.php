@@ -124,6 +124,92 @@ class Validate
     {
         return RespectValidator::phone();
     }
+    // Validate a personal full name across languages (Unicode-safe).
+    // Allowed: letters (any language) + combining marks, spaces, hyphen "-", dot ".", middle dot "·".
+    // Disallowed (security): apostrophe ', double quote ", backtick `, and any other risky punctuation.
+    // Additional guards: no leading/trailing punctuation, no double spaces or repeated punctuation.
+    // Valid: Mary A. Smith or Kim·Seokjin or Tran-Dinh Thuan or علي أحمد
+    // Notvalid: O'Connor, "Jean Luc", Jean` Luc, -Nguyen Van Anh, Kim··Seokjin
+    /**
+     * Validate a personal name, city name, company name, across languages (Unicode-safe).
+     * @param int $min
+     * @param int $max
+     * @return RespectValidator
+     */
+    public static function name(int $min = 2, int $max = 100)
+    {
+        return RespectValidator::allOf(
+            RespectValidator::stringType()->notEmpty(),
+            RespectValidator::charset('UTF-8'),
+            RespectValidator::length($min, $max),
+            // Start & end with a letter; allow letters/marks/spaces/hyphen/dot/middle-dot in-between
+            RespectValidator::regex('/^\p{L}(?:[\p{L}\p{M} \.\-·]*\p{L})?$/u'),
+            // Extra sanity checks
+            RespectValidator::callback(function ($v) {
+                if ($v === null) return false;
+                $s = trim($v);
+
+                // Ban risky punctuation
+                if (preg_match('/[\'"`]/u', $s)) return false;
+
+                // No double spaces; no repeated punctuation
+                if (preg_match('/ {2,}/u', $s)) return false;
+                if (preg_match('/[.\-·]{2,}/u', $s)) return false;
+
+                // No leading/trailing punctuation
+                if (preg_match('/^[.\-·]/u', $s)) return false;
+                if (preg_match('/[.\-·]$/u', $s)) return false;
+
+                return true;
+            })
+        )->setName('name');
+    }
+
+    // Validate a single-line postal address (international-friendly).
+    // Allowed chars: letters (any language) + combining marks, digits, spaces,
+    // comma ",", dot ".", hyphen "-", slash "/", number sign "#", parentheses "(" and ")".
+    // Disallowed (security): < > ' " ` \ ; and any other high-risk punctuation.
+    // Additional guards: must contain at least one letter or digit; no leading/trailing separators;
+    // no double spaces or repeated separators.
+    // Valid: 1-2-3 Shinjuku-dori, Shinjuku City (Bldg #4) / 123/5 Nguyen Trai, P.5, Q.3 / Av. Paulista 1578, Sao Paulo / Blk 123 #05-67, Clementi Ave 3
+    // Notvalid: "123 Main St" / ‘123 Main St’ / 221B Baker Street; London / “Quoted Address” 5 / --12 Main St
+    /**
+     * Validate a single-line postal address (international-friendly).
+     * @param int $min
+     * @param int $max
+     * @return RespectValidator
+     */
+    public static function address(int $min = 3, int $max = 255)
+    {
+        return RespectValidator::allOf(
+            RespectValidator::stringType()->notEmpty(),
+            RespectValidator::charset('UTF-8'),
+            RespectValidator::length($min, $max),
+            // Allow only a safe, commonly used address character set
+            RespectValidator::regex('/^[\p{L}\p{M}\p{N}\s,\.\-\/#\(\)]+$/u'),
+            // Extra sanity checks
+            RespectValidator::callback(function ($v) {
+                if ($v === null) return false;
+                $s = trim($v);
+
+                // Must contain at least one letter or digit
+                if (!preg_match('/[\p{L}\p{N}]/u', $s)) return false;
+
+                // Ban risky punctuation outright
+                if (preg_match('/[<>\'\"`\\\\;]/u', $s)) return false;
+
+                // No double spaces or repeated separators
+                if (preg_match('/ {2,}/u', $s)) return false;
+                if (preg_match('/[,\.\-\/#\(\)]{2,}/u', $s)) return false;
+
+                // No leading/trailing separators
+                if (preg_match('/^[,\.\-\/#\(\)]/u', $s)) return false;
+                if (preg_match('/[,\.\-\/#\(\)]$/u', $s)) return false;
+
+                return true;
+            })
+        )->setName('address');
+    }
     // IP address validator
     public static function ip()
     {
