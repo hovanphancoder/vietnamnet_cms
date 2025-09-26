@@ -1,20 +1,16 @@
 <?php
-namespace App\Controllers\Backend;
-
-use App\Controllers\BackendController;
+namespace App\Controllers;
+use System\Core\BaseController;
 use App\Models\UsersModel;
-use App\Libraries\Fasttoken;
+use App\Libraries\Fastlang;
 use System\Libraries\Security;
 use System\Libraries\Session;
 use System\Libraries\Render;
 use App\Libraries\Fastmail;
-use App\Libraries\Fastlang as Flang;
 use System\Libraries\Validate;
-use Google_Client;
-use Google_Service_Oauth2;
 use System\Libraries\Events;
 
-class AuthController extends BackendController
+class AuthController extends BaseController
 {
     protected $usersModel;
     protected $mailer;
@@ -23,7 +19,8 @@ class AuthController extends BackendController
     {
         parent::__construct();
         $this->usersModel = new UsersModel();
-        Flang::load('Common/Auth');
+        Fastlang::load('Common/Auth');
+        load_helpers(['languages','images']);
 
         // Render::asset('css', 'css/new_style.css', ['area' => 'backend', 'location' => 'head']);
         // Render::asset('css', 'css/font-inter.css', ['area' => 'backend', 'location' => 'head']);
@@ -34,115 +31,201 @@ class AuthController extends BackendController
         // Render::asset('js', 'js/script.js', ['area' => 'backend', 'location' => 'footer']);
 
     }
-
-    // Check login status
-    public function index()
-    {
+    /**
+     * Check login status
+     * @return void
+     */
+    public function index(){
         if (Session::has('user_id')) {
             // If already logged in, redirect to dashboard
-            redirect(admin_url('/'));
+            redirect(auth_url('profile'));
         } else {
             // If not logged in, redirect to login page
             redirect(auth_url('login'));
         }
     }
+    /**
+     * Display login form
+     * @return void
+     */
+    public function login(){
+        // Check if already logged in
+        if (Session::has('user_id')) {
+            return redirect(auth_url('profile'));
+        }
 
-    // Display login form
-    public function login()
-    {
-        //Validate step if there's a login request.
+        // Handle login request
         if (HAS_POST('username')){
             $csrf_token = S_POST('csrf_token') ?? '';
             if (!Session::csrf_verify($csrf_token)){
-                Session::flash('error', Flang::_e('csrf_failed') );
-                redirect(auth_url('login'));
+                Session::flash('error', __('csrf_failed'));
+                return redirect(auth_url('login'));
             }
+            
             $input = [
-                'username'  =>  S_POST('username') ?? '',
-                'password'  =>  S_POST('password') ?? ''
+                'username' => trim(S_POST('username') ?? ''),
+                'password' => S_POST('password') ?? '',
+                'remember' => S_POST('remember') ?? ''
             ];
-            // lowercase username
+            
+            // Convert username to lowercase
             $input['username'] = strtolower($input['username']);
+            
+            // Validation rules
             $rules = [
                 'username' => [
                     'rules' => [Validate::alnum("@._"), Validate::length(5, 150)],
-                    'messages' => [Flang::_e('Username can only contain letters, numbers, @, ., and _'), Flang::_e('Username must be between %1% and %2% characters', 5, 30)]
+                    'messages' => [
+                        __('Username can only contain letters, numbers, @, ., and _'), 
+                        __('Username must be between %1% and %2% characters', 5, 150)
+                    ]
                 ],
                 'password' => [
-                    'rules' => [Validate::length(5, null)],
-                    'messages' => [Flang::_e('Password must be at least %1% characters long', 6)]
+                    'rules' => [Validate::length(6, null)],
+                    'messages' => [__('Password must be at least %1% characters long', 6)]
                 ]
             ];
+            
             $validator = new Validate();
             if (!$validator->check($input, $rules)) {
-                // Get errors and display
                 $errors = $validator->getErrors();
-                $this->data('errors', $errors);     
-            }else{
+                $strErrors = '';
+                foreach ($errors as $key => $error) {
+                    $strErrors .= $key . ': ' . implode('. ', $error) . '.<br />';
+                }
+                Session::flash('error', $strErrors);
+                return redirect(auth_url('login'));
+            } else {
                 return $this->_login($input);
             }
         }
 
-        // Display login page: If no login request, or validation failed
-        $this->data('title', Flang::_e('Welcome Back - Sign In'));
-        $this->data('csrf_token', Session::csrf_token(600)); //security token for login only exists for 10 minutes.
+        // Display login page
+        $this->data('title', __('Welcome Back - Sign In'));
+        $this->data('csrf_token', Session::csrf_token(600));
 
         echo Render::html('Common/Auth/login', $this->data);
     }
-    
-    // Handle login
-    public function _login($input)
-    {
-        if (!filter_var($input['username'], FILTER_VALIDATE_EMAIL)) {
-            $user = $this->usersModel->getUserByUsername($input['username']);
-        }else{
+    /**
+     * Handle login
+     * @param array $input
+     * @return void
+     */
+    public function _login($input){
+        // Find user by username or email
+        if (filter_var($input['username'], FILTER_VALIDATE_EMAIL)) {
             $user = $this->usersModel->getUserByEmail($input['username']);
+        } else {
+            $user = $this->usersModel->getUserByUsername($input['username']);
         }
         
-        // echo Security::hashPassword($input['password']);die;
-        if ($user && Security::verifyPassword($input['password'], $user['password'])) {
-            if ($user['status'] !== 'active') {
-                Session::flash('error', Flang::_e('Account %1% is not active. Please check your email for activation link.', $input['username']));
-                redirect(auth_url('login'));
-                exit();
-            }
-            // Set login information to session
-            setcookie('cmsff_logged', $user['id'], time()+86400, '/');
-            Session::set('user_id', $user['id']);
-            Session::set('role', $user['role']);
-            Session::set('permissions', json_decode($user['permissions'], true));
-            // Regenerate session ID to avoid session fixation
-            Session::regenerate();
-
-            // Create JWT token
-            $config_security = config('security');
-            $me_data = [
-                'id' => $user['id'],
-                'role' => $user['role'],
-                'username' => $user['username'],
-                'email' => $user['email']
-            ];
-            $access_token = Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
-            setcookie('cmsff_logged', $user['id'], time()+86400, '/');
-            if (S_POST('remember') == 'on') {
-                setcookie('cmsff_token', $access_token, time()+86400*365, '/');
+        // Check if user exists
+        if (!$user) {
+            Session::flash('error', __('Login failed for username: %1%', $input['username']));
+            return redirect(auth_url('login'));
+        }
+        
+        // Check if user is locked from login attempts
+        $userOptional = _json_decode($user['optional'] ?? []);
+        if (empty($userOptional)) {
+            $userOptional = [];
+        }
+        
+        $loginLockUntil = $userOptional['login_lock_until'] ?? 0;
+        if ($loginLockUntil > time()) {
+            $remainingMinutes = ceil(($loginLockUntil - time()) / 60);
+            Session::flash('error', __('Account is temporarily locked. Please wait %1% minutes before trying again.', $remainingMinutes));
+            return redirect(auth_url('login'));
+        }
+        
+        // Check if password is correct
+        if (!Security::verifyPassword($input['password'], $user['password'])) {
+            // Increment failed login attempts
+            $loginAttempts = $userOptional['login_attempts'] ?? 0;
+            $loginAttempts++;
+            
+            // Check if max attempts reached (5 attempts)
+            if ($loginAttempts >= 5) {
+                // Lock account for 5 minutes
+                $userOptional['login_lock_until'] = time() + 300; // 5 minutes
+                $userOptional['login_attempts'] = 0; // Reset attempts
+                $this->usersModel->updateUser($user['id'], ['optional' => json_encode($userOptional)]);
+                
+                Session::flash('error', __('Too many failed login attempts. Account locked for 5 minutes.'));
+                return redirect(auth_url('login'));
             } else {
-                setcookie('cmsff_token', $access_token, time()+86400, '/');
+                // Update failed attempts
+                $userOptional['login_attempts'] = $loginAttempts;
+                $this->usersModel->updateUser($user['id'], ['optional' => json_encode($userOptional)]);
+                
+                $remainingAttempts = 5 - $loginAttempts;
+                Session::flash('error', __('Login failed for username: %1%. %2% attempts remaining.', $input['username'], $remainingAttempts));
+                return redirect(auth_url('login'));
             }
-
-            // Write Events that a user has successfully logged in
+        }
+        
+        // if account is not active, set session confirm_user_id and confirm_expires and redirect to confirm page
+        if ($user['status'] !== 'active') {
+            Session::set('confirm_user_id', $user['id']);
+            Session::set('confirm_expires', time() + 1800); // 30 minutes
+            return redirect(auth_url('confirm'));
+        }
+        
+        // Reset login attempts on successful login
+        if (isset($userOptional['login_attempts']) || isset($userOptional['login_lock_until'])) {
+            unset($userOptional['login_attempts']);
+            unset($userOptional['login_lock_until']);
+            $this->usersModel->updateUser($user['id'], ['optional' => json_encode($userOptional)]);
+        }
+        
+        // Set login session
+        $this->_set_login_session($user, $input);
+        
+        // Update last login time
+        $this->usersModel->updateUser($user['id'], ['activity_at' => DateTime()]);
+        
+        // Trigger login event
             Events::run('Backend\\UserLoginEvent', $user);
 
-            redirect(admin_url('/'));
-        } else {
-            Session::flash('error', Flang::_e('Login failed for username: %1%', $input['username']) );
-            redirect(auth_url('login'));
-        }
+        // Success message and redirect
+        Session::flash('success', __('Login successful'));
+        return redirect(admin_url('/'));
     }
+    /**
+     * Set login session and cookies
+     * @param array $user
+     * @param array $input
+     * @return void
+     */
+    private function _set_login_session($user, $input = []){
+        // Set session data
+        Session::set('user_id', $user['id']);
+        Session::set('role', $user['role']);
+        Session::set('permissions', _json_decode($user['permissions'] ?? []));
+        Session::regenerate(); // Prevent session fixation
+        
+        // Set cookies
+        setcookie('cmsff_logged', $user['id'], time() + 86400, '/');
 
-    // Logout
-    public function logout()
-    {
+        // Create JWT token
+        $config_security = config('security');
+        $me_data = [
+            'id' => $user['id'],
+            'role' => $user['role'],
+            'username' => $user['username'],
+            'email' => $user['email']
+        ];
+        $access_token = \App\Libraries\Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
+        
+        // Set remember me cookie
+        $cookie_expiry = (isset($input['remember']) && $input['remember'] === 'on') ? time() + (86400 * 365) : time() + 86400;
+        setcookie('cmsff_token', $access_token, $cookie_expiry, '/');
+    }
+    /**
+     * Logout
+     * @return void
+     */
+    public function logout(){
         setcookie('cmsff_logged', '', time()-1, '/');
         Session::del('user_id');
         Session::del('role');
@@ -151,489 +234,562 @@ class AuthController extends BackendController
             setcookie('cmsff_token', '', time()-1, '/');
         }
         Events::run('Backend\\UserLogoutEvent');
-        redirect(auth_url('login'));
-        exit();
+        return redirect(base_url());
     }
-
-    // Register new account
-    public function register()
-    {
+    /**
+     * Register new account
+     * @return void
+     */
+    public function register(){
+        // Check if already logged in
+        if (Session::has('user_id')) {
+            return redirect(admin_url('/'));
+        }
        
-        //Validate step if there's a register request.
+        // Handle registration request
         if (HAS_POST('username')){
-            
-       
             $csrf_token = S_POST('csrf_token') ?? '';
-         
             if (!Session::csrf_verify($csrf_token)){
-                Session::flash('error', Flang::_e('csrf_failed') );
-                redirect(auth_url('register'));
+                Session::flash('error', __('csrf_failed'));
+                return redirect(auth_url('register'));
             }
+            
             $input = [
-                'username' => S_POST('username'),
-                'fullname' => S_POST('fullname'),
-                'email' => S_POST('email'),
-                'password' => S_POST('password'),
-                'password_repeat' => S_POST('password_repeat'),
-                'phone' => S_POST('phone'),
+                'username' => trim(S_POST('username') ?? ''),
+                'fullname' => trim(S_POST('fullname') ?? ''),
+                'email' => trim(S_POST('email') ?? ''),
+                'password' => S_POST('password') ?? '',
+                'password_repeat' => S_POST('password_repeat') ?? '',
+                'phone' => trim(S_POST('phone') ?? ''),
+                'terms' => S_POST('terms') ?? ''
             ];
-            //Lowercase username
+            
+            // Convert username to lowercase
             $input['username'] = strtolower($input['username']);
+            
+            // Validation rules
             $rules = [
                 'username' => [
-                    'rules' => [
-                        Validate::alnum('_'),
-                        Validate::length(5, 40)
-                    ],
+                    'rules' => [Validate::alnum('_'), Validate::length(5, 40)],
                     'messages' => [
-                        Flang::_e('Username can only contain letters, numbers, and _'),
-                        Flang::_e('Username must be between %1% and %2% characters', 5, 40)
+                        __('Username can only contain letters, numbers, and _'),
+                        __('Username must be between %1% and %2% characters', 5, 40)
                     ]
                 ],
                 'fullname' => [
-                    'rules' => [
-                        Validate::length(5, 60)
-                    ],
-                    'messages' => [
-                        Flang::_e('Full name must be between %1% and %2% characters', 5, 60)
-                    ]
+                    'rules' => [Validate::name(2, 150)],
+                    'messages' => [__('Full name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 150)]
                 ],
                 'email' => [
-                    'rules' => [
-                        Validate::email(),
-                        Validate::length(5, 150)
-                    ],
+                    'rules' => [Validate::email(), Validate::length(5, 150)],
                     'messages' => [
-                        Flang::_e('Please enter a valid email address'),
-                        Flang::_e('Email must be between %1% and %2% characters', 5, 150)
+                        __('Please enter a valid email address'),
+                        __('Email must be between %1% and %2% characters', 5, 150)
                     ]
                 ],
                 'phone' => [
-                    'rules' => [
-                        Validate::phone(),
-                        Validate::length(5, 30)
-                    ],
+                    'rules' => [Validate::phone(), Validate::length(5, 30)],
                     'messages' => [
-                        Flang::_e('Please enter a valid phone number'),
-                        Flang::_e('Phone number must be between %1% and %2% characters', 5, 30)
+                        __('Please enter a valid phone number'),
+                        __('Phone number must be between %1% and %2% characters', 5, 30)
                     ]
                 ],
                 'password' => [
-                    'rules' => [
-                        Validate::length(5, 60),
-                    ],
-                    'messages' => [
-                        Flang::_e('Password must be between %1% and %2% characters', 5, 60),
-                    ]
+                    'rules' => [Validate::length(6, 60)],
+                    'messages' => [__('Password must be between %1% and %2% characters', 6, 60)]
                 ],
                 'password_repeat' => [
-                    'rules' => [
-                        Validate::equals($input['password'])
+                    'rules' => [Validate::equals($input['password'])],
+                    'messages' => [__('Password confirmation does not match')]
                     ],
-                    'messages' => [
-                        Flang::_e('Password confirmation does not match')
+                'terms' => [
+                    'rules' => [Validate::notEmpty()],
+                    'messages' => [__('Please accept the terms and conditions')]
                     ]
-                ],
             ];
+            
             $validator = new Validate();
             if (!$validator->check($input, $rules)) {
-                // Lấy các lỗi và hiển thị
                 $errors = $validator->getErrors();
                 $this->data('errors', $errors);
-            }else{
+            } else {
+                // Check for existing username/email
                 $errors = [];
                 if ($this->usersModel->getUserByUsername($input['username'])) {
-                    $errors['username'] = array(
-                        Flang::_e('Username %1% is already taken', $input['username'])
-                    );
-                    $isExists = true;
+                    $errors['username'] = [__('Username %1% is already taken', $input['username'])];
                 }
                 if ($this->usersModel->getUserByEmail($input['email'])) {
-                    $errors['email'] = array(
-                        Flang::_e('Email %1% is already registered', $input['email'])
-                    );
-                    $isExists = true;
+                    $errors['email'] = [__('Email %1% is already registered', $input['email'])];
                 }
-                if (!isset($isExists) && empty($errors)){
-                    $input['password'] = Security::hashPassword($input['password']);
-                    $input['avatar'] = '';
-                    $input['role'] = 'member';
-                    $input['permissions'] = json_encode(config('member', 'Roles')['permissions'] ?? []);
-                    $input['status'] = 'inactive';
-                    $input['created_at'] = DateTime();
-                    $input['updated_at'] = DateTime();
-                    return $this->_register($input);
-                }else{
+                
+                if (empty($errors)) {
+                    // Prepare user data
+                    $userData = [
+                        'username' => $input['username'],
+                        'fullname' => $input['fullname'],
+                        'email' => $input['email'],
+                        'password' => Security::hashPassword($input['password']),
+                        'phone' => $input['phone'],
+                        'avatar' => '',
+                        'role' => 'member',
+                        'permissions' => json_encode(config('member', 'Roles')['permissions'] ?? []),
+                        'status' => 'inactive',
+                        'created_at' => DateTime(),
+                        'updated_at' => DateTime()
+                    ];
+                    
+                    return $this->_register($userData);
+                } else {
                     $this->data('errors', $errors);
                 }
             }
         }
         
-        // Display login page: If no login request, or validation failed
-        $this->data('title', Flang::_e('Create New Account'));
-        $this->data('csrf_token', Session::csrf_token(600)); //security token for login only exists for 10 minutes.
+        // Display registration page
+        $this->data('title', __('Create New Account'));
+        $this->data('csrf_token', Session::csrf_token(600));
 
         echo Render::html('Common/Auth/register', $this->data);
     }
-    
-    // Handle account registration
-    private function _register($input)
-    {
-        // Create 6-character activation code for user input
-        $activationNo = strtoupper(random_string(6)); // Create 6-character code
-        // Create separate activation code for URL
-        $activationCode = strtolower(random_string(20)); // Create 20-character code
+    /**
+     * Handle account registration
+     * @param array $userData
+     * @return void
+     */
+    private function _register($userData){
+        // Generate activation codes
+        $activationCode = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT); // 8-digit code
+        $activationString = strtolower(random_string(32)); // 32-character string for URL
+        
+        // Prepare optional data
         $optionalData = [
-            'activation_no' => $activationNo,
             'activation_code' => $activationCode,
-            'activation_expires' => time()+86400,
+            'activation_string' => $activationString,
+            'activation_expires' => time() + 86400, // 24 hours
+            'activation_attempts' => 0, // Track failed attempts
+            'activation_type' => 'registration', // Distinguish from forgot password
+            'cooldown_until' => 0 // Cooldown period to prevent spam
         ];
-        $input['optional'] = json_encode($optionalData);
-        //Them Data Nguoi Dung Vao Du Lieu
-        $user_id = $this->usersModel->addUser($input);
+        
+        $userData['optional'] = json_encode($optionalData);
+        
+        // Add user to database
+        $user_id = $this->usersModel->addUser($userData);
 
         if ($user_id) {
+            // Set secure session for confirmation
+            Session::set('confirm_user_id', $user_id);
+            Session::set('confirm_expires', time() + 1800); // 30 minutes
+            
             // Send activation email
-            $activationLink = auth_url('activation/' . $user_id . '/' . $activationCode.'/');
-            $emailContent = Render::component('Common/Email/activation', ['username' => $input['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
+            $activationLink = auth_url('confirmlink/' . $user_id . '/' . $activationString);
+            $emailContent = Render::component('Common/Email/auth_register', [
+                'username' => $userData['username'], 
+                'activation_link' => $activationLink, 
+                'activation_code' => $activationCode
+            ]);
             
             $this->mailer = new Fastmail();
-            $this->mailer->send($input['email'], Flang::_e('Account Activation'), $emailContent, ['smtpDebug' => 2]);
+            $this->mailer->send($userData['email'], option('site_brand') . ' - ' . __('Account Registration Activation'), $emailContent);
             
-            Session::flash('success', Flang::_e('Registration successful'));
-            $this->data('csrf_token', Session::csrf_token(600));
-
+            // Trigger registration event
             Events::run('Backend\\UserRegisterEvent', $user_id);
          
-            redirect(auth_url("activation/{$user_id}/"));
-
+            // Redirect to confirm screen
+            Session::flash('success', __('Registration successful'));
+            redirect(auth_url("confirm"));
         } else {
-            Session::flash('error', Flang::_e('Failed to register account'));
+            Session::flash('error', __('Failed to register account'));
             redirect(auth_url('register'));
         }
     }
-
-    public function activation($user_id = '', $activationCode = null)
-    {
-        // Get user information from ID
-        $user = $this->usersModel->getUserById($user_id);
-        if (!$user) {
-            Session::flash('error', Flang::_e('Account does not exist'));
-            redirect(auth_url('login'));
-            return;
-        }
-        if ($user['status'] != 'inactive'){
-            Session::flash('success', Flang::_e('Account is already active'));
-            redirect(auth_url('login'));
-            return;
-        }
-
-        $user_optional = @json_decode($user['optional'], true);
-
-        $user_active_expires = $user_optional['activation_expires'] ?? 0;
-
-        // If user requests to resend code
-        if (HAS_POST('activation_resend')) {
-            return $this->_activation_resend($user_id, $user_optional, $user);
-        }
-
-        if ($user_active_expires < time()){
-            $this->data('error', Flang::_e('Activation code has expired'));
-            return $this->_activation_form($user_id);
-        } 
-
-        // Case when user accesses via URL
-        if ($activationCode) {
-            $user_active_code = $user_optional['activation_code'] ?? '';
-            if (!empty($user_active_code) && strtolower($user_active_code) === strtolower($activationCode)) {
-                // Activate account
-                return $this->_activation($user_id);
-            } else {
-                $this->data('error', Flang::_e('Invalid activation code'));
-                return $this->_activation_form($user_id);
-            }
-        }
-
-        // Case when user enters code in form
-        if (HAS_POST('activation_no')) {
-            $activationNo = S_POST('activation_no');
-            $user_active_no = $user_optional['activation_no'] ?? '';
-            if (!empty($user_active_no) && strtoupper($user_active_no) === strtoupper($activationNo)) {
-                // Activate account
-                $this->_activation($user_id);
-            } else {
-                $this->data('error', Flang::_e('Invalid activation code'));
-                $this->_activation_form($user_id);
-            }
-        } else {
-            // Display activation code input form
-            $this->_activation_form($user_id);
-        }
-    }
-    
-    //Forgot Password - handles both email input and password reset
-    public function forgot($user_id = '', $token = ''){
-        // Case 1: User is requesting password reset (has user_id and token)
-        if (!empty($user_id) && !empty($token)) {
-            $user = $this->usersModel->getUserById($user_id);
-            if (!$user) {
-                Session::flash('error', Flang::_e('Account does not exist'));
-                redirect(auth_url('forgot'));
-                return;
-            }
-            // If token is 'code', show password reset form directly
-            if ($token === 'code') {
-                return $this->_forgot_password($user, 'code');
-            }
-            // For regular token, show password reset form with code verification
-            return $this->_forgot_password($user, $token);
+    /**
+     * Forgot Password - handles email input
+     * @return void
+     */
+    public function forgot(){
+        // Check if already logged in
+        if (Session::has('user_id')) {
+            return redirect(admin_url('/'));
         }
         
-        // Case 1.5: User is requesting password reset with code (has user_id but no token)
-        if (!empty($user_id) && empty($token)) {
-            $user = $this->usersModel->getUserById($user_id);
-            if (!$user) {
-                Session::flash('error', Flang::_e('Account does not exist'));
-                redirect(auth_url('forgot'));
-                return;
-            }
-            return $this->_forgot_password_with_code($user);
-        }
-        
-        // Case 2: User is submitting email for password reset
-        if(HAS_POST('email')) {
+        // Handle email submission for password reset
+        if (HAS_POST('email')) {
             $csrf_token = S_POST('csrf_token') ?? '';
-            if (!Session::csrf_verify($csrf_token)){
-                Session::flash('error', Flang::_e('csrf_failed') );
+            if (!Session::csrf_verify($csrf_token)) {
+                Session::flash('error', __('csrf_failed'));
                 redirect(auth_url('forgot'));
+                return;
             }
-            $input = [ 
-                'email' => S_POST('email')
-            ];
+            
+            $input = ['email' => trim(S_POST('email'))];
+            
             $rules = [
                 'email' => [
-                    'rules' => [
-                        Validate::email(),
-                        Validate::length(5, 150)
-                    ],
+                    'rules' => [Validate::email(), Validate::length(5, 150)],
                     'messages' => [
-                        Flang::_e('Please enter a valid email address'),
-                        Flang::_e('Email must be between %1% and %2% characters', 5, 150)
+                        __('Please enter a valid email address'),
+                        __('Email must be between %1% and %2% characters', 5, 150)
                     ]
-                ],
+                ]
             ];
+            
             $validator = new Validate();
             if (!$validator->check($input, $rules)) {
                 $errors = $validator->getErrors();
                 $this->data('errors', $errors);     
-            }else{
+            } else {
                 $user = $this->usersModel->getUserByEmail($input['email']);
                 if (!$user) {
-                    $errors['email'] = array(
-                        Flang::_e('User with email %1% not found', $input['email'])
-                    );
+                    $errors['email'] = [__('User with email %1% not found', $input['email'])];
                     $this->data('errors', $errors);     
-                }else {
+                } else {
                     $this->_forgot_send($user);
                 }
             }
         }
 
-        // Case 3: Display forgot password form (no POST data, no user_id/token)
+        // Display forgot password form
         $this->data('csrf_token', Session::csrf_token(600));
-        $this->data('title', Flang::_e('Forgot Password'));
+        $this->data('title', __('Forgot Password'));
         
-        echo Render::html('Common/Auth/forgot-password', $this->data);
+        echo Render::html('Common/Auth/forgot', $this->data);
     }
-
-
-    private function _forgot_password($user, $token) {
+    /**
+     * Send forgot password email
+     * @param array $user
+     * @return void
+     */
+    private function _forgot_send($user){
+        if (empty($user['id'])) {
+            return;
+        }
         $user_id = $user['id'];
-        $user_optional = @json_decode($user['optional'], true);
-
-        $error = '';
         
-        // Validate token if it's not 'code'
-        if ($token !== 'code') {
-            $token_db = $user_optional['token_reset_password'] ?? '';
-            $token_expires = $user_optional['token_reset_password_expires'] ?? 0;
-            
-            if($token !== $token_db) {
-                $error = Flang::_e('Invalid reset token');
-            }
-            if($token_expires <= time()){
-                $error = Flang::_e('Reset token has expired');
+        // Generate reset codes
+        $resetCode = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT); // 8-digit code
+        $resetToken = strtolower(random_string(32)); // 32-character token
+        
+        $userOptional = _json_decode($user['optional'] ?? []);
+        if (empty($userOptional)) {
+            $userOptional = [];
+        }
+        
+        // Prepare optional data for forgot password
+        $userOptional['activation_code'] = $resetCode;
+        $userOptional['activation_string'] = $resetToken;
+        $userOptional['activation_expires'] = time() + 86400; // 24 hours
+        $userOptional['activation_attempts'] = 0; // Track failed attempts
+        $userOptional['activation_type'] = 'forgot_password'; // Distinguish from registration
+        $userOptional['cooldown_until'] = 0; // Reset cooldown
+        
+        $this->usersModel->updateUser($user_id, ['optional' => json_encode($userOptional)]);
+
+        // Set secure session for confirmation
+        Session::set('confirm_user_id', $user_id);
+        Session::set('confirm_expires', time() + 1800); // 30 minutes
+
+        // Send reset email
+        $resetLink = auth_url('confirmlink/' . $user_id . '/' . $resetToken);
+        $emailContent = Render::component('Common/Email/auth_reset_password', [
+            'username' => $user['username'], 
+            'reset_link' => $resetLink,
+            'reset_code' => $resetCode,
+            'user_id' => $user_id
+        ]);
+        
+        $this->mailer = new Fastmail();
+        $this->mailer->send($user['email'], option('site_brand') . ' - ' . __('Password Reset Request'), $emailContent);
+
+        Events::run('Backend\\UserForgotSendEvent', $user);
+
+        Session::flash('success', __('Password reset code sent to: %1% successfully', $user['email']) );
+        redirect(auth_url("confirm"));
+    }
+    /**
+     * Confirm screen - handles activation/Forgot password link after code validation
+     * @return void
+     */
+    public function confirm(){
+        // Check if user is already logged in
+        if (Session::has('user_id')) {
+            return redirect(admin_url('/'));
+        }
+        
+        // Get user_id from secure session
+        $user_id = Session::get('confirm_user_id');
+        $confirm_expires = Session::get('confirm_expires');
+        
+        // Check if session is valid
+        if (empty($user_id) || $confirm_expires < time()) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Session expired. Please try again.'));
+            return redirect(auth_url('login'));
+        }
+        
+        // Get user information
+        $user = $this->usersModel->getUserById($user_id);
+        if (!$user) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Account does not exist'));
+            redirect(auth_url('login'));
+            return;
+        }
+        $this->data('email', $user['email']);
+        
+        $userOptional = _json_decode($user['optional'] ?? []);
+        $activationType = $userOptional['activation_type'] ?? 'registration';
+        
+        // For registration activation, check if account is already active or disabled
+        if ($activationType === 'registration') {
+            if ($user['status'] === 'active') {
+                Session::flash('success', __('Account has already been activated'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] === 'disabled') {
+                Session::flash('error', __('Account has been disabled. Please contact support.'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] !== 'inactive') {
+                Session::flash('error', __('Invalid account status'));
+                redirect(auth_url('login'));
             }
         }
         
-        // Always require code verification for password reset
-        // Always show the password reset form with code input
-        
-        if (!empty($error)){
-            $this->data('error', $error);
-            $this->data('title', Flang::_e('Forgot Password'));
+        // Check if activation has expired
+        $activationExpires = $userOptional['activation_expires'] ?? 0;
+        if ($activationExpires < time()) {
+            Session::flash('error', __('Activation code has expired'));
+            $this->data('activation_type', $activationType);
+            $this->data('cooldown_until', $userOptional['cooldown_until'] ?? 0);
+            $this->data('title', __('Enter Confirmation Code'));
             $this->data('csrf_token', Session::csrf_token(600));
-            echo Render::html('Common/Auth/forgot-password', $this->data);
-        }else{
-            // Debug: Check if form is being submitted
-            error_log("=== FORGOT PASSWORD DEBUG ===");
-            error_log("User ID: " . $user_id);
-            error_log("Token: " . $token);
-            error_log("Checking for POST password: " . (HAS_POST('password') ? 'YES' : 'NO'));
-            error_log("POST data: " . print_r($_POST, true));
-            error_log("=============================");
-            
-            // Force error log to be written
-            error_log("FORCE LOG TEST - " . date('Y-m-d H:i:s'));
-            
-            if(HAS_POST('password')) {
-                error_log("*** FORM SUBMITTED - PROCESSING PASSWORD RESET ***");
+            echo Render::html('Common/Auth/confirm', $this->data);
+            return;
+        }
+        
+        // Handle code submission
+        if (HAS_POST('confirmation_code')) {
                 $csrf_token = S_POST('csrf_token') ?? '';
-                error_log("CSRF token: " . $csrf_token);
-                if (!Session::csrf_verify($csrf_token)){
-                    error_log("CSRF verification failed");
-                    $this->data('error', Flang::_e('csrf_failed'));
+            if (!Session::csrf_verify($csrf_token)) {
+                    Session::flash('error', __('csrf_failed'));
                 } else {
-                    error_log("CSRF verification passed");
-                    // Always require code verification for password reset
-                    $input_code = S_POST('reset_code') ?? '';
-                    $reset_code_db = $user_optional['reset_password_code'] ?? '';
-                    $reset_code_expires = $user_optional['reset_password_code_expires'] ?? 0;
+                $inputCode = S_POST('confirmation_code');
+                $storedCode = $userOptional['activation_code'] ?? '';
+                $attempts = $userOptional['activation_attempts'] ?? 0;
+                
+                // Check if max attempts reached
+                if ($attempts >= 5) {
+                    // Set cooldown period (30 minutes)
+                    $userOptional['cooldown_until'] = time() + 1800; // 30 minutes
+                    $this->usersModel->updateUser($user_id, ['optional' => json_encode($userOptional)]);
                     
-                    error_log("=== CODE VERIFICATION DEBUG ===");
-                    error_log("Input code: '" . $input_code . "'");
-                    error_log("DB code: '" . $reset_code_db . "'");
-                    error_log("Codes match: " . ($reset_code_db === $input_code ? 'YES' : 'NO'));
-                    
-                    // Debug: Log the codes for debugging
-                    error_log("Input code: " . $input_code);
-                    error_log("DB code: " . $reset_code_db);
-                    error_log("Code expires: " . $reset_code_expires);
-                    error_log("Current time: " . time());
-                    
-                    // Debug: Check conditions
-                    error_log("Is code expired? " . ($reset_code_expires <= time() ? 'YES' : 'NO'));
-                    error_log("Is reset_code_db empty? " . (empty($reset_code_db) ? 'YES' : 'NO'));
-                    error_log("Do codes match? " . ($reset_code_db === $input_code ? 'YES' : 'NO'));
-                    
-                    if($reset_code_expires <= time()){
-                        error_log("Code expired - showing error message");
-                        $this->data('error', Flang::_e('Reset code has expired'));
-                        $this->data('title', Flang::_e('Update Password'));
+                    Session::flash('error', __('Maximum attempts reached. Please wait 30 minutes before requesting a new code.'));
+                    $this->data('activation_type', $activationType);
+                    $this->data('cooldown_until', $userOptional['cooldown_until']);
+                    $this->data('title', __('Enter Confirmation Code'));
                         $this->data('csrf_token', Session::csrf_token(600));
-                        $this->data('user_id', $user_id);
-                        $this->data('token', $token);
-                        echo Render::html('Common/Auth/forgot-setpassword', $this->data);
-                        return;
-                    }elseif (empty($reset_code_db) || $reset_code_db !== $input_code) {
-                        error_log("Code mismatch - showing error message");
-                        $error_message = Flang::_e('Invalid reset code. Please check your email for the correct code.');
-                        error_log("Error message: " . $error_message);
-                        $this->data('error', $error_message);
-                        $this->data('title', Flang::_e('Update Password'));
-                        $this->data('csrf_token', Session::csrf_token(600));
-                        $this->data('user_id', $user_id);
-                        $this->data('token', $token);
-                        error_log("About to render forgot-setpassword template");
-                        echo Render::html('Common/Auth/forgot-setpassword', $this->data);
+                    echo Render::html('Common/Auth/confirm', $this->data);
                         return;
                     }
-                    $input = [
-                        'password' => S_POST('password'),
-                    ];
-                    $rules = [
-                    'password' => [
-                        'rules' => [
-                            Validate::length(5, 60),
-                        ],
-                        'messages' => [
-                            Flang::_e('Password must be between %1% and %2% characters', 5, 60),
-                        ]
-                    ]
-                    ];
-                    $validator = new Validate();
-                    if (!$validator->check($input, $rules)) {
-                        $errors = $validator->getErrors();
-                        error_log("Validation errors: " . print_r($errors, true));
-                        $this->data('errors', $errors);
-                    }else {
-                        error_log("Password validation passed");
-                        $input['password'] = Security::hashPassword($input['password']);
-                        if (isset($user_optional['token_reset_password'])){
-                            unset($user_optional['token_reset_password']);
-                        }
-                        if (isset($user_optional['token_reset_password_expires'])){
-                            unset($user_optional['token_reset_password_expires']);
-                        }
-                        // Also remove reset code after successful password reset
-                        if (isset($user_optional['reset_password_code'])){
-                            unset($user_optional['reset_password_code']);
-                        }
-                        if (isset($user_optional['reset_password_code_expires'])){
-                            unset($user_optional['reset_password_code_expires']);
-                        }
-                        $input['optional'] = json_encode($user_optional); //remove ma reset sau khi set passs.
-                        $this->usersModel->updateUser($user_id, $input);                    
-                        
-                        Session::flash('success', Flang::_e('Password reset successful'));
-                        error_log("Password reset successful, redirecting to login");
-                        redirect(auth_url('login'));
-                        return;
-                    }
+                
+                // Verify code
+                if ($inputCode === $storedCode) {
+                    // Code is correct, redirect to confirmlink
+                    $activationString = $userOptional['activation_string'] ?? '';
+                    redirect(auth_url("confirmlink/{$user_id}/{$activationString}"));
+                } else {
+                    // Wrong code, increment attempts
+                    $userOptional['activation_attempts'] = $attempts + 1;
+                    $this->usersModel->updateUser($user_id, ['optional' => json_encode($userOptional)]);
+                    
+                    $remainingAttempts = 5 - ($attempts + 1);
+                    Session::flash('error', __('Invalid confirmation code. %1% attempts remaining.', $remainingAttempts));
                 }
-            } else {
-                error_log("No POST password data received");
             }
-            // Always show the password reset form with code input
-            error_log("Displaying password reset form");
-            $this->data('title', Flang::_e('Update Password'));
-            $this->data('csrf_token', Session::csrf_token(600));
-            $this->data('user_id', $user_id);
-            $this->data('token', $token);
-            echo Render::html('Common/Auth/forgot-setpassword', $this->data);
         }
-    }   
-
-    private function _forgot_password_with_code($user) {
-        $user_id = $user['id'];
-        $user_optional = @json_decode($user['optional'], true);
-
-        $reset_code_db = $user_optional['reset_password_code'] ?? '';
-        $reset_code_expires = $user_optional['reset_password_code_expires'] ?? 0;
         
-        $error = '';
-        if($reset_code_expires <= time()){
-            $error = Flang::_e('Reset code has expired');
+        // Display confirmation form
+        $this->data('activation_type', $activationType);
+        $this->data('cooldown_until', $userOptional['cooldown_until'] ?? 0);
+        $this->data('title', __('Enter Confirmation Code'));
+        $this->data('csrf_token', Session::csrf_token(600));
+        
+        echo Render::html('Common/Auth/confirm', $this->data);
+    }
+    /**
+     * Confirmlink - handles activation/Forgot password link after code validation
+     * @param string $user_id
+     * @param string $activationString
+     * @return void
+     */
+    public function confirmlink($user_id = null, $activationString = ''){
+        if (!$user_id || !$user = $this->usersModel->getUserById($user_id)) {
+            Session::flash('error', __('Account does not exist'));
+            redirect(auth_url('login'));
+            return;
         }
-        if (!empty($error)){
-            $this->data('error', $error);
-            $this->data('title', Flang::_e('Forgot Password'));
-            $this->data('csrf_token', Session::csrf_token(600));
-            echo Render::html('Common/Auth/forgot-password', $this->data);
-        }else{
-            if(HAS_POST('reset_code')) {
-                $csrf_token = S_POST('csrf_token') ?? '';
-                if (!Session::csrf_verify($csrf_token)){
-                    $this->data('error', Flang::_e('csrf_failed'));
-                }else{
-                    $input_code = S_POST('reset_code');
-                    if (!empty($reset_code_db) && $reset_code_db === $input_code) {
-                        // Code is valid, redirect to password reset form
-                        redirect(auth_url('forgot/' . $user_id . '/code'));
-                        return;
-                    } else {
-                        $this->data('error', Flang::_e('Invalid reset code'));
-                    }
-                }
+        
+        // Check account status for registration activation
+        $userOptional = _json_decode($user['optional'] ?? []);
+        $activationType = $userOptional['activation_type'] ?? 'registration';
+        
+        // For registration activation, check if account is already active or disabled
+        if ($activationType === 'registration') {
+            if ($user['status'] === 'active') {
+                Session::flash('success', __('Account has already been activated'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] === 'disabled') {
+                Session::flash('error', __('Account has been disabled. Please contact support.'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] !== 'inactive') {
+                Session::flash('error', __('Invalid account status'));
+                return redirect(auth_url('login'));
             }
+        }
+        $storedActivationString = $userOptional['activation_string'] ?? '';
+        
+        // Validate activation string
+        if (empty($storedActivationString) || strtolower($storedActivationString) !== strtolower($activationString)) {
+            Session::flash('error', __('Invalid activation link'));
+            redirect(auth_url('login'));
+            return;
+        }
+
+        // Check if activation has expired
+        $activationExpires = $userOptional['activation_expires'] ?? 0;
+        if ($activationExpires < time()) {
+            Session::flash('error', __('Activation link has expired'));
+            redirect(auth_url('login'));
+            return;
+        }
+        
+        // Process based on activation type
+        if ($activationType === 'forgot_password') {
+            // Set secure session for password reset
+            Session::set('confirm_user_id', $user_id);
+            Session::set('confirm_expires', time() + 1800); // 30 minutes
             
-            $this->data('title', Flang::_e('Enter Reset Code'));
-            $this->data('csrf_token', Session::csrf_token(600));
-            $this->data('user_id', $user_id);
-            echo Render::html('Common/Auth/forgot-code', $this->data);
+            // For forgot password, redirect to password reset form
+            redirect(auth_url("reset-password"));
+        } else {
+            // For registration, activate account
+            $this->usersModel->updateUser($user_id, [
+                'status' => 'active',
+                'optional' => null
+            ]);
+            
+            // Send welcome email
+            $welcomeContent = Render::component('Common/Email/auth_welcome', [
+                'username' => $user['username']
+            ]);
+            
+            $this->mailer = new Fastmail();
+            $this->mailer->send($user['email'], option('site_brand') . ' - ' . __('Welcome to %1%', option('site_brand')), $welcomeContent);
+            
+            Events::run('Backend\\UserActivationEvent', $user_id);
+            
+            // Set login session and redirect to dashboard
+            $this->_set_login_session($user);
+            redirect(base_url());
+            //redirect(auth_url('login'));
         }
     }
-
+    /**
+     * Resend activation/forgot password code
+     * @return void
+     */
+    public function resend_code(){
+        // Get user_id from secure session
+        $user_id = Session::get('confirm_user_id');
+        $confirm_expires = Session::get('confirm_expires');
+        
+        // Check if session is valid
+        if (empty($user_id) || $confirm_expires < time()) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Session expired. Please try again.'));
+            return redirect(auth_url('login'));
+        }
+        
+        $user = $this->usersModel->getUserById($user_id);
+        if (!$user) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Account does not exist'));
+            redirect(auth_url('login'));
+                        return;
+        }
+        
+        $userOptional = _json_decode($user['optional'] ?? []);
+        $activationType = $userOptional['activation_type'] ?? 'registration';
+        
+        // For registration activation, check if account is already active or disabled
+        if ($activationType === 'registration') {
+            if ($user['status'] === 'active') {
+                Session::flash('success', __('Account has already been activated'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] === 'disabled') {
+                Session::flash('error', __('Account has been disabled. Please contact support.'));
+                return redirect(auth_url('login'));
+            } elseif ($user['status'] !== 'inactive') {
+                Session::flash('error', __('Invalid account status'));
+                return redirect(auth_url('login'));
+            }
+        }
+        
+        // Check if user is in cooldown period
+        $cooldownUntil = $userOptional['cooldown_until'] ?? 0;
+        if ($cooldownUntil > time()) {
+            $remainingMinutes = ceil(($cooldownUntil - time()) / 60);
+            Session::flash('error', __('Please wait %1% minutes before requesting a new code.', $remainingMinutes));
+            return redirect(auth_url('confirm'));
+        }
+        
+        // Generate new codes
+        $activationCode = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT); // 8-digit code
+        $activationString = strtolower(random_string(32));
+        
+        // Update optional data
+        $userOptional['activation_code'] = $activationCode;
+        $userOptional['activation_string'] = $activationString;
+        $userOptional['activation_expires'] = time() + 86400;
+        $userOptional['activation_attempts'] = 0; // Reset attempts
+        $userOptional['cooldown_until'] = 0; // Reset cooldown
+        $userOptional['activation_type'] = $activationType;
+        
+        $this->usersModel->updateUser($user_id, ['optional' => json_encode($userOptional)]);
+        
+        // Send new activation email based on type
+        if ($activationType === 'forgot_password') {
+            $resetLink = auth_url('confirmlink/' . $user_id . '/' . $activationString);
+            $emailContent = Render::component('Common/Email/auth_reset_password', [
+                'username' => $user['username'], 
+                'reset_link' => $resetLink,
+                'reset_code' => $activationCode,
+                'user_id' => $user_id
+            ]);
+            $subject = __('New Password Reset Code');
+        } else {
+            $activationLink = auth_url('confirmlink/' . $user_id . '/' . $activationString);
+            $emailContent = Render::component('Common/Email/auth_register', [
+                'username' => $user['username'], 
+                'activation_link' => $activationLink, 
+                'activation_code' => $activationCode
+            ]);
+            $subject = __('New Register Activation Code');
+        }
+        
+        $this->mailer = new Fastmail();
+        $this->mailer->send($user['email'], option('site_brand') . ' - ' . $subject, $emailContent);
+        
+        Session::flash('success', __('Confirmation code sent to your email'));
+        redirect(auth_url("confirm"));
+    }
+    /**
+     * Login with Google
+     * @return void
+     */
     public function login_google(){
         
         $option_google = option('google');
@@ -642,7 +798,7 @@ class AuthController extends BackendController
         $client_secret = $option_google['GOOGLE_CLIENT_SECRET'] ?? '';
         $client_url = $option_google['GOOGLE_REDIRECT_URL'] ?? '';
 
-        $client = new Google_Client();
+        $client = new \Google_Client();
         $client->setClientId($client_id); 
         $client->setClientSecret($client_secret);
         $client->setRedirectUri($client_url);
@@ -663,19 +819,18 @@ class AuthController extends BackendController
             // Đặt token truy cập cho client
             $client->setAccessToken($token);
             // Lấy thông tin người dùng từ Google
-            $oauth2 = new Google_Service_Oauth2($client);
+            $oauth2 = new \Google_Service_Oauth2($client);
             $userInfo = $oauth2->userinfo->get();
             $email_user = $userInfo->email ?? '';
             $fullname = $userInfo->name ?? ''; 
             $user = $this->usersModel->getUserByEmail($email_user);
 
             if ($user) {
-                // Set thông tin đăng nhập vào session
-                Session::set('user_id', $user['id']);
-                Session::set('role', $user['role']);
-                Session::set('permissions', json_decode($user['permissions'], true));
-                // Tái tạo session ID để tránh session fixation
-                Session::regenerate();
+                // Set login session
+                $this->_set_login_session($user);
+                
+                // Update last login time
+                $this->usersModel->updateUser($user['id'], ['activity_at' => DateTime()]);
 
                 Events::run('Backend\\UserLoginGoogleEvent', $user);
 
@@ -689,200 +844,733 @@ class AuthController extends BackendController
         
         }
     }
-
-    private function _activation_resend($user_id, $user_optional, $user)
-    {
-        // Tạo mã kích hoạt 6 ký tự cho người dùng nhập vào
-        $activationNo = strtoupper(random_string(6)); // Tạo mã gồm 6 ký tự
-        // Tạo mã kích hoạt riêng cho URL
-        $activationCode = strtolower(random_string(32)); // Tạo mã gồm 32 ký tự
-        if (empty($user_optional)){
-            $user_optional = [];
-        }/*  */
-        $user_optional['activation_no'] = $activationNo;
-        $user_optional['activation_code'] = $activationCode;
-        $user_optional['activation_expires'] = time()+86400;
-        $this->usersModel->updateUser($user_id, ['optional'=>json_encode($user_optional)]);
-
-        // Gửi email mã kích hoạt mới
-        $activationLink = auth_url('activation/' . $user_id . '/' . $activationCode.'/');
-        $emailContent = Render::component('Common/Email/activation', ['username' => $user['username'], 'activation_link' => $activationLink, 'activation_no' => $activationNo]);
-        
-        $this->mailer = new Fastmail();
-        $this->mailer->send($user['email'], Flang::_e('New Activation Code'), $emailContent);
-        Session::flash('success', Flang::_e('Activation code sent to your email'));
-        Events::run('Backend\\UserActivationResendEvent', $user);
-
-        redirect(auth_url('activation/' . $user_id));
-    }   
-    
-    // send email forgot password
-    private function _forgot_send($user)
-    {
-        $user_id = $user['id'];
-        // tạo token forgot password
-        $token = strtolower(random_string(32));
-        // Tạo mã kích hoạt 6 số cho người dùng nhập vào
-        $resetCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT); // Tạo mã gồm 6 số
-        
-        $user_optional = @json_decode($user['optional'], true);
-        if (empty($user_optional)){
-            $user_optional = [];
-        }
-        $user_optional['token_reset_password'] = $token;
-        $user_optional['token_reset_password_expires'] = time()+86400;
-        // Thêm mã code reset password
-        $user_optional['reset_password_code'] = $resetCode;
-        $user_optional['reset_password_code_expires'] = time()+86400;
-        $this->usersModel->updateUser($user_id, ['optional'=>json_encode($user_optional)]);
-
-        // Construct reset link 
-        $reset_link = auth_url('forgot/'.$user_id . '/' . $token) ;
-        // Gửi email link reset password và code
-        $emailContent = Render::component('Common/Email/reset_password', [
-            'username' => $user['username'], 
-            'reset_link' => $reset_link,
-            'reset_code' => $resetCode,
-            'user_id' => $user_id
-        ]);
-        
-        $this->mailer = new Fastmail();
-        $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent);
-        // $this->mailer->send($user['email'], Flang::_e('Password Reset Request'), $emailContent, ['smtpDebug' => 2]);
-
-        Events::run('Backend\\UserForgotSendEvent', $user);
-
-        Session::flash('success', Flang::_e('Password reset link and code sent to your email') . ': ' .$user['email']);
-    }   
-
     /**
-     * Hiển thị form nhập mã kích hoạt
+     * Reset Password - handles password reset after code validation
+     * @return void
      */
-    private function _activation_form($user_id)
-    {
-        $this->data('csrf_token', Session::csrf_token(600)); //token security login chi ton tai 10 phut.
+    public function reset_password(){
+        // Check if user is already logged in
+        if (Session::has('user_id')) {
+            return redirect(admin_url('/'));
+        }
         
-        $this->data('title', Flang::_e('Account Activation'));
+        // Get user_id from secure session
+        $user_id = Session::get('confirm_user_id');
+        $confirm_expires = Session::get('confirm_expires');
+        
+        // Check if session is valid
+        if (empty($user_id) || $confirm_expires < time()) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Session expired. Please try again.'));
+            return redirect(auth_url('login'));
+        }
+        
+        $user = $this->usersModel->getUserById($user_id);
+        if (!$user) {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Account does not exist'));
+            redirect(auth_url('login'));
+            return;
+        }
+        
+        $userOptional = _json_decode($user['optional'] ?? []);
+        $activationType = $userOptional['activation_type'] ?? '';
+        
+        // Verify this is a forgot password request
+        if ($activationType !== 'forgot_password') {
+            Session::del('confirm_user_id');
+            Session::del('confirm_expires');
+            Session::flash('error', __('Invalid reset request'));
+            redirect(auth_url('login'));
+            return;
+        }
+        
+        // Handle password reset form submission
+        if (HAS_POST('password')) {
+            $csrf_token = S_POST('csrf_token') ?? '';
+            if (!Session::csrf_verify($csrf_token)) {
+                Session::flash('error', __('csrf_failed'));
+            } else {
+                $input = [
+                    'password' => S_POST('password'),
+                    'password_confirm' => S_POST('password_confirm')
+                ];
+                
+                $rules = [
+                    'password' => [
+                        'rules' => [Validate::length(6, 60)],
+                        'messages' => [__('Password must be between %1% and %2% characters', 6, 60)]
+                    ],
+                    'password_confirm' => [
+                        'rules' => [Validate::equals($input['password'])],
+                        'messages' => [__('Password confirmation does not match')]
+                    ]
+                ];
+                
+                $validator = new Validate();
+                if (!$validator->check($input, $rules)) {
+                    $errors = $validator->getErrors();
+                    $this->data('errors', $errors);
+                } else {
+                    $this->usersModel->updateUser($user_id, [
+                        'password' => Security::hashPassword($input['password']),
+                        'optional' => null
+                    ]);
 
-        $this->data('user_id', $user_id);
-        $this->render('auth', 'Backend/Auth/activation');
-    }
-
-    private function _activation($user_id)
-    {
-        $this->usersModel->updateUser($user_id, [
-            'status' => 'active',
-            'optional' => null
-        ]);
-
-        Events::run('Backend\\UserActivationEvent', $user_id);
+                    // Clear confirmation session
+                    Session::del('confirm_user_id');
+                    Session::del('confirm_expires');
     
-        Session::flash('success', Flang::_e('Account activated successfully'));
-        redirect(auth_url('login'));
-    }
+                    Events::run('Backend\\UserPasswordResetEvent', $user_id);
+                    
+                    Session::flash('success', __('Password reset successful'));
+                    return redirect(auth_url('login'));
+                }
+            }
+        }
+        
+        // Display password reset form
+        $this->data('title', __('Reset Your Password'));
+        $this->data('csrf_token', Session::csrf_token(600));
+        
+        echo Render::html('Common/Auth/reset_password', $this->data);
+    }   
 
-    // update profile
-    public function profile()
-    {
+    // update profile - main function for displaying profile page
+    public function profile(){
         $user_id = Session::get('user_id');
         $user = $this->usersModel->getUserById($user_id);
         if (!$user){
             return $this->logout();
         }
         
-        //Buoc validate neu co request register.
-        if (HAS_POST('fullname')){
+        // Handle profile update request
+        if (HAS_POST('csrf_token')){
             $csrf_token = S_POST('csrf_token') ?? '';
             if (!Session::csrf_verify($csrf_token)){
-                $this->data('error', Flang::_e('csrf_failed'));
-                unset($_POST['username']);
+                Session::flash('error', __('csrf_failed'));
+                return redirect(auth_url('profile'));
+            }
+            
+            // Get page type to determine which handler to use
+            $page = S_POST('page') ?? '';
+            
+            switch($page) {
+                case 'personal_info':
+                    $this->_handle_personal_info($user_id, $user);
+                    break;
+                case 'social_media':
+                    $this->_handle_social_media($user_id, $user);
+                    break;
+                case 'detailed_info':
+                    $this->_handle_detailed_info($user_id, $user);
+                    break;
+                default:
+                    Session::flash('error', __('Invalid request'));
+                    return redirect(auth_url('profile'));
+            }
+            $user = $this->usersModel->getUserById($user_id);
+        }
+        
+        // Prepare data for display
+        $this->_prepare_profile_data($user);
+        
+        $this->data('title', __('Profile Settings'));
+        $this->data('csrf_token', Session::csrf_token(600));
+        
+        echo Render::html('Common/Auth/profile', $this->data);
+    }
+    
+    /**
+     * Handle personal information form submission
+     * @param int $user_id
+     * @param array $user
+     * @return void
+     */
+    private function _handle_personal_info($user_id, $user) {
+        // Get personal information data
+            $input = [
+            'username' => trim(S_POST('username') ?? ''),
+            'fullname' => trim(S_POST('fullname') ?? ''),
+            'birthday' => S_POST('birthday') ?? '',
+            'gender' => S_POST('gender') ?? '',
+            'phone' => trim(S_POST('phone') ?? ''),
+            'country' => S_POST('country') ?? '',
+            'display' => S_POST('display') ? 1 : 0,
+            'about_me' => trim(S_POST('about_me') ?? ''),
+            'address1' => trim(S_POST('address1') ?? ''),
+            'address2' => trim(S_POST('address2') ?? ''),
+            'city' => trim(S_POST('city') ?? ''),
+            'state' => trim(S_POST('state') ?? ''),
+            'zipcode' => trim(S_POST('zipcode') ?? '')
+        ];
+        
+        // Validation rules for personal information
+            $rules = [
+            'username' => [
+                'rules' => [Validate::length(3, 40), Validate::alnum('_')],
+                'messages' => [
+                    __('Username must be between %1% and %2% characters', 3, 40),
+                    __('Username can only contain letters, numbers, and underscores')
+                ]
+            ],
+                'fullname' => [
+                'rules' => [Validate::name(2, 150)],
+                'messages' => [__('Full name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 150)]
+            ],
+            'birthday' => [
+                'rules' => [Validate::optional(Validate::date('Y-m-d'))],
+                'messages' => [__('Birthday must be a valid date in YYYY-MM-DD format')]
+            ],
+            'gender' => [
+                'rules' => [Validate::optional(Validate::in(['male', 'female', 'other']))],
+                'messages' => [__('Gender must be male, female, or other')]
+            ],
+            'phone' => [
+                'rules' => [Validate::optional(Validate::phone()), Validate::optional(Validate::length(1, 30))],
+                    'messages' => [
+                    __('Please enter a valid phone number'),
+                    __('Phone number must be between %1% and %2% characters', 1, 30)
+                ]
+            ],
+            'country' => [
+                'rules' => [Validate::optional(Validate::length(2, 2)), Validate::optional(Validate::alpha())],
+                    'messages' => [
+                    __('Country code must be exactly 2 characters'),
+                    __('Country code can only contain letters')
+                ]
+            ],
+            'about_me' => [
+                'rules' => [Validate::optional(Validate::length(null, 1000))],
+                'messages' => [__('Personal description must be less than %1% characters', 1000)]
+            ],
+            'address1' => [
+                'rules' => [Validate::optional(Validate::address(3, 200))],
+                'messages' => [__('Address line 1 must be between %1% and %2% characters and contain only valid address characters', 3, 200)]
+            ],
+            'address2' => [
+                'rules' => [Validate::optional(Validate::address(3, 200))],
+                'messages' => [__('Address line 2 must be between %1% and %2% characters and contain only valid address characters', 3, 200)]
+            ],
+            'city' => [
+                'rules' => [Validate::optional(Validate::name(2, 100))],
+                'messages' => [__('City must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 100)]
+            ],
+            'state' => [
+                'rules' => [Validate::optional(Validate::name(2, 100))],
+                'messages' => [__('State must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 100)]
+            ],
+            'zipcode' => [
+                'rules' => [Validate::optional(Validate::alnum('-')), Validate::optional(Validate::length(3, 20))],
+                    'messages' => [
+                    __('ZIP code can only contain letters, numbers, and hyphens'),
+                    __('ZIP code must be between %1% and %2% characters', 3, 20)
+                ]
+            ]
+        ];
+
+        // Check username uniqueness if changed
+        if ($input['username'] !== $user['username']) {
+            $existingUser = $this->usersModel->where('username', $input['username'])->first();
+            if ($existingUser) {
+                $this->data('errors', ['username' => [__('Username already exists')]]);
+                Session::flash('activetab', 'personal-info');
+                return;
             }
         }
-        if (HAS_POST('fullname')){
-            $input = [
-                'fullname' => S_POST('fullname') ?? '',
-                'phone' => S_POST('phone') ?? '',
-                'telegram' => S_POST('telegram') ?? '',
-                'skype' => S_POST('skype') ?? '',
-                'whatsapp' => S_POST('whatsapp') ?? '',
-            ];
-            $rules = [
-                'fullname' => [
-                    'rules' => [
-                        Validate::length(3, 30)
-                    ],
+
+        $validator = new Validate();
+        if (!$validator->check($input, $rules)) {
+            $errors = $validator->getErrors();
+            $this->data('errors', $errors);
+            Session::flash('activetab', 'personal-info');
+        } else {
+            // Process and save personal information
+            $this->_process_profile_data($user_id, $input, 'personal_info');
+            Session::flash('success', __('Personal information updated successfully'));
+            Session::flash('activetab', 'personal-info');
+        }
+    }
+    
+    /**
+     * Handle social media form submission
+     * @param int $user_id
+     * @param array $user
+     * @return void
+     */
+    private function _handle_social_media($user_id, $user) {
+        // Get social media data
+        $input = [
+            'facebook' => trim(S_POST('facebook') ?? ''),
+            'linkedin' => trim(S_POST('linkedin') ?? ''),
+            'telegram' => trim(S_POST('telegram') ?? ''),
+            'whatsapp' => trim(S_POST('whatsapp') ?? ''),
+            'custom_social_name' => S_POST('custom_social_name') ?? [],
+            'custom_social_value' => S_POST('custom_social_value') ?? []
+        ];
+        
+        // Validation rules for social media
+        $rules = [
+            'facebook' => [
+                'rules' => [Validate::optional(Validate::url()), Validate::optional(Validate::length(5, 200))],
+                'messages' => [
+                    __('Facebook must be a valid URL'),
+                    __('Facebook URL must be between %1% and %2% characters', 5, 200)
+                ]
+            ],
+            'linkedin' => [
+                'rules' => [Validate::optional(Validate::url()), Validate::optional(Validate::length(5, 200))],
+                'messages' => [
+                    __('LinkedIn must be a valid URL'),
+                    __('LinkedIn URL must be between %1% and %2% characters', 5, 200)
+                ]
+            ],
+            'telegram' => [
+                'rules' => [Validate::optional(Validate::alnum('@_')), Validate::optional(Validate::length(3, 100))],
                     'messages' => [
-                        Flang::_e('Full name must be between %1% and %2% characters', 3, 50)
-                    ]
-                ],
-                'phone' => [
-                    'rules' => [
-                        Validate::length(null, 30)
-                    ],
-                    'messages' => [
-                        Flang::_e('Phone number must be between %1% and %2% characters', 0, 30)
-                    ]
-                ],
-                'telegram' => [
-                    'rules' => [
-                        Validate::length(null, 100)
-                    ],
-                    'messages' => [
-                        Flang::_e('Telegram username must be between %1% and %2% characters', 0, 100)
-                    ]
-                ],
-                'skype' => [
-                    'rules' => [
-                        Validate::length(null, 100)
-                    ],
-                    'messages' => [
-                        Flang::_e('Skype username must be between %1% and %2% characters', 0, 100)
+                    __('Telegram username can only contain letters, numbers, @, and _'),
+                    __('Telegram username must be between %1% and %2% characters', 3, 100)
                     ]
                 ],
                 'whatsapp' => [
-                    'rules' => [
-                        Validate::length(null, 30)
-                    ],
+                'rules' => [Validate::optional(Validate::phone()), Validate::optional(Validate::length(5, 30))],
                     'messages' => [
-                        Flang::_e('WhatsApp number must be between %1% and %2% characters', 0, 30)
-                    ]
+                    __('WhatsApp must be a valid phone number'),
+                    __('WhatsApp number must be between %1% and %2% characters', 5, 30)
                 ]
-            ];
+            ]
+        ];
+
+        // Validate custom social media
+        $customSocialErrors = $this->_validate_custom_social_media($input);
+        if (!empty($customSocialErrors)) {
+            $this->data('errors', $customSocialErrors);
+            Session::flash('activetab', 'social-media');
+            return;
+        }
 
             $validator = new Validate();
             if (!$validator->check($input, $rules)) {
-                // Lấy các lỗi và hiển thị
                 $errors = $validator->getErrors();
                 $this->data('errors', $errors);
-            }else{
-                $this->data('success', Flang::_e('Profile updated successfully'));
-                $this->usersModel->updateUser($user_id, $input);
-                $user = array_merge($user, $input);
+            Session::flash('activetab', 'social-media');
+        } else {
+            // Process and save social media
+            $this->_process_profile_data($user_id, $input, 'social_media');
+            Session::flash('success', __('Social media updated successfully'));
+            Session::flash('activetab', 'social-media');
+        }
+    }
+    
+    /**
+     * Handle detailed information form submission
+     * @param int $user_id
+     * @param array $user
+     * @return void
+     */
+    private function _handle_detailed_info($user_id, $user) {
+        // Get detailed information data
+        $input = [
+            'work_experiences' => S_POST('work_experiences') ?? [],
+            'educations' => S_POST('educations') ?? [],
+            'skills' => S_POST('skills') ?? [],
+            'languages' => S_POST('languages') ?? [],
+            'hobbies' => S_POST('hobbies') ?? [],
+            'certifications' => S_POST('certifications') ?? []
+        ];
+        
+        // Validate detailed information
+        $detailedInfoErrors = $this->_validate_detailed_information($input);
+        if (!empty($detailedInfoErrors)) {
+            $this->data('errors', $detailedInfoErrors);
+            Session::flash('activetab', 'detailed-info');
+        } else {
+            // Process and save detailed information
+            $this->_process_profile_data($user_id, $input, 'detailed_info');
+            Session::flash('success', __('Detailed information updated successfully'));
+            Session::flash('activetab', 'detailed-info');
+        }
+    }
+    
+    /**
+     * Process profile data and save to database
+     * @param int $user_id
+     * @param array $input
+     * @param string $page_type
+     * @return void
+     */
+    private function _process_profile_data($user_id, $input, $page_type = '') {
+        // Get current user data
+        $currentUser = $this->usersModel->getUserById($user_id);
+        $userData = ['updated_at' => DateTime()];
+        
+        switch($page_type) {
+            case 'personal_info':
+                // Update basic user fields
+                $userData = array_merge($userData, [
+                    'username' => $input['username'],
+                    'fullname' => $input['fullname'],
+                    'birthday' => $input['birthday'],
+                    'gender' => $input['gender'],
+                    'phone' => $input['phone'],
+                    'country' => $input['country'],
+                    'display' => $input['display']
+                ]);
+                
+                // Update address
+                $addressData = [
+                    'address1' => $input['address1'],
+                    'address2' => $input['address2'],
+                    'city' => $input['city'],
+                    'state' => $input['state'],
+                    'zipcode' => $input['zipcode']
+                ];
+                $userData['address'] = json_encode($addressData);
+                
+                // Update about_me in personal data
+                $existingPersonal = _json_decode($currentUser['personal'] ?? []);
+                $personalData = array_merge($existingPersonal, [
+                    'about_me' => $input['about_me']
+                ]);
+                $userData['personal'] = json_encode($personalData);
+                break;
+                
+            case 'social_media':
+                // Update social media in personal data
+                $existingPersonal = _json_decode($currentUser['personal'] ?? []);
+                $socials = [
+                    'facebook' => $input['facebook'],
+                    'linkedin' => $input['linkedin'],
+                    'telegram' => $input['telegram'],
+                    'whatsapp' => $input['whatsapp']
+                ];
+                
+                // Process custom social media - add directly to socials array
+                if (!empty($input['custom_social_name']) && !empty($input['custom_social_value'])) {
+                    foreach ($input['custom_social_name'] as $index => $name) {
+                        if (!empty($name) && !empty($input['custom_social_value'][$index])) {
+                            $key = strtolower(trim($name));
+                            $value = trim($input['custom_social_value'][$index]);
+                            $socials[$key] = $value;
+                        }
+                    }
+                }
+                
+                $personalData = array_merge($existingPersonal, [
+                    'socials' => $socials
+                ]);
+                $userData['personal'] = json_encode($personalData);
+                break;
+                
+            case 'detailed_info':
+                // Update detailed information in personal data
+                $existingPersonal = _json_decode($currentUser['personal'] ?? []);
+                $detailedData = [
+                    'work_experiences' => $input['work_experiences'],
+                    'educations' => $input['educations'],
+                    'skills' => _json_decode($input['skills']),
+                    'languages' => $input['languages'],
+                    'hobbies' => _json_decode($input['hobbies']),
+                    'certifications' => $input['certifications']
+                ];
+                
+                $personalData = array_merge($existingPersonal, $detailedData);
+                $userData['personal'] = json_encode($personalData);
+                break;
+        }
+        
+        // Update user in database
+        $this->usersModel->updateUser($user_id, $userData);
+    }
+    
+    
+    /**
+     * Prepare profile data for display
+     * @param array $user
+     * @return void
+     */
+    private function _prepare_profile_data($user) {
+        // Parse personal data
+        // Handle personal data - could be array or JSON string
+        $personal = _json_decode($user['personal'] ?? []);
+        
+        // Parse address data - could be array or JSON string
+        $address = _json_decode($user['address'] ?? []);
+        
+        // Prepare detailed information data
+        $me_info = [
+            'id' => $user['id'],
+            'username' => $user['username'],
+            'email' => $user['email'],
+            'fullname' => $user['fullname'],
+            'birthday' => $user['birthday'],
+            'gender' => $user['gender'],
+            'phone' => $user['phone'],
+            'country' => $user['country'],
+            'display' => $user['display'],
+            'about_me' => $personal['about_me'] ?? '',
+            'work_experiences' => $personal['work_experiences'] ?? [],
+            'educations' => $personal['educations'] ?? [],
+            'skills' => $personal['skills'] ?? [],
+            'languages' => $personal['languages'] ?? [],
+            'hobbies' => $personal['hobbies'] ?? [],
+            'certifications' => $personal['certifications'] ?? [],
+            'address' => $address,
+            'socials' => $personal['socials'] ?? []
+        ];
+        
+        $this->data('me_info', $me_info);
+    }
+    
+    /**
+     * Validate custom social media data
+     * @param array $input
+     * @return array
+     */
+    private function _validate_custom_social_media($input) {
+        $errors = [];
+        
+        if (!empty($input['custom_social_name']) && !empty($input['custom_social_value'])) {
+            foreach ($input['custom_social_name'] as $index => $name) {
+                $value = $input['custom_social_value'][$index] ?? '';
+                
+                // Validate social media name
+                if (!empty($name)) {
+                    if (!preg_match('/^[a-zA-Z0-9\s\-_]+$/', $name)) {
+                        $errors["custom_social_name_{$index}"] = [__('Social platform name can only contain letters, numbers, spaces, hyphens, and underscores')];
+                    }
+                    if (strlen($name) > 50) {
+                        $errors["custom_social_name_{$index}"] = [__('Social platform name must be less than %1% characters', 50)];
+                    }
+                }
+                
+                // Validate social media value
+                if (!empty($value)) {
+                    if (strlen($value) > 200) {
+                        $errors["custom_social_value_{$index}"] = [__('Social media value must be less than %1% characters', 200)];
+                    }
+                    // Check for XSS patterns
+                    if (preg_match('/<script|javascript:|on\w+\s*=/i', $value)) {
+                        $errors["custom_social_value_{$index}"] = [__('Invalid characters detected in social media value')];
+                    }
+                }
             }
         }
         
-        $this->data('me', $user);
+        return $errors;
+    }
+    
+    /**
+     * Validate detailed information data
+     * @param array $input
+     * @return array
+     */
+    private function _validate_detailed_information($input) {
+        $errors = [];
+        $validator = new Validate();
         
-        // // Hiển thị trang đăng nhập: Nếu ko có request login, or validate that bai
-        $this->data('title', Flang::_e('Profile Settings'));
-        $this->data('csrf_token', Session::csrf_token(600)); //token security login chi ton tai 10 phut.
+        // Prepare all data and rules for batch validation
+        $validationData = [];
+        $validationRules = [];
         
+        // Validate work experiences
+        if (!empty($input['work_experiences'])) {
+            foreach ($input['work_experiences'] as $index => $work) {
+                if (!empty($work['company'])) {
+                    $validationData["work_company_{$index}"] = $work['company'];
+                    $validationRules["work_company_{$index}"] = [
+                        'rules' => [Validate::name(2, 100)],
+                        'messages' => [__('Company name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 100)]
+                    ];
+                }
+                
+                if (!empty($work['position'])) {
+                    $validationData["work_position_{$index}"] = $work['position'];
+                    $validationRules["work_position_{$index}"] = [
+                        'rules' => [Validate::name(2, 100)],
+                        'messages' => [__('Position must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 100)]
+                    ];
+                }
+                
+                // Manual validation for description (XSS check)
+                if (!empty($work['description'])) {
+                    if (strlen($work['description']) > 1000) {
+                        $errors["work_description_{$index}"] = [__('Work description must be less than %1% characters', 1000)];
+                    }
+                    if (preg_match('/<script|javascript:|on\w+\s*=/i', $work['description'])) {
+                        $errors["work_description_{$index}"] = [__('Work description contains invalid characters')];
+                    }
+                }
+            }
+        }
         
-        $this->render('auth', 'Backend/Auth/profile');
+        // Validate educations
+        if (!empty($input['educations'])) {
+            foreach ($input['educations'] as $index => $edu) {
+                if (!empty($edu['institution'])) {
+                    $validationData["edu_institution_{$index}"] = $edu['institution'];
+                    $validationRules["edu_institution_{$index}"] = [
+                        'rules' => [Validate::name(2, 200)],
+                        'messages' => [__('Institution name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 200)]
+                    ];
+                }
+                
+                if (!empty($edu['degree'])) {
+                    $validationData["edu_degree_{$index}"] = $edu['degree'];
+                    $validationRules["edu_degree_{$index}"] = [
+                        'rules' => [Validate::name(2, 100)],
+                        'messages' => [__('Degree must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 100)]
+                    ];
+                }
+            }
+        }
+        
+        // Validate languages
+        if (!empty($input['languages'])) {
+            foreach ($input['languages'] as $index => $lang) {
+                if (!empty($lang['language'])) {
+                    $validationData["lang_language_{$index}"] = $lang['language'];
+                    $validationRules["lang_language_{$index}"] = [
+                        'rules' => [Validate::name(2, 50)],
+                        'messages' => [__('Language name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 50)]
+                    ];
+                }
+                
+                // Manual validation for proficiency
+                if (!empty($lang['proficiency'])) {
+                    if (!in_array($lang['proficiency'], ['beginner', 'intermediate', 'advanced', 'native'])) {
+                        $errors["lang_proficiency_{$index}"] = [__('Invalid proficiency level')];
+                    }
+                }
+            }
+        }
+        
+        // Validate certifications
+        if (!empty($input['certifications'])) {
+            foreach ($input['certifications'] as $index => $cert) {
+                if (!empty($cert['name'])) {
+                    $validationData["cert_name_{$index}"] = $cert['name'];
+                    $validationRules["cert_name_{$index}"] = [
+                        'rules' => [Validate::name(2, 200)],
+                        'messages' => [__('Certification name must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 200)]
+                    ];
+                }
+                
+                if (!empty($cert['issuer'])) {
+                    $validationData["cert_issuer_{$index}"] = $cert['issuer'];
+                    $validationRules["cert_issuer_{$index}"] = [
+                        'rules' => [Validate::name(2, 200)],
+                        'messages' => [__('Issuing organization must be between %1% and %2% characters and contain only letters, spaces, hyphens, dots, and middle dots', 2, 200)]
+                    ];
+                }
+            }
+        }
+        
+        // Validate skills
+        if (!empty($input['skills']) && is_array($input['skills'])) {
+            foreach ($input['skills'] as $index => $skill) {
+                if (!empty($skill)) {
+                    // XSS check for skills
+                    if (preg_match('/<script|javascript:|on\w+\s*=/i', $skill)) {
+                        $errors["skill_{$index}"] = [__('Skill contains invalid characters')];
+                    }
+                    if (strlen($skill) > 100) {
+                        $errors["skill_{$index}"] = [__('Skill must be less than %1% characters', 100)];
+                    }
+                }
+            }
+        }
+        
+        // Validate hobbies
+        if (!empty($input['hobbies']) && is_array($input['hobbies'])) {
+            foreach ($input['hobbies'] as $index => $hobby) {
+                if (!empty($hobby)) {
+                    // XSS check for hobbies
+                    if (preg_match('/<script|javascript:|on\w+\s*=/i', $hobby)) {
+                        $errors["hobby_{$index}"] = [__('Hobby contains invalid characters')];
+                    }
+                    if (strlen($hobby) > 100) {
+                        $errors["hobby_{$index}"] = [__('Hobby must be less than %1% characters', 100)];
+                    }
+                }
+            }
+        }
+        
+        // Batch validate all fields at once
+        if (!empty($validationData) && !empty($validationRules)) {
+            if (!$validator->check($validationData, $validationRules)) {
+                $validationErrors = $validator->getErrors();
+                $errors = array_merge($errors, $validationErrors);
+            }
+        }
+        
+        return $errors;
     }
 
-    // Kiểm tra quyền truy cập (middleware)
-    // public function _checkPermission($controller, $action)
-    // {
-    //     $permissions = Session::get('permissions');
-    //     if (!$permissions) {
-    //         return false;
-    //     }
-
-    //     if (isset($permissions[$controller]) && in_array($action, $permissions[$controller])) {
-    //         return true;
-    //     }
-
-    //     return false;
-    // }
+    /**
+     * Change password
+     * @return void
+     */
+    public function change_password(){
+        $user_id = Session::get('user_id');
+        $user = $this->usersModel->getUserById($user_id);
+        if (!$user){
+            return $this->logout();
+        }
+        
+        // Handle password change request
+        if (HAS_POST('current_password')){
+            $csrf_token = S_POST('csrf_token') ?? '';
+            if (!Session::csrf_verify($csrf_token)){
+                Session::flash('error', __('csrf_failed'));
+                return redirect(auth_url('profile'));
+            }
+            
+            $input = [
+                'current_password' => S_POST('current_password') ?? '',
+                'new_password' => S_POST('new_password') ?? '',
+                'confirm_password' => S_POST('confirm_password') ?? ''
+            ];
+            
+            $rules = [
+                'current_password' => [
+                    'rules' => [Validate::length(6, null)],
+                    'messages' => [__('Current password is required')]
+                ],
+                'new_password' => [
+                    'rules' => [Validate::length(6, 60)],
+                    'messages' => [__('New password must be between %1% and %2% characters', 6, 60)]
+                ],
+                'confirm_password' => [
+                    'rules' => [Validate::equals($input['new_password'])],
+                    'messages' => [__('Password confirmation does not match')]
+                ]
+            ];
+            
+            $validator = new Validate();
+            if (!$validator->check($input, $rules)) {
+                $errors = $validator->getErrors();
+                $this->data('errors', $errors);
+            } else {
+                // Verify current password
+                if (!Security::verifyPassword($input['current_password'], $user['password'])) {
+                    Session::flash('error', __('Current password is incorrect'));
+                    return redirect(auth_url('profile'));
+                }
+                
+                // Update password
+                $this->usersModel->updateUser($user_id, [
+                    'password' => Security::hashPassword($input['new_password'])
+                ]);
+                
+                Session::flash('success', __('Password changed successfully'));
+                return redirect(auth_url('profile'));
+            }
+        }
+        
+        // Redirect to profile if not POST request
+        return redirect(auth_url('profile'));
+    }
 }

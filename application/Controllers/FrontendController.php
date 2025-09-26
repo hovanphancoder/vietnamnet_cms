@@ -18,6 +18,7 @@ class FrontendController extends BaseController
 
     public function index($layout = '', ...$params)
     {
+
         $cache = $this->caching($layout);
         // $cachedata = $cache ?  $cache->get() : false;
         $cachedata = false;

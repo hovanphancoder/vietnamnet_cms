@@ -18,7 +18,7 @@
                             <rect width="7" height="5" x="3" y="16" rx="1"></rect>
                         </svg>
                     </div>
-                    <span class="text-xl font-bold"><?php __e('CMS Name') ?></span>
+                    <span class="text-xl font-bold"><?php __e('CMS Full Form') ?></span>
                 </a>
             </div>
 
@@ -28,7 +28,7 @@
                     <!-- Logo -->
                     <div class="text-center">
                         <?= _img(
-                            theme_assets('images/logo/logo-icon.png'),
+                            theme_assets('images/logo/logo.png'),
                             'Logo CMS',
                             false,
                             'mx-auto mb-6 h-32 w-32 object-contain drop-shadow-lg'
@@ -38,10 +38,10 @@
                     <!-- Description -->
                     <div class="text-center">
                         <h1 class="text-3xl font-bold text-white mb-4 leading-tight">
-                            <?php __e('Welcome to Modern CMS') ?>
+                            <?php __e('Welcome to') ?> <?= option('site_brand') ?>
                         </h1>
                         <p class="text-xl text-blue-100 leading-relaxed max-w-md mx-auto">
-                            <?php __e('CMS Description') ?>
+                            <?= option('site_desc') ?>
                         </p>
                     </div>
                 </div>

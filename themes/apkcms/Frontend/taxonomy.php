@@ -13,6 +13,6 @@ get_template('_metas/meta_index', ['locale' => $locale]);
 ?>
 
 
-<!-- <?php// get_template('sections/taxonomy/taxonomy_main'); ?> -->
+<?php get_template('sections/taxonomy/taxonomy_main'); ?>
 
 <?php get_footer(); ?>
