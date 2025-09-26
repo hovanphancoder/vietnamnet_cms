@@ -740,3 +740,20 @@ if(!function_exists('dump')) {
     }
 }
 
+
+
+if (!function_exists('_json_decode')) {
+    /**
+     * Safely decode JSON data
+     * @param mixed $data
+     * @param mixed $default
+     * @return array
+     */
+    function _json_decode($data, $default = []) {
+        if (is_array($data)) {
+            return $data;
+        }
+        $decoded = json_decode((string)$data, true);
+        return is_array($decoded) ? $decoded : $default;
+    }
+}

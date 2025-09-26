@@ -186,7 +186,7 @@ class Bootstrap {
         $middleware->handle($route, function () use ($route) {
         // Get controller and method information from matched route
             $controllerClass = $route['controller'];
-            $action = $route['action'];
+            $action = str_replace('-', '_', $route['action']);
             $params = $route['params'];
             define('APP_ROUTE', $route);
             

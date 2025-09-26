@@ -1,30 +1,23 @@
 <?php
 App\Libraries\Fastlang::load('Homepage');
 //Render::asset('js', 'js/home-index.js', ['area' => 'frontend', 'location' => 'footer']);
+global $post;
 
-$slug = get_current_slug();
-
-// ===== LẤY THÔNG TIN PAGE =====
-// Lấy thông tin page theo slug sử dụng get_post function
-$page = get_post([
-    'slug' => $slug,
-    'posttype' => 'pages',
-    'active' => true,
-    'columns' => ['*']
-]);
+// Sử dụng dữ liệu từ $post (đã được set trong FrontendController)
+$page = $post;
 
 //Get Object Data for this Pages
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
-// Tạo mảng dữ liệu để truyền vào template từ field admin
+// Tạo mảng dữ liệu để truyền vào template từ $post
 $meta_data = [
     'locale' => $locale,
     'page_title' => $page['seo_title'] ?? $page['title'] ?? 'Page - ' . option('site_title', APP_LANG),
     'page_description' => $page['seo_desc'] ?? $page['description'] ?? option('site_description', APP_LANG),
-    'page_type' => 'page',
+    'page_type' => 'single',
     'current_lang' => APP_LANG,
     'site_name' => option('site_title', APP_LANG),
-    'page_data' => $page, // Truyền toàn bộ dữ liệu page
+    'page_data' => $page, // Truyền toàn bộ dữ liệu từ $post
     'custom_data' => [
         'page_id' => $page['id'] ?? 0,
         'page_slug' => $page['slug'] ?? '',
@@ -65,16 +58,16 @@ get_template('_metas/meta_single', $meta_data);
                             </div>
                             <!-- Right side: Date and time -->
                             <div class="text-gray-500 hidden lg:block text-xs sm:text-sm text-[12px]">
-                                22/09/2025 10:25 (GMT+07:00)
+                                <?= !empty($page['created_at']) ? date('d/m/Y H:i', strtotime($page['created_at'])) . ' (GMT+07:00)' : date('d/m/Y H:i') . ' (GMT+07:00)' ?>
                             </div>
                         </nav>
 
                         <h1 class="merriweather-bold text-2xl sm:notosans-bold sm:text-3xl font-bold text-gray-h1 mb-4 leading-tight">
-                            Billions on paper: Vietnam's LNG power ambitions stalled by policy bottlenecks
+                            <?= htmlspecialchars($page['title'] ?? 'No Title Available') ?>
                         </h1>
 
                         <div class="text-gray-500 lg:hidden text-xs sm:text-sm text-[12px]">
-                            22/09/2025 10:25 (GMT+07:00)
+                            <?= !empty($page['created_at']) ? date('d/m/Y H:i', strtotime($page['created_at'])) . ' (GMT+07:00)' : date('d/m/Y H:i') . ' (GMT+07:00)' ?>
                         </div>
                         <div class="flex flex-wrap flex-col sm:flex-row sm:items-center sm:justify-between mb-0 lg:mb-6 ">
                             <div class="flex items-center space-x-2 mb-3 sm:mb-0">
@@ -130,7 +123,7 @@ get_template('_metas/meta_single', $meta_data);
                         </div>
                         <!-- Article Summary -->
                         <h2 class="arial  text-gray-h2 mb-6 arial font-bold leading-relaxed">
-                            Vietnam's Power Development Plan VIII placed strong emphasis on liquefied natural gas (LNG) as a transitional energy source to gradually replace coal-fired power and ensure energy security amid the shift to renewables. Yet many LNG projects worth billions of dollars remain stuck "on paper" due to persistent policy and administrative hurdles, including unresolved land clearance issues.
+                            <?= htmlspecialchars($page['description'] ?? $page['excerpt'] ?? 'No description available') ?>
                         </h2>
                     </div>
                     <!-- Article Content -->
@@ -139,12 +132,7 @@ get_template('_metas/meta_single', $meta_data);
 
                         <!-- Article Text -->
                         <div class="text-gray-p space-y-4 font-arial text-base leading-relaxed">
-                            <p><strong>Bureaucratic bottlenecks persist</strong></p>
-                            <p>According to the revised Power Development Plan VIII, Vietnam's LNG import-based power capacity is expected to rise from 0.8 GW to 22.5 GW by 2030, through the development of 15 projects. This would represent approximately 12.3% of the country's total power generation capacity - a critical share intended to replace coal and balance the rising share of renewables.</p>
-                            <p>In practice, however, many of these projects are moving slowly or remain stagnant. For instance, the USD 2.2 billion Quang Ninh LNG project is still facing land clearance obstacles. The provincial government has issued a final warning and threatened forced land acquisition if owners refuse to hand over the land.</p>
-                            <p>In Ca Na, a 1,500 MW LNG project received only one bid during its tender in July, with a proposed tariff of 12.83 US cents per kWh - an unusually high rate reflecting investor concerns over policy and financial risks.</p>
-                            <p>Projects that were once expected to lead Vietnam's LNG development - such as Son My I and II (in Lam Dong province) and the Son My LNG terminal - are still stuck in paperwork and financing limbo. The Nghi Son LNG project, valued at USD 2.2 billion (equivalent to about 57,000–58,000 billion VND) and with a 1,500 MW capacity, is considered a vital link in the revised national plan. But after two bidding rounds and two extensions, the project was cancelled due to lack of interest from investors.</p>
-                            <p>Another prominent example is the 3,200 MW Bac Lieu LNG power plant, which has been dormant for years. Despite receiving its investment certificate in January 2020 and being scheduled to begin phase one by late 2023, the project has not broken ground. Over five years later, unresolved land clearance and compensation issues have left the site idle.</p>
+                            <?= $page['content'] ?? '<p>No content available</p>' ?>
                         </div>
                         <!-- ------------------- -->
                         <!-- Info Box -->
@@ -154,7 +142,7 @@ get_template('_metas/meta_single', $meta_data);
                             </p>
                         </div>
                         <!-- Author -->
-                        <p class="notosans-bold font-bold mt-6">Tien Phong</p>
+                        <p class="notosans-bold font-bold mt-6"><?= htmlspecialchars($page['author'] ?? get_user_name($page['user_id'] ?? 0) ?? 'Admin') ?></p>
                         <!-- Related Articles -->
                         <!-- Related Articles -->
                         <div class="mt-6 pt-4 mb-6 border-t border-[#add2e1] related-articles">

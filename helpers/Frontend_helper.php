@@ -129,41 +129,6 @@ if (!function_exists('demo_url')) {
 
 
 
-if (!function_exists('auth_url')) {
-    function auth_url($path = '')
-    {
-        $path = trim($path, '/');
-        switch ($path) {
-            case 'login':
-                return base_url('account/login');
-                break;
-            case 'register':
-                return base_url('account/register');
-                break;
-            case 'forgot':
-                return base_url('account/forgot');
-                break;
-            case 'reset':
-                return base_url('account/forgot');
-                break;
-            case 'logout':
-                return base_url('account/logout');
-                break;
-            case 'google':
-                return base_url('account/login_google');
-                break;
-            case 'profile':
-                return base_url('account/me');
-                break;
-            default:
-                return base_url('account/' . $path);
-                break;
-        }
-    }
-}
-
-
-
 function search_url($keyword = '', $type = '', $category = '', $status = '', $page = 1)
 {
     if (empty($keyword)) {

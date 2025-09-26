@@ -29,9 +29,9 @@ $this->routes->get('account/profile', 'AuthController::profile', [\App\Middlewar
 $this->routes->post('account/profile', 'AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
 
 
-$this->routes->get('account/login_google/', 'Backend\AuthController::login_google', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->get('account/(:any)/', 'Backend\AuthController::$1', [\App\Middleware\NoauthMiddleware::class]);
-$this->routes->post('account/(:any)', 'Backend\AuthController::$1', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('account/login_google/', 'AuthController::login_google', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('account/(:any)/', 'AuthController::$1', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('account/(:any)', 'AuthController::$1', [\App\Middleware\NoauthMiddleware::class]);
 
 // router admin
 $this->routes->get('admin/auth/logout/', 'Backend\AuthController::logout');
