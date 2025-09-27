@@ -1,19 +1,30 @@
 <?php
-// Lấy tất cả bài viết sắp xếp theo mới nhất
-$home_posts = get_posts([
+// Lấy trang hiện tại từ URL
+$current_page = (int)(S_GET('page', 1));
+$per_page = 7;
+
+// Lấy tất cả bài viết sắp xếp theo mới nhất với pagination
+$home_posts_data = get_posts([
     'posttype' => 'posts',
     'filters' => [
         'status' => 'active'
     ],
-    'perPage' => 10,
+    'perPage' => $per_page,
+    'paged' => $current_page,
     'sort' => ['created_at', 'DESC'],
+    'withCategories' => true,
+    'totalpage' => true,
 ]);
 
 // Lấy dữ liệu từ key 'data' nếu có
-if (isset($home_posts['data']) && is_array($home_posts['data'])) {
-    $home_posts = $home_posts['data'];
+if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
+    $home_posts = $home_posts_data['data'];
+    $total_posts = $home_posts_data['total'] ?? 0;
+    $total_pages = $home_posts_data['totalpage'] ?? 1;
 } else {
     $home_posts = [];
+    $total_posts = 0;
+    $total_pages = 1;
 }
 
 ?>
@@ -130,8 +141,6 @@ if (isset($home_posts['data']) && is_array($home_posts['data'])) {
                                             $category_name = strtoupper($side_post['name']);
                                         }
                                         
-                                        // Debug danh mục
-                                        echo "<!-- DEBUG CATEGORY: " . $category_name . " -->";
                                         ?>
                                 <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200 last:border-b-0 last:pb-0">
                                             <a href="<?= link_single($side_post['slug'], $side_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($side_post['title'] ?? '') ?>" class="w-[130px] sm:w-full flex-shrink-0">
@@ -270,12 +279,28 @@ if (isset($home_posts['data']) && is_array($home_posts['data'])) {
                             </div>
                         </div>
                     </div>
-                    <!-- SEE MORE - Mobile -->
+                    <!-- Pagination - Mobile -->
+                    <?php if ($total_pages > 1): ?>
                     <div class="sm:hidden flex justify-center items-center w-full mt-5 mb-10">
-                        <a href="/en-more" class="text-[#2d67ad] text-sm font-medium hover:text-[#1e4a7a] transition-colors">
-                            SEE MORE
-                        </a>
+                        <div class="flex items-center space-x-2">
+                            <?php if ($current_page > 1): ?>
+                            <a href="<?= $current_page == 2 ? '/' : '/?page=' . ($current_page - 1) ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                                ← Previous
+                            </a>
+                            <?php endif; ?>
+                            
+                            <span class="px-3 py-2 text-sm text-gray-600">
+                                Page <?= $current_page ?> of <?= $total_pages ?>
+                            </span>
+                            
+                            <?php if ($current_page < $total_pages): ?>
+                            <a href="/?page=<?= $current_page + 1 ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                                Next →
+                            </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                    <?php endif; ?>
                     <!-- Right Sidebar - TOP STORIES -->
                     <div class="w-full lg:w-[300px] flex-shrink-0">
                         <!-- TOP STORIES -->
@@ -315,46 +340,76 @@ if (isset($home_posts['data']) && is_array($home_posts['data'])) {
         </section>
 
         <!-- Pagination - Desktop -->
+        <?php if ($total_pages > 1): ?>
         <div class="hidden sm:flex justify-center items-center w-full mt-5 mb-10">
             <div class="flex items-center space-x-2">
-                <!-- Page 1 - Active -->
-                <a href="/en-page0" class="w-10 h-10 bg-blue-600 text-white rounded-md flex items-center justify-center text-sm font-medium hover:bg-blue-700 transition-colors">
+                <?php
+                // Previous button
+                if ($current_page > 1):
+                    $prev_page = $current_page - 1;
+                    $prev_url = $prev_page == 1 ? '/' : '/?page=' . $prev_page;
+                ?>
+                <a href="<?= $prev_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <?php endif; ?>
+
+                <?php
+                // Page numbers
+                $start_page = max(1, $current_page - 2);
+                $end_page = min($total_pages, $current_page + 2);
+                
+                // Show first page if not in range
+                if ($start_page > 1):
+                ?>
+                <a href="/" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     1
                 </a>
+                <?php if ($start_page > 2): ?>
+                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                <?php endif; ?>
+                <?php endif; ?>
 
-                <!-- Page 2 -->
-                <a href="/en-page1" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    2
+                <?php
+                // Show page numbers in range
+                for ($i = $start_page; $i <= $end_page; $i++):
+                    $page_url = $i == 1 ? '/' : '/?page=' . $i;
+                    $is_active = $i == $current_page;
+                ?>
+                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <?= $i ?>
                 </a>
+                <?php endfor; ?>
 
-                <!-- Page 3 -->
-                <a href="/en-page2" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    3
+                <?php
+                // Show last page if not in range
+                if ($end_page < $total_pages):
+                ?>
+                <?php if ($end_page < $total_pages - 1): ?>
+                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                <?php endif; ?>
+                <a href="/?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <?= $total_pages ?>
                 </a>
+                <?php endif; ?>
 
-                <!-- Page 4 -->
-                <a href="/en-page3" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    4
-                </a>
-
-                <!-- Page 5 -->
-                <a href="/en-page4" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    5
-                </a>
-
-                <!-- Page 6 -->
-                <a href="/en-page5" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    6
-                </a>
-
-                <!-- Next Button -->
-                <a href="/en-page1" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                <?php
+                // Next button
+                if ($current_page < $total_pages):
+                    $next_page = $current_page + 1;
+                    $next_url = '/?page=' . $next_page;
+                ?>
+                <a href="<?= $next_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
+                <?php endif; ?>
             </div>
         </div>
+        <?php endif; ?>
 
 
 
