@@ -48,6 +48,10 @@ abstract class BaseModel
         }
     }
 
+
+    public function _table(){
+        return $this->table;
+    }
     // Initialize QueryBuilder for current model
     public function newQuery(): QueryBuilder
     {

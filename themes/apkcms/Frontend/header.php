@@ -60,7 +60,7 @@ $GLOBALS['categories'] = $all_categories;
                     <div class="flex items-center space-x-4">
                         <!-- Vietnamnet Logo -->
                         <div class="flex items-center space-x-2">
-                            <a href="index.html">
+                            <a href="/">
                                 <img class="w-[140px]" src="https://static.vnncdn.net/v1/logo/logoVietnamNet.svg" alt="VietNamNet">
                             </a>
                         </div>
@@ -73,7 +73,7 @@ $GLOBALS['categories'] = $all_categories;
                         <div class="flex items-center space-x-3 relative">
                             <!-- Desktop: Expandable search form -->
                             <div class="hidden md:block relative">
-                                <form class="search-small__form  flex items-center" action="/search.html">
+                                <form class="search-small__form  flex items-center" action="/search/">
                                     <input id="searchInput" class="search-small__form-input w-0 h-[28px] px-0 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out" name="key" type="text" placeholder="Type keywords....">
                                     <button id="searchToggleDesktop" class="search-small__form-btn absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="button">
                                         <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon search" class="w-4 h-4">
@@ -89,7 +89,7 @@ $GLOBALS['categories'] = $all_categories;
 
                                 <!-- Search Dropdown -->
                                 <div id="searchDropdown" class="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50">
-                                    <form class="p-4" action="/search.html">
+                                    <form class="p-4" action="/search/">
                                         <div class="relative">
                                             <input class="w-full h-10 px-4 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="key" type="text" placeholder="Type keywords....">
                                             <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="submit">
