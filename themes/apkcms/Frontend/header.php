@@ -2,11 +2,8 @@
 use App\Models\FastModel;
 require_once __DIR__ . '/functions.php';
 
-
-$all_categories = get_categories('posts','category');
-$GLOBALS['categories'] = $all_categories;
-// var_dump($GLOBALS['categories']);
-
+// Use global categories initialized in functions.php
+$categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
 ?>
 <!DOCTYPE html>
 <html lang="<?= lang_code() ?>">
@@ -118,15 +115,15 @@ $GLOBALS['categories'] = $all_categories;
 
                     <!-- Navigation Menu -->
                     <nav class="hidden lg:flex items-center space-x-2 text-sm font-medium whitespace-nowrap overflow-x-auto">
-                        <?php if (!empty($GLOBALS['categories'])): ?>
-                            <?php foreach ($GLOBALS['categories'] as $index => $category): ?>
+                        <?php if (!empty($categories_for_menu)): ?>
+                            <?php foreach ($categories_for_menu as $index => $category): ?>
                                 <a href="<?= link_cat($category['slug']) ?>" 
-                                   class="text-gray-800 hover:text-[#447ec5] <?= $index === 0 ? 'color-[#2d67ad]' : 'color-[#2a2a2a]' ?> whitespace-nowrap text-sm font-bold">
+                                   class="text-gray-800 hover:text-[#447ec5] <?= $index === 0 ? 'text-[#2d67ad]' : 'text-[#2a2a2a]' ?> whitespace-nowrap text-sm font-bold">
                                     <?= htmlspecialchars($category['name']) ?>
                                 </a>
                             <?php endforeach; ?>
                         <?php else: ?>
-                           
+                            <!-- No categories available -->
                         <?php endif; ?>
                     </nav>
                    

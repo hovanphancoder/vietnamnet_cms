@@ -16,70 +16,76 @@ $search_page = (int)(S_GET('page', 1));
 $search_results = [];
 $total_results = 0;
 $categories = [];
+// Use global categories initialized in theme functions to populate the filter
+if (function_exists('globals_categories')) {
+    $categories = globals_categories();
+} else {
+    // Fallback: load theme functions and fetch categories only
+    require_once __DIR__ . '/functions.php';
+    $categories = get_categories('posts','category', APP_LANG, true);
+}
 
-
-// Nếu có từ khóa tìm kiếm
+// Build search results when keyword provided
 if (!empty($search_keyword)) {
     try {
-        // Xử lý từ khóa tìm kiếm
+        // Prepare keyword for search
         $search_keyword_processed = str_replace(['-', '_'], ' ', $search_keyword);
-        
-        // Sử dụng get_posts function với search
-        $search_params = [
-            'posttype' => 'posts',
-            'filters' => [
-                'status' => 'active'
-            ],
-            'search' => $search_keyword_processed,
-            'searchcolumns' => ['title', 'description', 'content', 'search_string'],
-            'perPage' => 10,
-            'paged' => $search_page,
-            'withCategories' => true,
-            'totalpage' => true
-        ];
-        
-        // Filter theo category nếu có
-        if ($search_category !== 'all' && !empty($search_category)) {
-            $search_params['cat'] = $search_category;
+
+         // Base params
+         $search_params = [
+             'posttype' => 'posts',
+             'filters' => [
+                 'status' => 'active',
+             ],
+             'search' => $search_keyword_processed,
+             'searchcolumns' => ['title'],
+             'perPage' => 10,
+             'paged' => $search_page,
+             'withCategories' => true,
+             'totalpage' => true,
+             'sort' => ['created_at', 'DESC'], // Default sort
+         ];
+
+        // Filter by category if provided (get_posts expects id_main)
+        if ($search_category !== 'all' && $search_category !== '' && is_numeric($search_category)) {
+            $search_params['cat'] = (int)$search_category;
         }
-        
-        // Sắp xếp
-        if ($search_order === '1') {
-            $search_params['sort'] = ['created_at', 'ASC']; // Oldest
-        } else {
-            $search_params['sort'] = ['created_at', 'DESC']; // Newest
-        }
-        
-        // Filter theo thời gian
-        if ($search_sort !== 'all') {
-            $date_conditions = [
-                '1' => '1 DAY',      // Past 24 hours
-                '2' => '7 DAY',      // Past week
-                '3' => '1 MONTH',    // Past month
-                '4' => '1 YEAR'      // Past year
-            ];
-            
-            if (isset($date_conditions[$search_sort])) {
-                $search_params['filters']['created_at'] = ['>=', date('Y-m-d H:i:s', strtotime('-' . $date_conditions[$search_sort]))];
-            }
-        }
-        
-        // Lấy kết quả search
+
+         // Time range filter
+         if ($search_sort !== 'all') {
+             $date_conditions = [
+                 '1' => 1,      // 1 day
+                 '2' => 7,      // 7 days
+                 '3' => 30,     // 1 month (30 days)
+                 '4' => 365,    // 1 year (365 days)
+             ];
+             if (isset($date_conditions[$search_sort])) {
+                 $days_ago = $date_conditions[$search_sort];
+                 $from_date = date('Y-m-d H:i:s', strtotime("-{$days_ago} days"));
+                 // Sử dụng format array cho get_posts function
+                 $search_params['filters'][] = ['created_at', '>=', $from_date];
+             }
+         }
+
+         // Order by (sắp xếp theo thời gian) - Override default sort
+         if ($search_order === '1') {
+             $search_params['sort'] = ['created_at', 'ASC']; // Oldest first
+         } else {
+             $search_params['sort'] = ['created_at', 'DESC']; // Newest first (default)
+         }
+
+        // Execute search
         $search_data = get_posts($search_params);
-        
         if (is_array($search_data) && isset($search_data['data'])) {
-            // Kết quả có pagination
             $search_results = $search_data['data'];
             $total_results = $search_data['total'] ?? 0;
         } elseif (is_array($search_data)) {
-            // Kết quả không có pagination
             $search_results = $search_data;
             $total_results = count($search_results);
         } else {
             $search_results = [];
             $total_results = 0;
         }
-        
     } catch (Exception $e) {
         error_log('Error searching posts: ' . $e->getMessage());
         $search_results = [];
@@ -144,7 +150,7 @@ get_template('_metas/meta_index', ['locale' => $locale]);
                                 <option value="all" <?= $search_category === 'all' ? 'selected' : '' ?>>All categories</option>
                                 <?php if (!empty($categories)): ?>
                                     <?php foreach ($categories as $category): ?>
-                                        <option value="<?= $category['id'] ?>" <?= $search_category == $category['id'] ? 'selected' : '' ?>>
+                                        <option value="<?= $category['id_main'] ?? $category['id'] ?? '' ?>" <?= $search_category == ($category['id_main'] ?? $category['id'] ?? '') ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($category['name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -179,15 +185,40 @@ get_template('_metas/meta_index', ['locale' => $locale]);
                             <?php
                             // Xử lý hình ảnh
                             $image_url = '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp'; // Default image
+                            
+                            // Kiểm tra feature image trước
                             if (!empty($post['feature'])) {
                                 $feature_data = json_decode($post['feature'], true);
-                                if (is_array($feature_data) && !empty($feature_data['url'])) {
-                                    $image_url = '/uploads/' . $feature_data['url'];
+                                if (is_array($feature_data)) {
+                                    // Kiểm tra các trường có thể có trong feature data
+                                    if (!empty($feature_data['path'])) {
+                                        $image_url = '/uploads/' . $feature_data['path'];
+                                    } elseif (!empty($feature_data['url'])) {
+                                        $image_url = '/uploads/' . $feature_data['url'];
+                                    } elseif (!empty($feature_data['name'])) {
+                                        $image_url = '/uploads/' . $feature_data['name'];
+                                    }
+                                } elseif (is_string($post['feature']) && !empty($post['feature'])) {
+                                    // Nếu feature là string trực tiếp
+                                    $image_url = '/uploads/' . $post['feature'];
                                 }
-                            } elseif (!empty($post['banner'])) {
+                            }
+                            
+                            // Nếu chưa có feature, kiểm tra banner
+                            if ($image_url === '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp' && !empty($post['banner'])) {
                                 $banner_data = json_decode($post['banner'], true);
-                                if (is_array($banner_data) && !empty($banner_data['url'])) {
-                                    $image_url = '/uploads/' . $banner_data['url'];
+                                if (is_array($banner_data)) {
+                                    // Kiểm tra các trường có thể có trong banner data
+                                    if (!empty($banner_data['path'])) {
+                                        $image_url = '/uploads/' . $banner_data['path'];
+                                    } elseif (!empty($banner_data['url'])) {
+                                        $image_url = '/uploads/' . $banner_data['url'];
+                                    } elseif (!empty($banner_data['name'])) {
+                                        $image_url = '/uploads/' . $banner_data['name'];
+                                    }
+                                } elseif (is_string($post['banner']) && !empty($post['banner'])) {
+                                    // Nếu banner là string trực tiếp
+                                    $image_url = '/uploads/' . $post['banner'];
                                 }
                             }
 
@@ -238,7 +269,7 @@ get_template('_metas/meta_index', ['locale' => $locale]);
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>
-                </div>
+                    </div>
                 <?php if (!empty($search_results) && $total_results > 10): ?>
                 <!-- Pagination - Desktop -->
                 <div class="hidden sm:flex justify-center items-center w-full mt-5 mb-10">
@@ -290,8 +321,8 @@ get_template('_metas/meta_index', ['locale' => $locale]);
                             </svg>
                         </a>
                             <?php endif; ?>
-                        </div>
                     </div>
+                </div>
                 <?php endif; ?>
 
             </div>

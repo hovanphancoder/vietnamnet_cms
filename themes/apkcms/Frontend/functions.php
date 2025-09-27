@@ -5,6 +5,49 @@ use System\Core\AppException;
 if (!defined('APP_THEME_PATH')) {
     exit('Direct access not allowed');
 }
+/**
+ * Get categories of a post using FastModel (theme-level helper)
+ * Bắt categories của bài viết dựa trên bảng fast_post_terms (đảm bảo đúng type/lang/status)
+ */
+if (!function_exists('get_post_categories')) {
+    function get_post_categories($post_id, $posttype, $lang = APP_LANG)
+    {
+        if (empty($post_id) || empty($posttype)) {
+            return [];
+        }
+        try {
+            // Join fast_post_terms (pivot) với fast_terms để lấy slug/name
+            $pivot = 'fast_post_terms';
+            $termsTable = 'fast_terms';
+            $qb = (new \App\Models\FastModel($pivot))
+                ->newQuery()
+                ->select([
+                    "$termsTable.id",
+                    "$termsTable.id_main",
+                    "$termsTable.slug",
+                    "$termsTable.name",
+                    "$termsTable.type",
+                    "$termsTable.lang",
+                ])
+                ->join($termsTable, "$termsTable.id_main", '=', "$pivot.rel_id")
+                ->where("$pivot.post_id", '=', $post_id)
+                ->where("$pivot.posttype", '=', $posttype)
+                ->where("$pivot.type", '=', 'category')
+                ->where("$pivot.lang", '=', $lang)
+                ->where("$pivot.status", '=', 'active')
+                ->where("$termsTable.posttype", '=', $posttype)
+                ->where("$termsTable.type", '=', 'category')
+                ->where("$termsTable.lang", '=', $lang)
+                ->orderBy("$termsTable.name", 'ASC');
+
+            $terms = $qb->get();
+            return is_array($terms) ? $terms : [];
+        } catch (Exception $e) {
+            error_log('Error in get_post_categories: ' . $e->getMessage());
+            return [];
+        }
+    }
+}
 
 /**
  * Get categories with static cache
@@ -96,6 +139,35 @@ if (!function_exists('get_all_categories')) {
             ];
             return $all_categories_cache;
         }
+    }
+}
+
+/**
+ * Initialize global categories for entire theme scope
+ * Thiết lập biến global để dùng ở mọi template trong theme
+ * Lưu ý: Không chạm vào core, chạy ngay khi file functions.php của theme được nạp
+ */
+if (!isset($GLOBALS['all_categories'])) {
+    $GLOBALS['all_categories'] = get_all_categories(APP_LANG);
+}
+if (!isset($GLOBALS['categories'])) {
+    // Lấy tất cả category (posttype=posts, type=category) theo ngôn ngữ hiện tại
+    $GLOBALS['categories'] = get_categories('posts', 'category', APP_LANG, true);
+}
+
+// Helper: truy cập nhanh biến global categories
+if (!function_exists('globals_categories')) {
+    function globals_categories() {
+        return $GLOBALS['categories'] ?? [];
+    }
+}
+if (!function_exists('globals_all_categories')) {
+    function globals_all_categories() {
+        // Trả về cấu trúc mặc định nếu chưa có dữ liệu
+        return $GLOBALS['all_categories'] ?? [
+
+            'all_categories' => []
+        ];
     }
 }
 

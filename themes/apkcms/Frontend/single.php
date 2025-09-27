@@ -9,7 +9,13 @@ global $post;
 // Lấy danh mục của bài viết
 $post_categories = [];
 if (!empty($post['id']) && !empty($post['posttype'])) {
-    $post_categories = get_post_terms($post['id'], $post['posttype'], 'category', APP_LANG);
+    // Ưu tiên dùng helper theme đảm bảo đúng schema
+    if (function_exists('get_post_categories')) {
+        $post_categories = get_post_categories($post['id'], $post['posttype'], APP_LANG);
+    } else {
+        // Fallback về get_post_terms nếu helper chưa có
+        $post_categories = get_post_terms($post['id'], $post['posttype'], 'category', APP_LANG);
+    }
 }
 
 // Lấy social links từ options
