@@ -80,6 +80,12 @@ if (!function_exists('get_posts')) {
         } else {
             $table       = posttype_name($args['posttype'], $lang);              // fast_posts_stories
         }
+        
+        // Kiểm tra nếu table không tồn tại
+        if (empty($table)) {
+            return [];
+        }
+        
         $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
         $termTable   = 'fast_terms';
 
@@ -200,6 +206,12 @@ if (!function_exists('get_post')) {
 
         /* ---------- 1. Tên bảng ---------- */
         $table       = posttype_name($args['posttype'], APP_LANG);              // fast_posts_stories
+        
+        // Kiểm tra nếu table không tồn tại
+        if (empty($table)) {
+            return null;
+        }
+        
         $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
         $termTable   = 'fast_terms';
 

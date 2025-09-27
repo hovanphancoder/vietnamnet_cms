@@ -150,39 +150,7 @@ if (!function_exists('link_single')) {
         return base_url($lang . '/' . $posttype . '/' . $slug . '/');
     }
 }
-// Hàm lấy slug cuối cùng từ get_current_page()
-if (!function_exists('get_current_slug')) {
-    function get_current_slug()
-    {
-        $current_page = get_current_page();
-        
-        if (!$current_page || empty($current_page['segments'])) {
-            return '';
-        }
-        
-        $segments = $current_page['segments'];
-        
-        // Lấy phần cuối cùng của segments
-        $last_segment = end($segments);
-        
-        // Kiểm tra xem có phải là slug không (không phải ngôn ngữ hoặc posttype)
-        $excluded_parts = ['vi', 'en', 'post', 'posts', 'game', 'games', 'app', 'apps', 'blog', 'blogs', 'page', 'pages'];
-        
-        if (!in_array($last_segment, $excluded_parts)) {
-            return $last_segment;
-        }
-        
-        // Nếu phần cuối là posttype, lấy phần trước đó
-        if (count($segments) >= 2) {
-            $second_last = $segments[count($segments) - 2];
-            if (!in_array($second_last, $excluded_parts)) {
-                return $second_last;
-            }
-        }
-        
-        return '';
-    }
-}
+
 
 // Hàm tạo URL sạch không hiển thị ngôn ngữ mặc định
 if (!function_exists('clean_page_url')) {
@@ -228,62 +196,8 @@ if (!function_exists('my_custom_function')) {
     }
 }
 
-/**
- * Custom page title function
- * Override default page title behavior
- */
-if (!function_exists('custom_page_title')) {
-    function custom_page_title() {
-        $current_page = get_current_page();
-        
-        // Custom logic for different pages
-        switch ($current_page['page_type']) {
-            case 'home':
-                return 'Welcome to ' . option('site_title', APP_LANG);
-            case 'blog':
-                return 'Our Blog - ' . option('site_title', APP_LANG);
-            case 'apps':
-                return 'Download Apps - ' . option('site_title', APP_LANG);
-            case 'games':
-                return 'Download Games - ' . option('site_title', APP_LANG);
-            default:
-                return get_current_page_title();
-        }
-    }
-}
 
-/**
- * Custom navigation menu
- * Create custom menu structure
- */
-if (!function_exists('custom_main_menu')) {
-    function custom_main_menu() {
-        $menu_items = [
-            [
-                'title' => __('Home', APP_LANG),
-                'url' => base_url(),
-                'active' => is_page('home')
-            ],
-            [
-                'title' => __('Apps', APP_LANG),
-                'url' => base_url('apps'),
-                'active' => is_page('apps')
-            ],
-            [
-                'title' => __('Games', APP_LANG),
-                'url' => base_url('games'),
-                'active' => is_page('games')
-            ],
-            [
-                'title' => __('Blog', APP_LANG),
-                'url' => base_url('blog'),
-                'active' => is_page('blog')
-            ]
-        ];
-        
-        return $menu_items;
-    }
-}
+
 
 /**
  * Custom footer content
@@ -298,36 +212,6 @@ if (!function_exists('custom_footer_content')) {
     }
 }
 
-/**
- * Custom CSS/JS enqueue
- * Add custom assets to specific pages
- */
-// if (!function_exists('custom_enqueue_assets')) {
-//     function custom_enqueue_assets() {
-//         $current_page = get_current_page();
-        
-//         // Add custom CSS for specific pages
-//         if (is_page('blog')) {
-//             \System\Libraries\Render::asset('css', theme_assets('Assets/css/blog-custom.css'), [
-//                 'area' => 'frontend',
-//                 'location' => 'head'
-//             ]);
-//         }
-        
-//         // Add custom JS for specific pages
-//         if (is_page('apps') || is_page('games')) {
-//             \System\Libraries\Render::asset('js', theme_assets('Assets/js/download-counter.js'), [
-//                 'area' => 'frontend',
-//                 'location' => 'footer'
-//             ]);
-//         }
-//     }
-// }
-
-/**
- * Custom post query
- * Modify post queries for specific pages
- */
 if (!function_exists('custom_get_posts')) {
     function custom_get_posts($post_type = 'post', $limit = 10) {
         // Add custom logic here
@@ -449,128 +333,8 @@ init_theme_functions();
 
 
 
-/**
- * Get page title for specific page type
- * @param string $type
- * @param string $custom_title
- * @return string
- */
-if (!function_exists('get_page_title')) {
-    function get_page_title($type = '', $custom_title = '')
-    {
-        if (!empty($custom_title)) {
-            return $custom_title . ' - ' . option('site_title', APP_LANG);
-        }
-        
-        $current_page = get_current_page();
-        $page_type = !empty($type) ? $type : $current_page['page_type'];
-        
-        switch ($page_type) {
-            case 'home':
-                return option('site_title', APP_LANG) ?: 'Home';
-            case 'blog':
-                return __('Blog', APP_LANG) . ' - ' . option('site_title', APP_LANG);
-            case 'apps':
-                return __('Apps', APP_LANG) . ' - ' . option('site_title', APP_LANG);
-            case 'games':
-                return __('Games', APP_LANG) . ' - ' . option('site_title', APP_LANG);
-            case 'single':
-                return ucwords(str_replace('-', ' ', $current_page['page_slug'])) . ' - ' . option('site_title', APP_LANG);
-            default:
-                return option('site_title', APP_LANG) ?: 'Page';
-        }
-    }
-}
-
-/**
- * Get page heading (H1) for current page
- * @return string
- */
-if (!function_exists('get_page_heading')) {
-    function get_page_heading()
-    {
-        $current_page = get_current_page();
-        
-        switch ($current_page['page_type']) {
-            case 'home':
-                return option('site_title', APP_LANG) ?: 'Welcome';
-            case 'blog':
-                return __('Blog', APP_LANG);
-            case 'apps':
-                return __('Apps', APP_LANG);
-            case 'games':
-                return __('Games', APP_LANG);
-            case 'single':
-                return ucwords(str_replace('-', ' ', $current_page['page_slug']));
-            default:
-                return 'Page';
-        }
-    }
-}
 
 
-if (!function_exists('get_page_description')) {
-    function get_page_description()
-    {
-        $current_page = get_current_page();
-        
-        switch ($current_page['page_type']) {
-            case 'home':
-                return option('site_desc', APP_LANG) ?: 'Welcome to our website';
-            case 'blog':
-                return __('Discover the latest news, tips, and insights about mobile apps and games.', APP_LANG);
-            case 'apps':
-                return __('Download the latest mod APK apps for Android. Get premium features for free.', APP_LANG);
-            case 'games':
-                return __('Download the latest mod APK games for Android. Get unlimited features for free.', APP_LANG);
-            case 'single':
-                return 'Read more about ' . str_replace('-', ' ', $current_page['page_slug']);
-            default:
-                return option('site_desc', APP_LANG) ?: 'Page description';
-        }
-    }
-}
-
-if (!function_exists('get_current_posttype')) {
-    function get_current_posttype()
-    {
-        $current_page = get_current_page();
-        if (!$current_page) {
-            return 'posts';
-        }
-        
-        // Check page type first
-        switch ($current_page['page_type']) {
-            case 'blog':
-                return 'news';
-            case 'apps':
-                return 'posts'; // Assuming apps are stored in posts table
-            case 'games':
-                return 'posts'; // Assuming games are stored in posts table
-            case 'single':
-                // For single pages, try to determine posttype from URL
-                $segments = $current_page['segments'];
-                if (!empty($segments)) {
-                    $first_segment = $segments[0];
-                    switch ($first_segment) {
-                        case 'blog':
-                            return 'news';
-                        case 'apps':
-                        case 'app':
-                            return 'posts';
-                        case 'games':
-                        case 'game':
-                            return 'posts';
-                        default:
-                            return 'posts';
-                    }
-                }
-                return 'posts';
-            default:
-                return 'posts';
-        }
-    }
-}
 
 if (!function_exists('is_posttype')) {
     function is_posttype($posttype)
@@ -613,76 +377,44 @@ if (!function_exists('get_user_by_id')) {
     }
 }
 
-if (!function_exists('get_user_name')) {
-    /**
-     * Lấy tên user theo ID
-     * 
-     * @param mixed $user_id ID của user (có thể là int, string, hoặc null)
-     * @param string $lang Ngôn ngữ (mặc định: APP_LANG)
-     * @return string Tên user hoặc 'Admin' nếu không tìm thấy
-     */
-    function get_user_name($user_id, $lang = null)
-    {
-        // Kiểm tra input cơ bản
-        if (empty($user_id)) {
-            return 'Admin';
-        }
-        
-        // Chuyển đổi thành số nếu có thể
-        $user_id = (int) $user_id;
-        if ($user_id <= 0) {
-            return 'Admin';
-        }
-        
-        try {
-            $user_data = get_user_by_id($user_id, $lang);
-            
-            if ($user_data && is_array($user_data)) {
-                return $user_data['name'] ?? $user_data['username'] ?? $user_data['display_name'] ?? $user_data['title'] ?? 'Admin';
-            }
-        } catch (Exception $e) {
-            error_log('Error in get_user_name: ' . $e->getMessage());
-        }
-        
-        return 'Admin';
-    }
-}
 
-if (!function_exists('get_user_avatar')) {
+if (!function_exists('get_post_terms')) {
     /**
-     * Lấy avatar user theo ID
+     * Lấy danh sách terms của một post
      * 
-     * @param mixed $user_id ID của user (có thể là int, string, hoặc null)
-     * @param string $lang Ngôn ngữ (mặc định: APP_LANG)
-     * @return string Đường dẫn avatar hoặc avatar mặc định
+     * @param int $post_id ID của post
+     * @param string $posttype Loại posttype
+     * @param string $type Loại term (category, tag, etc.)
+     * @param string $lang Mã ngôn ngữ
+     * @return array Danh sách terms
      */
-    function get_user_avatar($user_id, $lang = null)
+    function get_post_terms($post_id, $posttype, $type = 'category', $lang = APP_LANG)
     {
-        // Kiểm tra input cơ bản
-        if (empty($user_id)) {
-            return '/themes/apkcms/Frontend/images/default-user.png';
-        }
-        
-        // Chuyển đổi thành số nếu có thể
-        $user_id = (int) $user_id;
-        if ($user_id <= 0) {
-            return '/themes/apkcms/Frontend/images/default-user.png';
+        if (empty($post_id) || empty($posttype)) {
+            return [];
         }
         
         try {
-            $user_data = get_user_by_id($user_id, $lang);
+            $qb = (new \App\Models\FastModel('fast_post_terms'))
+                ->newQuery()
+                ->where('post_id', '=', $post_id)
+                ->where('posttype', '=', $posttype)
+                ->where('type', '=', $type)
+                ->where('lang', '=', $lang)
+                ->where('status', '=', 'active');
             
-            if ($user_data && is_array($user_data)) {
-                $avatar = $user_data['avatar'] ?? $user_data['profile_image'] ?? $user_data['image'] ?? null;
-                if ($avatar) {
-                    return $avatar;
-                }
+            $post_terms = $qb->get();
+            
+            if ($post_terms && is_array($post_terms)) {
+                return $post_terms;
             }
+            
+            return [];
+            
         } catch (Exception $e) {
-            error_log('Error in get_user_avatar: ' . $e->getMessage());
+            error_log('Error in get_post_terms: ' . $e->getMessage());
+            return [];
         }
-        
-        return '/themes/apkcms/Frontend/images/default-user.png';
     }
 }
 
@@ -853,8 +585,12 @@ if (!function_exists('link_cat')) {
         $slug = trim($slug, '/');
         $slug = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
         
-        // Tạo URL với format chuẩn
-        $url = "/{$slug}/";
+        // Chuẩn hóa posttype
+        $posttype = trim($posttype, '/');
+        $posttype = preg_replace('/[^a-zA-Z0-9\-_]/', '', $posttype);
+        
+        // Tạo URL với format: /$posttype/category/$slug
+        $url = "/{$posttype}/category/{$slug}/";
         
         return $url;
     }
@@ -911,5 +647,34 @@ if (!function_exists('link_rewrite')) {
         $url = "/{$slug}/";
         
         return $url;
+    }
+}
+
+
+/**
+ * Lấy danh sách terms (categories, tags) của một post
+ * 
+ * @param int $post_id ID của post
+ * @param string $posttype Loại posttype
+ * @param string $type Loại term (category, tag, etc.)
+ * @param string $lang Mã ngôn ngữ
+ * @return array Danh sách terms
+ */
+if (!function_exists('get_post_terms')) {
+    function get_post_terms($post_id, $posttype, $type = 'category', $lang = APP_LANG)
+    {
+        if (empty($post_id) || empty($posttype)) {
+            return [];
+        }
+        
+        try {
+            // Sử dụng PostsModel có sẵn
+            $postsModel = new \App\Models\PostsModel($posttype, $lang);
+            return $postsModel->getPostTermsByPostId($posttype, $post_id, $lang);
+            
+        } catch (Exception $e) {
+            error_log('Error in get_post_terms: ' . $e->getMessage());
+            return [];
+        }
     }
 }

@@ -27,6 +27,7 @@ $this->routes->post('account/(:any)/(:any)', 'AuthController::$1:$2', [\App\Midd
 $this->routes->get('account/logout', 'AuthController::logout', [\App\Middleware\AuthMiddleware::class]);
 $this->routes->get('account/profile', 'AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
 $this->routes->post('account/profile', 'AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->post('account/change-password', 'AuthController::change-password', [\App\Middleware\AuthMiddleware::class]);
 
 
 $this->routes->get('account/login_google/', 'AuthController::login_google', [\App\Middleware\NoauthMiddleware::class]);

@@ -76,7 +76,7 @@ return array (
     'value' => 5,
   ),
   'social' => array (
-    'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"}]',
+    'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"},{"network":"zalo","url":"https://zalo.me/0987654321"},{"network":"Google News","url":"https://news.google.com/"}]',
   ),
   'google' => array (
     'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"634145915585-r00flbf39o0f338niopm0b5usfplgkpe.apps.googleusercontent.com"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"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"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://cmsfullform.com/account/login_google/"}]',
@@ -97,6 +97,9 @@ return array (
     'value' => '',
   ),
   'favicon' => array (
+    'value' => '',
+  ),
+  'site_phone' => array (
     'value' => '',
   ),
   'watermark' => array (

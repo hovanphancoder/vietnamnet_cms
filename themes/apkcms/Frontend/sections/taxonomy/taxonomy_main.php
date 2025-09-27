@@ -1,3 +1,78 @@
+<?php
+// Lấy thông tin taxonomy từ URL
+$current_page = get_current_page();
+$taxonomy_title = __('Vietnamnet cat'); // Default title
+$taxonomy_url = '/en'; // Default URL
+
+if (!empty($current_page['segments']) && count($current_page['segments']) >= 3) {
+    $posttype = $current_page['segments'][0];
+    $taxonomy = $current_page['segments'][1];
+    $term_slug = $current_page['segments'][2];
+    
+    // Lấy thông tin term bằng hàm get_term()
+    $term = get_term($term_slug, $posttype, $taxonomy, APP_LANG);
+    
+    // Debug: uncomment để xem dữ liệu
+    // var_dump($term);
+    
+    if ($term && !empty($term['name'])) {
+        $taxonomy_title = $term['name'];
+        $taxonomy_url = link_cat($term_slug, $posttype);
+    }
+}
+
+// Lấy bài viết theo danh mục
+$taxonomy_posts = [];
+if (!empty($term) && !empty($term['id'])) {
+    // Thử cách khác - lấy trực tiếp từ bảng posts với điều kiện category
+    $post_ids = [];
+    try {
+        // Lấy post_ids từ bảng fast_posts_posts_rel với rel_type = 'term'
+        
+        try {
+            $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
+                ->newQuery()
+                ->where('rel_id', '=', $term['id'])
+                ->where('rel_type', '=', 'term') // Sử dụng 'term' thay vì 'category'
+                ->where('lang', '=', APP_LANG)
+                ->orderBy('created_at', 'DESC')
+                ->limit(10);
+            
+            $relations = $qb->get();
+            
+            if ($relations && !empty($relations)) {
+                // Lấy post_ids từ relations
+                $post_ids = [];
+                foreach ($relations as $relation) {
+                    if (!empty($relation['post_id'])) {
+                        $post_ids[] = $relation['post_id'];
+                    }
+                }
+                
+                if (!empty($post_ids)) {
+                    // Lấy bài viết theo post_ids
+                    $table_name = posttype_name($posttype ?? 'posts');
+                    if (!empty($table_name)) {
+                        $qb_posts = (new \App\Models\FastModel($table_name))
+                            ->newQuery()
+                            ->where('status', '=', 'active')
+                            ->whereIn('id', $post_ids)
+                            ->orderBy('created_at', 'DESC')
+                            ->limit(10);
+                        
+                        $taxonomy_posts = $qb_posts->get();
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Error getting post relations: ' . $e->getMessage());
+        }
+    } catch (Exception $e) {
+        error_log('Error getting posts: ' . $e->getMessage());
+    }
+}
+?>
+
 <!-- Breadcrumb Section -->
 <section class=" bg-white border-b border-gray-200 py-4 hidden sm:block">
             <div class="max-w-7xl mx-auto">
@@ -9,7 +84,7 @@
                         <!-- Title -->
                         <div class="breadcrumb__heading">
                             <h1 class="text-2xl font-bold text-[#2d67ad]" style=" font-family: notosans-bold; font-size: 32px;">
-                                <a href="/en" title="Vietnamnet Global"><?=__('Vietnamnet cat')?></a>
+                               <?= htmlspecialchars($taxonomy_title) ?>
                             </h1>
                         </div>
                     </div>
@@ -36,201 +111,196 @@
                         <div class="flex flex-col md:flex-row gap-4 sm:gap-5 mb-6 sm:mb-8">
                             <!-- Large Featured Article -->
                             <div class="flex-1 w-full md:w-[500px]">
-                                <a href="/single.html" title="Free checkups, hospital care by 2030: Vietnam's bold new healthcare vision">
-                                    <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/free-checkups-hospital-care-by-2030-vietnams-bold-new-healthcare-vision-551ef314a29b4800b5625e3e87070fd7-44.jpg?width=550&s=H7rye5Abl2PKSon-r0oqtQ" alt="Free checkups, hospital care by 2030: Vietnam's bold new healthcare vision" class="w-full h-48 sm:h-64 md:h-80 object-cover mb-4">
+                                <?php if (!empty($taxonomy_posts) && isset($taxonomy_posts[0])): ?>
+                                    <?php 
+                                    $featured_post = $taxonomy_posts[0];
+                                    
+                                    // Lấy ảnh đại diện
+                                    $featured_image = '';
+                                    if (!empty($featured_post['feature'])) {
+                                        $feature = is_string($featured_post['feature']) ? json_decode($featured_post['feature'], true) : $featured_post['feature'];
+                                        if (is_array($feature) && !empty($feature['path'])) {
+                                            $featured_image = '/uploads/' . $feature['path'];
+                                        }
+                                    }
+                                    
+                                    // Fallback image nếu không có ảnh
+                                    if (empty($featured_image)) {
+                                        $featured_image = 'https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/free-checkups-hospital-care-by-2030-vietnams-bold-new-healthcare-vision-551ef314a29b4800b5625e3e87070fd7-44.jpg?width=550&s=H7rye5Abl2PKSon-r0oqtQ';
+                                    }
+                                    ?>
+                                    <a href="<?= link_single($featured_post['slug'], $featured_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($featured_post['title'] ?? '') ?>">
+                                        <img src="<?= $featured_image ?>" alt="<?= htmlspecialchars($featured_post['title'] ?? '') ?>" class="w-full h-48 sm:h-64 md:h-80 object-cover mb-4">
                                 </a>
                                 <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 leading-tight">
-                                    <a href="/single.html" title="Free checkups, hospital care by 2030: Vietnam's bold new healthcare vision" class="hover:text-[#2d67ad]">
-                                        Free checkups, hospital care by 2030: Vietnam's bold new healthcare vision
+                                        <a href="<?= link_single($featured_post['slug'], $featured_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($featured_post['title'] ?? '') ?>" class="hover:text-[#2d67ad]">
+                                            <?= htmlspecialchars($featured_post['title'] ?? 'No Title') ?>
                                     </a>
                                 </h3>
                                 <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                    Deputy Prime Minister Le Thanh Long outlines a groundbreaking healthcare plan that will see the national insurance fund cover $5.6 billion annually.
-                                </p>
+                                        <?= htmlspecialchars($featured_post['description'] ?? $featured_post['excerpt'] ?? 'No description available') ?>
+                                    </p>
+                                <?php else: ?>
+                                    <!-- Fallback nếu không có bài viết -->
+                                    <div class="w-full h-48 sm:h-64 md:h-80 bg-gray-200 mb-4 flex items-center justify-center">
+                                        <p class="text-gray-500">No articles available in this category</p>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Two Stacked Articles -->
                             <div class="w-full md:w-[240px] flex-shrink-0 space-y-4 sm:space-y-6">
-                                <!-- Article 1 -->
+                                <?php for ($i = 1; $i <= 2; $i++): ?>
+                                    <?php if (!empty($taxonomy_posts) && isset($taxonomy_posts[$i])): ?>
+                                        <?php 
+                                        $side_post = $taxonomy_posts[$i];
+                                        
+                                        // Lấy ảnh đại diện
+                                        $side_image = '';
+                                        if (!empty($side_post['feature'])) {
+                                            $feature = is_string($side_post['feature']) ? json_decode($side_post['feature'], true) : $side_post['feature'];
+                                            if (is_array($feature) && !empty($feature['path'])) {
+                                                $side_image = '/uploads/' . $feature['path'];
+                                            }
+                                        }
+                                        
+                                        // Fallback image nếu không có ảnh
+                                        if (empty($side_image)) {
+                                            $side_image = 'https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/classical-stars-unite-for-vivaldi-beethoven-concert-in-hanoi-bb0763974f9c4f0daf96e7eb1665aba6-52.png?width=360&s=g-RuxjAOe5ay9qlQYhkzNA';
+                                        }
+                                        
+                                        // Lấy danh mục từ dữ liệu đã có
+                                        $category_name = strtoupper($taxonomy_title);
+                                        if (!empty($side_post['categories']) && is_array($side_post['categories'])) {
+                                            $category_name = strtoupper($side_post['categories'][0]['name'] ?? 'POSTS');
+                                        } elseif (!empty($side_post['category_name'])) {
+                                            $category_name = strtoupper($side_post['category_name']);
+                                        } elseif (!empty($side_post['category'])) {
+                                            $category_name = strtoupper($side_post['category']);
+                                        }
+                                        ?>
                                 <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" classical-stars-unite-for-vivaldi-beethoven-concert-in-hanoi-2443277.html" title="Classical stars unite for 'Vivaldi & Beethoven' concert in Hanoi" class="w-[130px] sm:w-full flex-shrink-0">
-                                        <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/classical-stars-unite-for-vivaldi-beethoven-concert-in-hanoi-bb0763974f9c4f0daf96e7eb1665aba6-52.png?width=360&s=g-RuxjAOe5ay9qlQYhkzNA" alt="Classical stars unite for 'Vivaldi & Beethoven' concert in Hanoi" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
-                                    </a>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">VIETNAMNET GLOBAL</div>
+                                            <a href="<?= link_single($side_post['slug'], $side_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($side_post['title'] ?? '') ?>" class="w-[130px] sm:w-full flex-shrink-0">
+                                                <img src="<?= $side_image ?>" alt="<?= htmlspecialchars($side_post['title'] ?? '') ?>" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
+                                            </a>
+                                            <div class="flex-1 flex flex-col">
+                                                <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">
+                                                    <?= $category_name ?>
+                                </div>
                                         <h3 class="text-base font-bold text-gray-900 leading-tight mb-3 order-1 sm:order-2">
-                                            <a href="/single.html" classical-stars-unite-for-vivaldi-beethoven-concert-in-hanoi-2443277.html" title="Classical stars unite for 'Vivaldi & Beethoven' concert in Hanoi" class="hover:text-[#2d67ad]">
-                                                Classical stars unite for 'Vivaldi & Beethoven' concert in Hanoi
+                                                    <a href="<?= link_single($side_post['slug'], $side_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($side_post['title'] ?? '') ?>" class="hover:text-[#2d67ad]">
+                                                        <?= htmlspecialchars($side_post['title'] ?? 'No Title') ?>
                                             </a>
                                         </h3>
                                     </div>
                                 </div>
-
-                                <!-- Article 2 -->
-                                <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200">
-                                    <a href="/single.html" experts-urge-legal-clarity-to-protect-vietnam-s-private-sector-2443262.html" title="VPSF 2025: Reform needed to protect private sector from legal risks" class="w-[130px] sm:w-full flex-shrink-0">
-                                        <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/vpsf-2025-reform-needed-to-protect-private-sector-from-legal-risks-e9f0329470194120914f703d526253f6-3124.jpg?width=360&s=YSvU9pNHOvvPWFhkZsrO4g" alt="VPSF 2025: Reform needed to protect private sector from legal risks" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
-                                    </a>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">VIETNAMNET GLOBAL</div>
-                                        <h3 class="text-base font-bold text-gray-900 leading-tight mb-3 order-1 sm:order-2">
-                                            <a href="/single.html" experts-urge-legal-clarity-to-protect-vietnam-s-private-sector-2443262.html" title="VPSF 2025: Reform needed to protect private sector from legal risks" class="hover:text-[#2d67ad]">
-                                                VPSF 2025: Reform needed to protect private sector from legal risks
-                                            </a>
-                                        </h3>
-                                    </div>
-                                </div>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
                             </div>
                         </div>
 
                         <!-- Bottom Section: Three Horizontal Articles -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                            <!-- Article 3 -->
+                            <?php for ($i = 3; $i <= 5; $i++): ?>
+                                <?php if (!empty($taxonomy_posts) && isset($taxonomy_posts[$i])): ?>
+                                    <?php 
+                                    $grid_post = $taxonomy_posts[$i];
+                                    
+                                    // Lấy ảnh đại diện
+                                    $grid_image = '';
+                                    if (!empty($grid_post['feature'])) {
+                                        $feature = is_string($grid_post['feature']) ? json_decode($grid_post['feature'], true) : $grid_post['feature'];
+                                        if (is_array($feature) && !empty($feature['path'])) {
+                                            $grid_image = '/uploads/' . $feature['path'];
+                                        }
+                                    }
+                                    
+                                    // Fallback image nếu không có ảnh
+                                    if (empty($grid_image)) {
+                                        $grid_image = 'https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/vietnamese-dance-duo-wins-world-bronze-in-latin-showdance-debut-f90b4100f4734b28a7bd6a64bd89b804-98.gif?width=360&s=R3gNXmh-f4G_2fNK9Yri_A';
+                                    }
+                                    
+                                    // Lấy danh mục từ dữ liệu đã có
+                                    $category_name = strtoupper($taxonomy_title);
+                                    if (!empty($grid_post['categories']) && is_array($grid_post['categories'])) {
+                                        $category_name = strtoupper($grid_post['categories'][0]['name'] ?? 'POSTS');
+                                    } elseif (!empty($grid_post['category_name'])) {
+                                        $category_name = strtoupper($grid_post['category_name']);
+                                    } elseif (!empty($grid_post['category'])) {
+                                        $category_name = strtoupper($grid_post['category']);
+                                    }
+                                    ?>
                             <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200 last:border-b-0 last:pb-0">
-                                <a href="/single.html" vietnamese-dance-duo-wins-world-bronze-in-latin-showdance-debut-2443289.html" title="Vietnamese dance duo wins world bronze in Latin Showdance debut" class="w-[130px] sm:w-full flex-shrink-0">
-                                    <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/vietnamese-dance-duo-wins-world-bronze-in-latin-showdance-debut-f90b4100f4734b28a7bd6a64bd89b804-98.gif?width=360&s=R3gNXmh-f4G_2fNK9Yri_A" alt="Vietnamese dance duo wins world bronze in Latin Showdance debut" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
+                                        <a href="<?= link_single($grid_post['slug'], $grid_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($grid_post['title'] ?? '') ?>" class="w-[130px] sm:w-full flex-shrink-0">
+                                            <img src="<?= $grid_image ?>" alt="<?= htmlspecialchars($grid_post['title'] ?? '') ?>" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
                                 </a>
                                 <div class="flex-1 flex flex-col">
-                                    <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">VIETNAMNET GLOBAL</div>
+                                            <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">
+                                                <?= $category_name ?>
+                            </div>
                                     <h3 class="text-base font-bold text-gray-900 leading-tight mb-3 order-1 sm:order-2">
-                                        <a href="/single.html" vietnamese-dance-duo-wins-world-bronze-in-latin-showdance-debut-2443289.html" title="Vietnamese dance duo wins world bronze in Latin Showdance debut" class="hover:text-[#2d67ad]">
-                                            Vietnamese dance duo wins world bronze in Latin Showdance debut
+                                                <a href="<?= link_single($grid_post['slug'], $grid_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($grid_post['title'] ?? '') ?>" class="hover:text-[#2d67ad]">
+                                                    <?= htmlspecialchars($grid_post['title'] ?? 'No Title') ?>
                                         </a>
                                     </h3>
                                 </div>
                             </div>
-
-                            <!-- Article 4 -->
-                            <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200 last:border-b-0 last:pb-0">
-                                <a href="/single.html" son-tra-peninsula-reopens-to-visitors-after-landslide-related-closure-2443270.html" title="Son Tra Peninsula reopens to visitors after landslide-related closure" class="w-[130px] sm:w-full flex-shrink-0">
-                                    <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/son-tra-peninsula-reopens-to-visitors-after-landslide-related-closure-9f817f4cece24dac82731fbdfdf47fee-3155.jpg?width=360&s=Vsw74mgQZoYOtfCB_fcoIQ" alt="Son Tra Peninsula reopens to visitors after landslide-related closure" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
-                                </a>
-                                <div class="flex-1 flex flex-col">
-                                    <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">VIETNAMNET GLOBAL</div>
-                                    <h3 class="text-base font-bold text-gray-900 leading-tight mb-3 order-1 sm:order-2">
-                                        <a href="/single.html" son-tra-peninsula-reopens-to-visitors-after-landslide-related-closure-2443270.html" title="Son Tra Peninsula reopens to visitors after landslide-related closure" class="hover:text-[#2d67ad]">
-                                            Son Tra Peninsula reopens to visitors after landslide-related closure
-                                        </a>
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <!-- Article 5 -->
-                            <div class="flex gap-4 sm:block pb-4 sm:pb-6 border-b sm:border-b-0 border-gray-200 last:border-b-0 last:pb-0">
-                                <a href="/single.html" vietnam-to-reform-energy-market-for-fairness-innovation-and-security-2443280.html" title="Vietnam to reform energy market for fairness, innovation, and security" class="w-[130px] sm:w-full flex-shrink-0">
-                                    <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/vietnam-to-reform-energy-market-for-fairness-innovation-and-security-c4ffadda7925445db63a637ddb6b18d6-63.jpg?width=360&s=QDoHcs_2scNw2jCoDK6QhA" alt="Vietnam to reform energy market for fairness, innovation, and security" class="w-[130px] sm:w-full h-[86px] sm:h-40 object-cover mb-3">
-                                </a>
-                                <div class="flex-1 flex flex-col">
-                                    <div class="text-xs font-bold mb-2 text-[#2d67ad] order-2 sm:order-1 sm:hidden">VIETNAMNET GLOBAL</div>
-                                    <h3 class="text-base font-bold text-gray-900 leading-tight mb-3 order-1 sm:order-2">
-                                        <a href="/single.html" vietnam-to-reform-energy-market-for-fairness-innovation-and-security-2443280.html" title="Vietnam to reform energy market for fairness, innovation, and security" class="hover:text-[#2d67ad]">
-                                            Vietnam to reform energy market for fairness, innovation, and security
-                                        </a>
-                                    </h3>
-                                </div>
-                            </div>
+                                <?php endif; ?>
+                            <?php endfor; ?>
                         </div>
                         <div class="max-w-7xl mx-auto border-t border-gray-200 mt-4 sm:mt-6 pt-4 sm:pt-5">
                             <div class="space-y-4 sm:space-y-6">
-                                <!-- Article 3 -->
+                                <?php for ($i = 6; $i < count($taxonomy_posts); $i++): ?>
+                                    <?php if (isset($taxonomy_posts[$i])): ?>
+                                        <?php 
+                                        $list_post = $taxonomy_posts[$i];
+                                        
+                                        // Lấy ảnh đại diện
+                                        $list_image = '';
+                                        if (!empty($list_post['feature'])) {
+                                            $feature = is_string($list_post['feature']) ? json_decode($list_post['feature'], true) : $list_post['feature'];
+                                            if (is_array($feature) && !empty($feature['path'])) {
+                                                $list_image = '/uploads/' . $feature['path'];
+                                            }
+                                        }
+                                        
+                                        // Fallback image nếu không có ảnh
+                                        if (empty($list_image)) {
+                                            $list_image = 'https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/two-tiktokers-arrested-in-hcm-city-for-staging-offensive-livestreams-3b53f60a389a464aa7b50d307a31d81a-94.png?width=360&s=HzyBbElIc-cePtrOPTt0VQ';
+                                        }
+                                        
+                                        // Lấy danh mục từ dữ liệu đã có
+                                        $category_name = strtoupper($taxonomy_title);
+                                        if (!empty($list_post['categories']) && is_array($list_post['categories'])) {
+                                            $category_name = strtoupper($list_post['categories'][0]['name'] ?? 'POSTS');
+                                        } elseif (!empty($list_post['category_name'])) {
+                                            $category_name = strtoupper($list_post['category_name']);
+                                        } elseif (!empty($list_post['category'])) {
+                                            $category_name = strtoupper($list_post['category']);
+                                        }
+                                        ?>
                                 <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
                                     <div class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 flex-shrink-0">
-                                        <a href="/single.html" two-tiktokers-arrested-in-hcmc-for-staging-offensive-livestreams-2443285.html" title="Two TikTokers arrested in HCM City for staging offensive livestreams">
-                                            <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/two-tiktokers-arrested-in-hcm-city-for-staging-offensive-livestreams-3b53f60a389a464aa7b50d307a31d81a-94.png?width=360&s=HzyBbElIc-cePtrOPTt0VQ" alt="Two TikTokers arrested in HCM City for staging offensive livestreams" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
+                                                <a href="<?= link_single($list_post['slug'], $list_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($list_post['title'] ?? '') ?>">
+                                                    <img src="<?= $list_image ?>" alt="<?= htmlspecialchars($list_post['title'] ?? '') ?>" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
                                         </a>
                                     </div>
                                     <div class="flex-1 flex flex-col">
-                                        <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">VIETNAMNET GLOBAL</div>
+                                                <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">
+                                                    <?= $category_name ?>
+                                    </div>
                                         <h3 class="text-base font-bold text-gray-900 mb-3 leading-tight order-1 sm:order-2">
-                                            <a href="/single.html" two-tiktokers-arrested-in-hcmc-for-staging-offensive-livestreams-2443285.html" title="Two TikTokers arrested in HCM City for staging offensive livestreams" class="hover:text-[#2d67ad]">
-                                                Two TikTokers arrested in HCM City for staging offensive livestreams
+                                                    <a href="<?= link_single($list_post['slug'], $list_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($list_post['title'] ?? '') ?>" class="hover:text-[#2d67ad]">
+                                                        <?= htmlspecialchars($list_post['title'] ?? 'No Title') ?>
                                             </a>
                                         </h3>
                                         <p class="hidden sm:block text-gray-600 leading-relaxed order-3">
-                                            Ho Chi Minh City police have arrested two TikTokers for producing and spreading offensive, staged videos online aimed at attracting views.
+                                                    <?= htmlspecialchars($list_post['description'] ?? $list_post['excerpt'] ?? 'No description available') ?>
                                         </p>
                                     </div>
                                 </div>
-
-                                <!-- Article 4 -->
-                                <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
-                                    <div class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 flex-shrink-0">
-                                        <a href="/single.html" iphone-18-rumors-point-to-slimmer-dynamic-island-not-under-display-face-id-2443073.html" title="iPhone 18 rumors point to slimmer Dynamic Island, not under-display Face ID">
-                                            <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/iphone-18-rumors-point-to-slimmer-dynamic-island-not-under-display-face-id-bd447a73097246e587ddb895220b10d0-1351.png?width=360&s=s9mCvu2ANl4bdiUuSJ1mkg" alt="iPhone 18 rumors point to slimmer Dynamic Island, not under-display Face ID" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">VIETNAMNET GLOBAL</div>
-                                        <h3 class="text-base font-bold text-gray-900 mb-3 leading-tight order-1 sm:order-2">
-                                            <a href="/single.html" iphone-18-rumors-point-to-slimmer-dynamic-island-not-under-display-face-id-2443073.html" title="iPhone 18 rumors point to slimmer Dynamic Island, not under-display Face ID" class="hover:text-[#2d67ad]">
-                                                iPhone 18 rumors point to slimmer Dynamic Island, not under-display Face ID
-                                            </a>
-                                        </h3>
-                                        <p class="hidden sm:block text-gray-600 leading-relaxed order-3">
-                                            iPhone 18 rumors say Apple will refine the notch design, but under-display Face ID won't arrive until 2026.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Article 5 -->
-                                <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
-                                    <div class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 flex-shrink-0">
-                                        <a href="/single.html" vietnam-plans-6-3-billion-upgrade-to-key-north-south-expressway-routes-2443268.html" title="$6.3 billion proposed to widen 18 North-South expressway segments">
-                                            <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/63-billion-proposed-to-widen-18-north-south-expressway-segments-4f4ac77654ae4d91aff82c39e5621652-3149.png?width=360&s=16x9sWRJH_f5qPmHMcS6VA" alt="$6.3 billion proposed to widen 18 North-South expressway segments" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">VIETNAMNET GLOBAL</div>
-                                        <h3 class="text-base font-bold text-gray-900 mb-3 leading-tight order-1 sm:order-2">
-                                            <a href="/single.html" vietnam-plans-6-3-billion-upgrade-to-key-north-south-expressway-routes-2443268.html" title="$6.3 billion proposed to widen 18 North-South expressway segments" class="hover:text-[#2d67ad]">
-                                                $6.3 billion proposed to widen 18 North-South expressway segments
-                                            </a>
-                                        </h3>
-                                        <p class="hidden sm:block text-gray-600 leading-relaxed order-3">
-                                            The Ministry of Construction has proposed widening 18 expressway sections to six lanes, aiming to ease traffic and boost economic connectivity.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Article 6 -->
-                                <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
-                                    <div class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 flex-shrink-0">
-                                        <a href="/single.html" hanoi-cdc-shuts-fanpage-comments-amid-child-abuse-scandal-2443267.html" title="Hanoi CDC shuts fanpage comments amid child abuse scandal">
-                                            <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/hanoi-cdc-shuts-fanpage-comments-amid-child-abuse-scandal-70a3b59bfac54a7d9ed02f03d302d1ce-3147.jpg?width=360&s=ZUQktaRVicGeRgG9jDgckg" alt="Hanoi CDC shuts fanpage comments amid child abuse scandal" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">VIETNAMNET GLOBAL</div>
-                                        <h3 class="text-base font-bold text-gray-900 mb-3 leading-tight order-1 sm:order-2">
-                                            <a href="/single.html" hanoi-cdc-shuts-fanpage-comments-amid-child-abuse-scandal-2443267.html" title="Hanoi CDC shuts fanpage comments amid child abuse scandal" class="hover:text-[#2d67ad]">
-                                                Hanoi CDC shuts fanpage comments amid child abuse scandal
-                                            </a>
-                                        </h3>
-                                        <p class="hidden sm:block text-gray-600 leading-relaxed order-3">
-                                            Hanoi CDC has disabled comments on its Facebook page after a staff member was accused of violently abusing her stepson, sparking public outrage.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Article 7 -->
-                                <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
-                                    <div class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 flex-shrink-0">
-                                        <a href="/single.html" fpt-ceo-vietnamese-businesses-must-unite-to-succeed-2443266.html" title="FPT CEO: Vietnamese businesses must unite to succeed">
-                                            <img src="https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/16/fpt-ceo-vietnamese-businesses-must-unite-to-succeed-af2be71520fb4280adcacdb5fb0639a0-3137.jpg?width=360&s=W4KZRT6rDusoQIi73OwVcg" alt="FPT CEO: Vietnamese businesses must unite to succeed" class="w-[130px] sm:w-[240px] h-[86px] sm:h-40 object-cover">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">VIETNAMNET GLOBAL</div>
-                                        <h3 class="text-base font-bold text-gray-900 mb-3 leading-tight order-1 sm:order-2">
-                                            <a href="/single.html" fpt-ceo-vietnamese-businesses-must-unite-to-succeed-2443266.html" title="FPT CEO: Vietnamese businesses must unite to succeed" class="hover:text-[#2d67ad]">
-                                                FPT CEO: Vietnamese businesses must unite to succeed
-                                            </a>
-                                        </h3>
-                                        <p class="hidden sm:block text-gray-600 leading-relaxed order-3">
-                                            At the Vietnam Private Sector Forum 2025, FPT CEO called for unity, collaboration, and digital skills to drive national transformation.
-                                        </p>
-                                    </div>
-                                </div>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
                             </div>
                         </div>
                     </div>

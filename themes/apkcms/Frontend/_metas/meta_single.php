@@ -9,12 +9,8 @@ use App\Blocks\Meta\MetaBlock;
 
 global $posttype, $post;
 
-$current_page = get_current_page();
-$posttype = $current_page['page_slug'];
-if($posttype != 'news'){
-    $posttype = 'posts';
-}
 
+$locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
 $meta = new MetaBlock();
 
