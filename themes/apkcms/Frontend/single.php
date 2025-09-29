@@ -210,12 +210,52 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                         <!-- ------------------- -->
                        
                         <!-- Author -->
-                         <?php
-                            // $author = get_user_name($post['user_id'] ?? 0);
-                            // var_dump($author);
-                         ?>
-                      
-                        <p class="notosans-bold font-bold mt-6">Admin</p>
+                        <?php
+                        // Lấy thông tin tác giả từ $post['author']
+                        $author_info = null;
+                        if (!empty($post['author'])) {
+                            $author_info = getAuthor($post['author']);
+                        }
+                        
+                        // Nếu không có thông tin tác giả, sử dụng thông tin mặc định
+                        $author_name = 'Admin';
+                        $author_avatar = '/themes/apkcms/Frontend/assets/images/default-avatar.png';
+                        $author_bio = '';
+                        $author_url = '/author/' . ($post['author'] ?? 'admin');
+                        
+                        if ($author_info && is_array($author_info)) {
+                            $author_name = $author_info['fullname'] ?? $author_info['username'] ?? 'Admin';
+                            $author_avatar = !empty($author_info['avatar']) ? $author_info['avatar'] : $author_avatar;
+                            $author_bio = $author_info['about_me'] ?? '';
+                            $author_url = '/author/' . ($author_info['username'] ?? $post['author']);
+                        }
+                        ?>
+                        
+                        <div class="author-info mt-4">
+                            <div class="flex items-center space-x-4">
+                                <!-- Avatar -->
+                                <div class="flex-shrink-0">
+                                    <img src="<?= $author_avatar ?>" 
+                                         alt="<?= htmlspecialchars($author_name) ?>" 
+                                         class="w-8 h-8 rounded-full object-cover border-2 border-gray-200">
+                                </div>
+                                
+                                <!-- Author Details -->
+                                <div class="flex-grow">
+                                    <h4 class="notosans-bold font-bold text-lg hover:text-[#2d67ad] ">
+                                        <a href="<?= $author_url ?>" 
+                                           title="Xem tất cả bài viết của <?= htmlspecialchars($author_name) ?>"
+                                           class="hover:text-blue-600 transition-colors">
+                                            <?= htmlspecialchars($author_name) ?>
+                                        </a>
+                                    </h4>
+                                    
+                                   
+                                    
+                                   
+                                </div>
+                            </div>
+                        </div>
                        
                         <!-- Related Articles -->
                         <!-- Related Articles -->
@@ -364,7 +404,8 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                     <!-- Comment Section -->
                     <div class="mt-8 pt-6 ">
                         <h3 class="text-lg notosans-bold mb-4 text-gray-h3 uppercase text-[#0a569d] font-bold">Comments</h3>
-                        <div class="block h-[70px] w-full border border-[#CDE3FF] bg-[#EEF5FF] rounded-[5px] cursor-text "><input class=" bg-[#EEF5FF] h-[40px] w-full rounded-[5px] py-[10px] px-[10px] focus:outline-none " type="text" placeholder="Your comment...."></div>
+                        <!-- <div class="block h-[70px] w-full border border-[#CDE3FF] bg-[#EEF5FF] rounded-[5px] cursor-text "><input class=" bg-[#EEF5FF] h-[40px] w-full rounded-[5px] py-[10px] px-[10px] focus:outline-none " type="text" placeholder="Your comment...."></div> -->
+                        <?php //do_shortcode('rw-rating',$post['posttype'], $post['id']); ?>
                     </div>
                 </div>
                 <!-- Right Column - Sidebar -->
