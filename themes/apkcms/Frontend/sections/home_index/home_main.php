@@ -313,33 +313,44 @@ if ($total_pages == 1 && $total_posts > $per_page) {
                         <!-- TOP STORIES -->
                         <div class="bg-white border border-gray-200 p-6 mb-6">
                             <h3 class="text-lg font-bold  mb-4 text-center text-[#2d67ad]">TOP STORIES</h3>
-                            <ul class="space-y-3">
-                                <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" apple-releases-ios-26-with-biggest-iphone-redesign-in-a-decade-2443034.html" class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed">
-                                        Apple releases iOS 26 with biggest iPhone redesign in a decade
-                                    </a>
-                                </li>
-                                <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" vietnamese-parents-divided-over-school-timetable-chaos-2443091.html" class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed">
-                                        Vietnamese parents divided over school timetable chaos
-                                    </a>
-                                </li>
-                                <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" vietnam-braces-for-more-storms-and-strong-cold-waves-in-late-2025-2443023.html" class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed">
-                                        Vietnam braces for more storms and strong cold waves in late 2025
-                                    </a>
-                                </li>
-                                <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" vietnam-urges-u-s-to-reconsider-seafood-import-ban-2443103.html" class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed">
-                                        Vietnam urges U.S. to reconsider seafood import ban
-                                    </a>
-                                </li>
-                                <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-                                    <a href="/single.html" free-healthcare-for-all-a-promise-of-national-well-being-2442684.html" class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed">
-                                        Free healthcare for all: A promise of national well-being
-                                    </a>
-                                </li>
-                            </ul>
+                            <?php
+                            // Lấy top stories - bài viết có lượt xem cao nhất
+                            $top_stories = get_posts([
+                                'posttype' => 'posts',
+                                'filters' => [
+                                    'status' => 'active'
+                                ],
+                                'perPage' => 5,
+                                'sort' => ['views', 'DESC']
+                            ]);
+                            
+                            // Lấy dữ liệu từ key 'data' nếu có
+                            if (isset($top_stories['data']) && is_array($top_stories['data'])) {
+                                $top_stories = $top_stories['data'];
+                            } else {
+                                $top_stories = [];
+                            }
+                            ?>
+                            
+                            <?php if (!empty($top_stories) && is_array($top_stories)): ?>
+                                <ul class="space-y-3">
+                                    <?php foreach ($top_stories as $story): ?>
+                                        <?php if (isset($story['title']) && isset($story['slug'])): ?>
+                                            <li class="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                                                <a href="<?= link_single($story['slug'], $story['posttype'] ?? 'posts') ?>" 
+                                                   class="text-sm text-gray-700 hover:text-[#2d67ad] leading-relaxed"
+                                                   title="<?= htmlspecialchars($story['title']) ?>">
+                                                    <?= htmlspecialchars($story['title']) ?>
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <div class="text-center py-4 text-gray-500 text-sm">
+                                    <p>No top stories available</p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

@@ -520,15 +520,21 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                         <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">
                                             <?php
                                             // Lấy danh mục của bài viết hot news
-                                            $news_categories = [];
-                                            if (!empty($news_post['id'])) {
-                                                $news_categories = get_post_terms($news_post['id'], $news_post['posttype'] ?? $post['posttype'], 'category', APP_LANG);
-                                            }
+                                            // $news_categories = [];
+                                            // if (!empty($news_post['id'])) {
+                                            //     $news_categories = get_post_categories($news_post['id'], $news_post['posttype'] ?? $post['posttype'], APP_LANG);
+                                            // }
                                             
-                                            if (!empty($news_categories)) {
-                                                echo strtoupper($news_categories[0]['name'] ?? 'POSTS');
+                                            // if (!empty($news_categories) && is_array($news_categories)) {
+                                            //     echo strtoupper($news_categories[0]['name'] ?? 'POSTS');
+                                            // } else {
+                                            //     echo strtoupper($news_post['posttype'] ?? 'POSTS');
+                                            // }
+
+                                            if (!empty($news_post['categories']) && is_array($news_post['categories'])) {
+                                                echo strtoupper($news_post['categories'][0]['name'] ?? 'POSTS');
                                             } else {
-                                                echo strtoupper($post['posttype'] ?? 'POSTS');
+                                                echo strtoupper($news_post['posttype'] ?? 'POSTS');
                                             }
                                             ?>
                                         </div>

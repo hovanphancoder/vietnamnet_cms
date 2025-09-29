@@ -67,19 +67,7 @@ use App\Models\FastModel;
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                            <!-- Fallback menu if no categories -->
-                            <div class="space-y-2">
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Chính trị</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Kinh doanh</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thể thao</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Công nghệ</a>
-                            </div>
-                            <div class="space-y-2">
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Thời sự</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Giáo dục</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Đời sống</a>
-                                <a href="/category.html" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Sức khỏe</a>
-                            </div>
+                         
                         <?php endif; ?>
                     </div>
                 </div>
@@ -120,9 +108,9 @@ use App\Models\FastModel;
                     <div class="footer-en__bottom-list text-sm text-gray-600 space-y-2">
                         <div class="footer-en__bottom-item font-medium">© Copyright of VietNamNet Global</div>
                         <div class="footer-en__bottom-item text-xs leading-relaxed">
-                            <span>Tel: 024 3772 7988 Fax: (024) 37722734</span>
+                            <span>Tel: <?= option('site_phone') ?> Fax: <?= option('site_fax') ?></span>
                             <span>, </span>
-                            <span>Email: evnn@vietnamnet.vn</span>
+                            <span>Email: <?= option('site_email') ?></span>
                         </div>
                     </div>
                 </div>
@@ -181,10 +169,10 @@ use App\Models\FastModel;
                            
                         </div>
                     </div>
-                    <div class="flex space-x-4">
+                    <!-- <div class="flex space-x-4">
                         <a class=" text-gray-800  text-sm font-medium hover:bg-gray-50  border-gray-300 " href="/news_register.html">Độc giả gửi bài</a>
                         <a class=" text-gray-800  text-sm font-medium hover:bg-gray-50  border-gray-300 " href="/">Tuyển dụng</a>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

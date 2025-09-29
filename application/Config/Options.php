@@ -24,7 +24,7 @@ return array (
     'value' => 'https://vietnamnet2.vn',
   ),
   'site_desc' => array (
-    'value' => 'NewsPortal - Trang tin tức Việt Nam cập nhật 24/7 với những thông tin mới nhất về thời sự, kinh tế, xã hội, thể thao, công nghệ và đời sống.',
+    'value' => 'Vietnamnet - Trang tin tức Việt Nam cập nhật 24/7 với những thông tin mới nhất về thời sự, kinh tế, xã hội, thể thao, công nghệ và đời sống.',
     'valuelang' => array (
       'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
       'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
@@ -34,7 +34,7 @@ return array (
     ),
   ),
   'site_title' => array (
-    'value' => 'NewsPortal - Tin tức Việt Nam',
+    'value' => 'Vietnamnet - Tin tức Việt Nam',
     'valuelang' => array (
       'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
       'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
@@ -100,7 +100,10 @@ return array (
     'value' => '{"id":109,"name":"unnamed.jpg","path":"2025/09/29/unnamed.jpg"}',
   ),
   'site_phone' => array (
-    'value' => '',
+    'value' => '0987654321',
+  ),
+  'site_fax' => array (
+    'value' => '(024) 377222222',
   ),
   'watermark' => array (
     'value' => '',
