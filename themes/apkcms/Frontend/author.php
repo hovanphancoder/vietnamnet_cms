@@ -4,7 +4,7 @@ App\Libraries\Fastlang::load('Homepage');
 
 // Include UsersModel
 use App\Models\UsersModel;
-
+// ekhjfsek
 //Get Object Data for this Pages
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
