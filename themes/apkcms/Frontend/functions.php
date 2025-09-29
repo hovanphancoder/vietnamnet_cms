@@ -538,104 +538,8 @@ if (!function_exists('get_term_by_slug')) {
 
 
 
-/**
- * Get current page information
- * @return array
- */
-if (!function_exists('get_current_page')) {
-    function get_current_page()
-    {
-        $uri = $_SERVER['REQUEST_URI'] ?? '';
-        $path = parse_url($uri, PHP_URL_PATH);
-        $segments = explode('/', trim($path, '/'));
-        
-        // Remove empty segments
-        $segments = array_filter($segments);
-        
-        $page = [
-            'uri' => $uri,
-            'path' => $path,
-            'segments' => array_values($segments),
-            'is_home' => empty($segments) || (count($segments) === 1 && $segments[0] === ''),
-            'is_blog' => false,
-            'is_apps' => false,
-            'is_games' => false,
-            'is_single' => false,
-            'page_type' => 'home',
-            'page_slug' => '',
-            'page_id' => null
-        ];
-        
-        // Check specific pages
-        if (!empty($segments)) {
-            $first_segment = $segments[0];
-            
-            switch ($first_segment) {
-                case 'blog':
-                    $page['is_blog'] = true;
-                    $page['page_type'] = 'blog';
-                    $page['page_slug'] = 'blog';
-                    break;
-                    
-                case 'apps':
-                    $page['is_apps'] = true;
-                    $page['page_type'] = 'apps';
-                    $page['page_slug'] = 'apps';
-                    break;
-                    
-                case 'games':
-                    $page['is_games'] = true;
-                    $page['page_type'] = 'games';
-                    $page['page_slug'] = 'games';
-                    break;
-                    
-                default:
-                    // Check if it's a single post/page
-                    if (count($segments) >= 1) {
-                        $page['is_single'] = true;
-                        $page['page_type'] = 'single';
-                        $page['page_slug'] = $first_segment;
-                    }
-                    break;
-            }
-        }
-        
-        return $page;
-    }
-}
 
 
-
-/**
- * Check if current page is specific page type
- * @param string $type
- * @return bool
- */
-if (!function_exists('is_page')) {
-    function is_page($type = '')
-    {
-        $current_page = get_current_page();
-        
-        if (empty($type)) {
-            return $current_page;
-        }
-        
-        switch ($type) {
-            case 'home':
-                return $current_page['is_home'];
-            case 'blog':
-                return $current_page['is_blog'];
-            case 'apps':
-                return $current_page['is_apps'];
-            case 'games':
-                return $current_page['is_games'];
-            case 'single':
-                return $current_page['is_single'];
-            default:
-                return $current_page['page_type'] === $type;
-        }
-    }
-}
 
 /**
  * Generate category link with proper URL format
@@ -746,6 +650,85 @@ if (!function_exists('get_post_terms')) {
             
         } catch (Exception $e) {
             error_log('Error in get_post_terms: ' . $e->getMessage());
+            return [];
+        }
+    }
+}
+
+/**
+ * Lấy danh mục của bài viết theo slug
+ * Lấy categories của bài viết dựa trên slug thay vì ID
+ * 
+ * @param string $slug_post Slug của bài viết
+ * @param string $posttype Loại posttype (posts, news, etc.)
+ * @param string $type Loại term (category, tag, etc.)
+ * @param string $lang Mã ngôn ngữ
+ * @return array Danh sách categories/terms
+ */
+
+if (!function_exists('get_post_categories_by_slug')) {
+    function get_post_categories_by_slug($slug_post, $posttype = 'posts', $type = 'category', $lang = APP_LANG)
+    {
+        if (empty($slug_post) || empty($posttype)) {
+            return [];
+        }
+        
+        try {
+            // Lấy thông tin bài viết theo slug để có ID
+            $post = get_post([
+                'slug' => $slug_post,
+                'posttype' => $posttype,
+                'active' => true
+            ]);
+            
+            if (empty($post) || !isset($post['id'])) {
+                return [];
+            }
+            
+            // Sử dụng hàm get_post_categories có sẵn với ID
+            return get_post_categories($post['id'], $posttype, $lang);
+            
+        } catch (Exception $e) {
+            error_log('Error in get_post_categories_by_slug: ' . $e->getMessage());
+            return [];
+        }
+    }
+}
+
+/**
+ * Lấy terms (tags, categories) của bài viết theo slug
+ * Lấy terms của bài viết dựa trên slug thay vì ID
+ * 
+ * @param string $slug_post Slug của bài viết
+ * @param string $posttype Loại posttype (posts, news, etc.)
+ * @param string $type Loại term (category, tag, etc.)
+ * @param string $lang Mã ngôn ngữ
+ * @return array Danh sách terms
+ */
+if (!function_exists('get_post_terms_by_slug')) {
+    function get_post_terms_by_slug($slug_post, $posttype = 'posts', $type = 'category', $lang = APP_LANG)
+    {
+        if (empty($slug_post) || empty($posttype)) {
+            return [];
+        }
+        
+        try {
+            // Lấy thông tin bài viết theo slug để có ID
+            $post = get_post([
+                'slug' => $slug_post,
+                'posttype' => $posttype,
+                'active' => true
+            ]);
+            
+            if (empty($post) || !isset($post['id'])) {
+                return [];
+            }
+            
+            // Sử dụng hàm get_post_terms có sẵn với ID
+            return get_post_terms($post['id'], $posttype, $type, $lang);
+            
+        } catch (Exception $e) {
+            error_log('Error in get_post_terms_by_slug: ' . $e->getMessage());
             return [];
         }
     }

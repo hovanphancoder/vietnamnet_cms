@@ -1,22 +1,41 @@
 <?php
 App\Libraries\Fastlang::load('Homepage');
 //Render::asset('js', 'js/home-index.js', ['area' => 'frontend', 'location' => 'footer']);
+
+// Include functions helper
+require_once __DIR__ . '/functions.php';
+
+// Include database helper
+// if (file_exists(FCPATH . 'helpers/Database_helper.php')) {
+//     require_once FCPATH . 'helpers/Database_helper.php';
+// }
+
 global $post;
+$categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
 
-// Sử dụng dữ liệu từ $post (đã được set trong FrontendController)
+// var_dump($categories_for_menu);
 
+$qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
+    ->newQuery()
+    ->where('post_id', '=', $post['id'])
+    ->where('lang', '=', APP_LANG);
 
-// Lấy danh mục của bài viết
-$post_categories = [];
-if (!empty($post['id']) && !empty($post['posttype'])) {
-    // Ưu tiên dùng helper theme đảm bảo đúng schema
-    if (function_exists('get_post_categories')) {
-        $post_categories = get_post_categories($post['id'], $post['posttype'], APP_LANG);
-    } else {
-        // Fallback về get_post_terms nếu helper chưa có
-        $post_categories = get_post_terms($post['id'], $post['posttype'], 'category', APP_LANG);
+// Thực hiện query và lấy kết quả
+$results = $qb->get();
+
+// Lưu các rel_id vào mảng
+$rel_ids = [];
+if (!empty($results) && is_array($results)) {
+    foreach ($results as $result) {
+        if (isset($result['rel_id'])) {
+            $rel_ids[] = $result['rel_id'];
+        }
     }
 }
+
+// Debug: hiển thị kết quả
+// echo "<!-- Debug: Query results count: " . count($results) . " -->";
+// echo "<!-- Debug: Rel IDs: " . print_r($rel_ids, true) . " -->";
 
 // Lấy social links từ options
 $social_links = [];
@@ -52,27 +71,47 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                         <!-- Breadcrumb Navigation Desktop -->
                         <nav class=" mb-4 lg:flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm  gap-2 sm:gap-0" aria-label="Breadcrumb">
                             <!-- Left side: Breadcrumb path -->
-                            <div class="flex items-center">
+                            <div class="flex flex-wrap items-center">
 
-                                <a href="/" class="flex lg:hidden items-center text-[#2d67ad] ">
+                                <a href="/" class="flex lg:hidden items-center text-[#2d67ad] mr-2">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill="#2d67ad" d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                                     </svg>
                                 </a>
-                                <?php if (!empty($post_categories)): ?>
-                                    <?php foreach ($post_categories as $index => $category): ?>
-                                        <a href="<?= link_cat($category['slug'], $post['posttype'] ?? 'posts') ?>" 
-                                           class="text-[#2d67ad] text-[16px] font-bold transition-colors text-sm sm:text-base">
-                                            <?= htmlspecialchars($category['name']) ?>
-                                        </a>
-                                        <?php if ($index < count($post_categories) - 1): ?>
-                                            <span class="text-gray-400 mx-2">,</span>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
+                                <?php 
+                              
+                                // Nếu vẫn không có, thử nhiều function khác nhau
+                           
+                               
+                                    // Lấy categories của bài viết hiện tại dựa trên rel_ids
+                                    $post_categories = [];
+                                    if (!empty($rel_ids) && !empty($categories_for_menu)) {
+                                        foreach ($categories_for_menu as $category) {
+                                            if (in_array($category['id_main'], $rel_ids)) {
+                                                $post_categories[] = $category;
+                                            }
+                                        }
+                                    }
+                                    ?>
                                     
-                                <?php endif; ?>
-
+                                    <?php if (!empty($post_categories) && is_array($post_categories)): ?>
+                                        <?php foreach ($post_categories as $index => $category): ?>
+                                            <?php if (isset($category['name']) && isset($category['slug'])): ?>
+                                                <a href="<?= link_cat($category['slug'], $post['posttype'] ?? 'posts') ?>" 
+                                                   class="text-[#2d67ad] text-[16px] font-bold transition-colors  text-sm sm:text-base hover:text-[#0a569d]">
+                                                    <?= htmlspecialchars($category['name']) ?>
+                                                </a>
+                                                <?php if ($index < count($post_categories) - 1): ?>
+                                                    <span class="text-gray-500 mr-1">, </span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-gray-500 text-sm">No categories available</span>
+                                    <?php endif; ?>
+                                
+                                
+                                
                             </div>
                             <!-- Right side: Date and time -->
                             <div class="text-gray-500 hidden lg:block text-xs sm:text-sm text-[12px]">
@@ -439,6 +478,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                         'sort' => ['views', 'DESC'],
                                         'withCategories' => true
                                     ]);
+                                    // var_dump($hot_news_posts);
                                     
                                     // Lấy dữ liệu từ key 'data' nếu có
                                     if (isset($hot_news_posts['data']) && is_array($hot_news_posts['data'])) {
@@ -459,33 +499,6 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 }
                             }
                             
-                            // Fallback: nếu không có danh mục, lấy bài viết mới nhất
-                            if (empty($hot_news_posts) && !empty($post['posttype'])) {
-                                $hot_news_posts = get_posts([
-                                    'posttype' => $post['posttype'],
-                                    'filters' => [
-                                        'status' => 'active'
-                                    ],
-                                    'perPage' => 4,
-                                    'sort' => ['views', 'DESC'],
-                                    'withCategories' => true
-                                ]);
-                                
-                                if (isset($hot_news_posts['data']) && is_array($hot_news_posts['data'])) {
-                                    $hot_news_posts = $hot_news_posts['data'];
-                                } else {
-                                    $hot_news_posts = [];
-                                }
-                                
-                                // Loại bỏ bài viết hiện tại
-                                if (!empty($hot_news_posts) && is_array($hot_news_posts)) {
-                                    $hot_news_posts = array_filter($hot_news_posts, function($news_post) use ($post) {
-                                        return is_array($news_post) && isset($news_post['id']) && $news_post['id'] != $post['id'];
-                                    });
-                                }
-                                
-                                $hot_news_posts = array_slice($hot_news_posts, 0, 4);
-                            }
                             
                             // var_dump($hot_news_posts);
                             ?>
@@ -519,16 +532,10 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                     <div class="flex-1 flex flex-col">
                                         <div class="text-xs sm:text-sm font-bold mb-2 text-[#2d67ad] order-2 sm:order-1">
                                             <?php
-                                            // Lấy danh mục của bài viết hot news
-                                            $news_categories = [];
-                                            if (!empty($news_post['id'])) {
-                                                $news_categories = get_post_terms($news_post['id'], $news_post['posttype'] ?? $post['posttype'], 'category', APP_LANG);
-                                            }
-                                            
-                                            if (!empty($news_categories)) {
-                                                echo strtoupper($news_categories[0]['name'] ?? 'POSTS');
+                                            if (!empty($news_post['categories']) && is_array($news_post['categories'])) {
+                                                echo strtoupper($news_post['categories'][0]['name'] ?? 'POSTS');
                                             } else {
-                                                echo strtoupper($post['posttype'] ?? 'POSTS');
+                                                echo strtoupper($news_post['posttype'] ?? 'POSTS');
                                             }
                                             ?>
                                         </div>
