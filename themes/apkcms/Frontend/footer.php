@@ -67,7 +67,7 @@ use App\Models\FastModel;
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                         
+                            
                         <?php endif; ?>
                     </div>
                 </div>
@@ -132,14 +132,18 @@ use App\Models\FastModel;
                             // Chỉ hiển thị 5 social networks cụ thể
                             $allowed_networks = ['facebook', 'youtube', 'tiktok', 'x', 'zalo'];
                             
-                            // Mapping network names to icons
+                            // Mapping network names to icons (sử dụng file local)
                             $icon_mapping = [
-                                'facebook' => 'https://static.vnncdn.net/v1/icon/facebook-black.svg',
-                                'youtube' => 'https://static.vnncdn.net/v1/icon/youtube-black.svg',
-                                'tiktok' => 'https://static.vnncdn.net/v1/icon/tiktok-black.svg',
-                                'x' => 'https://static.vnncdn.net/v1/icon/twitter-black.svg',
-                                'zalo' => 'https://static.vnncdn.net/v1/icon/zalo-black.svg'
+                                'facebook' => '/themes/apkcms/Frontend/Assets/icons/facebook-black.svg',
+                                'youtube' => '/themes/apkcms/Frontend/Assets/icons/youtube-black.svg',
+                                'tiktok' => '/themes/apkcms/Frontend/Assets/icons/tiktok-black.svg',
+                                'x' => '/themes/apkcms/Frontend/Assets/icons/twitter-black.svg',
+                                'zalo' => '/themes/apkcms/Frontend/Assets/icons/zalo-black.svg'
                             ];
+                            
+                            
+                            // Debug: Kiểm tra dữ liệu
+                            echo "<!-- Debug social_links: " . print_r($social_links, true) . " -->";
                             
                             // Duyệt qua từng social link trong mảng
                             if (!empty($social_links) && is_array($social_links)):
@@ -150,6 +154,7 @@ use App\Models\FastModel;
                                     // Chỉ hiển thị nếu network nằm trong danh sách cho phép
                                     if (in_array($network, $allowed_networks) && !empty($url)):
                                         $icon_url = $icon_mapping[$network] ?? '';
+                                        echo "<!-- Debug: network=$network, url=$url, icon_url=$icon_url -->";
                                         if (!empty($icon_url)):
                             ?>
                                 <a title="<?= htmlspecialchars($network) ?> vietnamnet" 

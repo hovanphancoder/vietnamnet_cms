@@ -1,6 +1,20 @@
 <?php
 // Lấy thông tin taxonomy từ URL
-$current_page = get_current_page();
+$uri = $_SERVER['REQUEST_URI'] ?? '';
+$path = parse_url($uri, PHP_URL_PATH);
+$segments = explode('/', trim($path, '/'));
+$segments = array_filter($segments);
+
+$current_page = [
+    'uri' => $uri,
+    'path' => $path,
+    'segments' => array_values($segments),
+    'is_home' => empty($segments),
+    'page_type' => empty($segments) ? 'home' : $segments[0],
+    'page_slug' => end($segments) ?: '',
+];
+
+// var_dump($current_page);
 $taxonomy_title = __('Vietnamnet cat'); // Default title
 $taxonomy_url = '/en'; // Default URL
 
