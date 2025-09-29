@@ -1,7 +1,7 @@
 <?php
 // Lấy trang hiện tại từ URL
 $current_page = (int)(S_GET('page', 1));
-$per_page = 7;
+$per_page = 10; // Tạm thời để test pagination
 
 // Lấy tất cả bài viết sắp xếp theo mới nhất với pagination
 $home_posts_data = get_posts([
@@ -16,15 +16,22 @@ $home_posts_data = get_posts([
     'totalpage' => true,
 ]);
 
+// Debug raw data
+
 // Lấy dữ liệu từ key 'data' nếu có
 if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
     $home_posts = $home_posts_data['data'];
-    $total_posts = $home_posts_data['total'] ?? 0;
-    $total_pages = $home_posts_data['totalpage'] ?? 1;
+    $total_posts = $home_posts_data['total'] ?? count($home_posts);
+    $total_pages = $home_posts_data['totalpage'] ?? ceil($total_posts / $per_page);
 } else {
     $home_posts = [];
     $total_posts = 0;
     $total_pages = 1;
+}
+
+// Tính toán lại total_pages nếu cần
+if ($total_pages == 1 && $total_posts > $per_page) {
+    $total_pages = ceil($total_posts / $per_page);
 }
 
 ?>
@@ -82,7 +89,7 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                                     
                                     // Fallback image nếu không có ảnh
                                     if (empty($featured_image)) {
-                                        $featured_image = 'https://static-images.vnncdn.net/vps_images_publish/000001/00000Q/2025/9/17/free-checkups-hospital-care-by-2030-vietnams-bold-new-healthcare-vision-551ef314a29b4800b5625e3e87070fd7-44.jpg?width=550&s=H7rye5Abl2PKSon-r0oqtQ';
+                                        $featured_image = '';
                                     }
                                     ?>
                                     <a href="<?= link_single($featured_post['slug'], $featured_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($featured_post['title'] ?? '') ?>">
@@ -338,6 +345,7 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                 </div>
             </div>
         </section>
+
 
         <!-- Pagination - Desktop -->
         <?php if ($total_pages > 1): ?>

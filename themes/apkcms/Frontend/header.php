@@ -58,7 +58,19 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                         <!-- Vietnamnet Logo -->
                         <div class="flex items-center space-x-2">
                             <a href="/">
-                                <img class="w-[140px]" src="https://static.vnncdn.net/v1/logo/logoVietnamNet.svg" alt="VietNamNet">
+                                <?php
+                                    $site_logo = option('site_logo');
+                                    // Decode JSON string to array
+                                    $site_logoData = json_decode($site_logo, true);
+                                    
+                                    if ($site_logoData && isset($site_logoData['path'])) {
+                                        $logoUrl ='/uploads/' . $site_logoData['path'];
+                                    } else {
+                                        $logoUrl = theme_assets('/images/logo-icon.webp');
+                                    }
+
+                                ?>
+                            <img class="h-[48px]" src="<?= $logoUrl ?>" alt="VietNamNet">
                             </a>
                         </div>
                     </div>

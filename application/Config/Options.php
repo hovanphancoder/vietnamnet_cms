@@ -76,7 +76,7 @@ return array (
     'value' => 5,
   ),
   'social' => array (
-    'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"},{"network":"zalo","url":"https://zalo.me/0987654321"},{"network":"Google News","url":"https://news.google.com/"}]',
+    'value' => '[{"network":"youtube","url":"https://www.youtube.com/"},{"network":"facebook","url":"https://www.facebook.com/"},{"network":"zalo","url":"https://zalo.me/0987654321"},{"network":"Google News","url":"https://news.google.com/"},{"network":"tiktok","url":"https://www.tiktok.com"},{"network":"x","url":"https://x.com/"}]',
   ),
   'google' => array (
     'value' => '[{"google_key":"GOOGLE_CLIENT_ID","google_value":"634145915585-r00flbf39o0f338niopm0b5usfplgkpe.apps.googleusercontent.com"},{"google_key":"GOOGLE_CLIENT_SECRET","google_value":"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"},{"google_key":"GOOGLE_REDIRECT_URL","google_value":"https://cmsfullform.com/account/login_google/"}]',
@@ -91,13 +91,13 @@ return array (
     'value' => 'contact@cmsfullform.com',
   ),
   'site_logo' => array (
-    'value' => '',
+    'value' => '{"id":115,"name":"logoVietnamNet (1).png","path":"2025/09/29/logoVietnamNet (1).png"}',
   ),
   'img_default' => array (
     'value' => '',
   ),
   'favicon' => array (
-    'value' => '',
+    'value' => '{"id":109,"name":"unnamed.jpg","path":"2025/09/29/unnamed.jpg"}',
   ),
   'site_phone' => array (
     'value' => '',

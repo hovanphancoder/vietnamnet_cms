@@ -11,6 +11,7 @@ use App\Blocks\Meta\MetaBlock;
 // Create meta tags for homepage directly from MetaBlock
 $meta = new MetaBlock();
 
+// var_dump(option('favicon'));
 $meta
     ->title(option('site_title', APP_LANG))
     ->description(option('site_desc', APP_LANG))
@@ -41,7 +42,7 @@ $meta
     ->twitter('site', '@' . option('site_title', APP_LANG));
 
 // Add favicon if available
-if (option('site_logo')) {
+if (option('favicon')) {
     $logoUrl = theme_assets(option('favicon')['path'] ?? '/images/logo-icon.webp');
     $meta
         ->og('image', $logoUrl)

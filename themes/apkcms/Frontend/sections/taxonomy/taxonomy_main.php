@@ -4,6 +4,10 @@ $current_page = get_current_page();
 $taxonomy_title = __('Vietnamnet cat'); // Default title
 $taxonomy_url = '/en'; // Default URL
 
+// Lấy trang hiện tại từ URL
+$page_num = (int)(S_GET('page', 1));
+$per_page = 10;
+
 if (!empty($current_page['segments']) && count($current_page['segments']) >= 3) {
     $posttype = $current_page['segments'][0];
     $taxonomy = $current_page['segments'][1];
@@ -12,63 +16,62 @@ if (!empty($current_page['segments']) && count($current_page['segments']) >= 3) 
     // Lấy thông tin term bằng hàm get_term()
     $term = get_term($term_slug, $posttype, $taxonomy, APP_LANG);
     
-    // Debug: uncomment để xem dữ liệu
-    // var_dump($term);
-    
     if ($term && !empty($term['name'])) {
         $taxonomy_title = $term['name'];
         $taxonomy_url = link_cat($term_slug, $posttype);
     }
 }
 
-// Lấy bài viết theo danh mục
+// Lấy bài viết theo danh mục với pagination
 $taxonomy_posts = [];
+$total_posts = 0;
+$total_pages = 1;
+
 if (!empty($term) && !empty($term['id'])) {
-    // Thử cách khác - lấy trực tiếp từ bảng posts với điều kiện category
-    $post_ids = [];
     try {
         // Lấy post_ids từ bảng fast_posts_posts_rel với rel_type = 'term'
+        $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
+            ->newQuery()
+            ->where('rel_id', '=', $term['id'])
+            ->where('rel_type', '=', 'term')
+            ->where('lang', '=', APP_LANG)
+            ->orderBy('created_at', 'DESC');
         
-        try {
-            $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
-                ->newQuery()
-                ->where('rel_id', '=', $term['id'])
-                ->where('rel_type', '=', 'term') // Sử dụng 'term' thay vì 'category'
-                ->where('lang', '=', APP_LANG)
-                ->orderBy('created_at', 'DESC')
-                ->limit(10);
-            
-            $relations = $qb->get();
-            
-            if ($relations && !empty($relations)) {
-                // Lấy post_ids từ relations
-                $post_ids = [];
-                foreach ($relations as $relation) {
-                    if (!empty($relation['post_id'])) {
-                        $post_ids[] = $relation['post_id'];
-                    }
-                }
-                
-                if (!empty($post_ids)) {
-                    // Lấy bài viết theo post_ids
-                    $table_name = posttype_name($posttype ?? 'posts');
-                    if (!empty($table_name)) {
-                        $qb_posts = (new \App\Models\FastModel($table_name))
-                            ->newQuery()
-                            ->where('status', '=', 'active')
-                            ->whereIn('id', $post_ids)
-                            ->orderBy('created_at', 'DESC')
-                            ->limit(10);
-                        
-                        $taxonomy_posts = $qb_posts->get();
-                    }
+        $relations = $qb->get();
+        
+        if ($relations && !empty($relations)) {
+            // Lấy post_ids từ relations
+            $post_ids = [];
+            foreach ($relations as $relation) {
+                if (!empty($relation['post_id'])) {
+                    $post_ids[] = $relation['post_id'];
                 }
             }
-        } catch (Exception $e) {
-            error_log('Error getting post relations: ' . $e->getMessage());
+            
+            if (!empty($post_ids)) {
+                $total_posts = count($post_ids);
+                $total_pages = ceil($total_posts / $per_page);
+                
+                // Tính offset cho pagination
+                $offset = ($page_num - 1) * $per_page;
+                
+                // Lấy bài viết theo post_ids với pagination
+                $table_name = posttype_name($posttype ?? 'posts');
+                if (!empty($table_name)) {
+                    $qb_posts = (new \App\Models\FastModel($table_name))
+                        ->newQuery()
+                        ->where('status', '=', 'active')
+                        ->whereIn('id', $post_ids)
+                        ->orderBy('created_at', 'DESC')
+                        ->limit($per_page)
+                        ->offset($offset);
+                    
+                    $taxonomy_posts = $qb_posts->get();
+                }
+            }
         }
     } catch (Exception $e) {
-        error_log('Error getting posts: ' . $e->getMessage());
+        error_log('Error getting posts by category: ' . $e->getMessage());
     }
 }
 ?>
@@ -304,12 +307,28 @@ if (!empty($term) && !empty($term['id'])) {
                             </div>
                         </div>
                     </div>
-                    <!-- SEE MORE - Mobile -->
+                    <!-- Pagination - Mobile -->
+                    <?php if ($total_pages > 1): ?>
                     <div class="sm:hidden flex justify-center items-center w-full mt-5 mb-10">
-                        <a href="/en-more" class="text-[#2d67ad] text-sm font-medium hover:text-[#1e4a7a] transition-colors">
-                            SEE MORE
-                        </a>
+                        <div class="flex items-center space-x-2">
+                            <?php if ($page_num > 1): ?>
+                            <a href="<?= $page_num == 2 ? $taxonomy_url : $taxonomy_url . '?page=' . ($page_num - 1) ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                                ← Previous
+                            </a>
+                            <?php endif; ?>
+                            
+                            <span class="px-3 py-2 text-sm text-gray-600">
+                                Page <?= $page_num ?> of <?= $total_pages ?>
+                            </span>
+                            
+                            <?php if ($page_num < $total_pages): ?>
+                            <a href="<?= $taxonomy_url ?>?page=<?= $page_num + 1 ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                                Next →
+                            </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                    <?php endif; ?>
                     <!-- Right Sidebar - TOP STORIES -->
                     <div class="w-full lg:w-[300px] flex-shrink-0">
                         <!-- TOP STORIES -->
@@ -349,46 +368,76 @@ if (!empty($term) && !empty($term['id'])) {
         </section>
 
         <!-- Pagination - Desktop -->
+        <?php if ($total_pages > 1): ?>
         <div class="hidden sm:flex justify-center items-center w-full mt-5 mb-10">
             <div class="flex items-center space-x-2">
-                <!-- Page 1 - Active -->
-                <a href="/en-page0" class="w-10 h-10 bg-blue-600 text-white rounded-md flex items-center justify-center text-sm font-medium hover:bg-blue-700 transition-colors">
+                <?php
+                // Previous button
+                if ($page_num > 1):
+                    $prev_page = $page_num - 1;
+                    $prev_url = $prev_page == 1 ? $taxonomy_url : $taxonomy_url . '?page=' . $prev_page;
+                ?>
+                <a href="<?= $prev_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <?php endif; ?>
+
+                <?php
+                // Page numbers
+                $start_page = max(1, $page_num - 2);
+                $end_page = min($total_pages, $page_num + 2);
+                
+                // Show first page if not in range
+                if ($start_page > 1):
+                ?>
+                <a href="<?= $taxonomy_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     1
                 </a>
+                <?php if ($start_page > 2): ?>
+                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                <?php endif; ?>
+                <?php endif; ?>
 
-                <!-- Page 2 -->
-                <a href="/en-page1" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    2
+                <?php
+                // Show page numbers in range
+                for ($i = $start_page; $i <= $end_page; $i++):
+                    $page_url = $i == 1 ? $taxonomy_url : $taxonomy_url . '?page=' . $i;
+                    $is_active = $i == $page_num;
+                ?>
+                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <?= $i ?>
                 </a>
+                <?php endfor; ?>
 
-                <!-- Page 3 -->
-                <a href="/en-page2" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    3
+                <?php
+                // Show last page if not in range
+                if ($end_page < $total_pages):
+                ?>
+                <?php if ($end_page < $total_pages - 1): ?>
+                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                <?php endif; ?>
+                <a href="<?= $taxonomy_url ?>?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                    <?= $total_pages ?>
                 </a>
+                <?php endif; ?>
 
-                <!-- Page 4 -->
-                <a href="/en-page3" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    4
-                </a>
-
-                <!-- Page 5 -->
-                <a href="/en-page4" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    5
-                </a>
-
-                <!-- Page 6 -->
-                <a href="/en-page5" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    6
-                </a>
-
-                <!-- Next Button -->
-                <a href="/en-page1" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                <?php
+                // Next button
+                if ($page_num < $total_pages):
+                    $next_page = $page_num + 1;
+                    $next_url = $taxonomy_url . '?page=' . $next_page;
+                ?>
+                <a href="<?= $next_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
+                <?php endif; ?>
             </div>
         </div>
+        <?php endif; ?>
 
 
 

@@ -103,7 +103,19 @@ use App\Models\FastModel;
                 <!-- Left Side - Logo and Copyright -->
                 <div class="footer-en__bottom-left flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-8 w-full lg:w-auto">
                     <a class="footer-en__bottom-logo flex-shrink-0" href="/en">
-                        <img src="https://static.vnncdn.net/v1/icon/VietnamNet-bridge-vien-trang.svg" alt="VietnamNet Global" class="h-12 sm:h-16">
+                            <?php
+                                    $site_logo = option('site_logo');
+                                    // Decode JSON string to array
+                                    $site_logoData = json_decode($site_logo, true);
+                                    
+                                    if ($site_logoData && isset($site_logoData['path'])) {
+                                        $logoUrl ='/uploads/' . $site_logoData['path'];
+                                    } else {
+                                        $logoUrl = theme_assets('/images/logo-icon.webp');
+                                    }
+
+                                ?>
+                        <img src="<?= $logoUrl ?>" alt="VietnamNet Global" class="h-12 sm:h-16">
                     </a>
                     <div class="footer-en__bottom-list text-sm text-gray-600 space-y-2">
                         <div class="footer-en__bottom-item font-medium">© Copyright of VietNamNet Global</div>
@@ -120,21 +132,53 @@ use App\Models\FastModel;
                     <div class="text-right">
                         <div class="text-sm font-medium text-gray-700 mb-3">Follow us on</div>
                         <div class="footer-en__bottom-social flex items-center space-x-2">
-                            <a title="facebook vietnamnet" target="_blank" href="https://www.facebook.com/vietnamnet.vn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
-                                <img src="https://static.vnncdn.net/v1/icon/facebook-black.svg" alt="Facebook" class="w-4 h-4 filter invert">
-                            </a>
-                            <a title="youtube vietnamnet" target="_blank" href="https://www.youtube.com/c/B%C3%A1oVietNamNetTV" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
-                                <img src="https://static.vnncdn.net/v1/icon/youtube-black.svg" alt="YouTube" class="w-4 h-4 filter invert">
-                            </a>
-                            <a title="tiktok vietnamnet" target="_blank" href="https://www.tiktok.com/@vietnamnet.vn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
-                                <img src="https://static.vnncdn.net/v1/icon/tiktok-black.svg" alt="TikTok" class="w-4 h-4 filter invert">
-                            </a>
-                            <a title="twitter vietnamnet" target="_blank" href="https://twitter.com/vietnamnetvn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
-                                <img src="https://static.vnncdn.net/v1/icon/twitter-black.svg" alt="Twitter" class="w-4 h-4 filter invert">
-                            </a>
-                            <a title="zalo vietnamnet" target="_blank" href="http://zalo.me/660139855964186242?src=qr" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
-                                <img src="https://static.vnncdn.net/v1/icon/zalo-black.svg" alt="Zalo" class="w-4 h-4 filter invert">
-                            </a>
+                            <?php
+                            $social_links = [];
+                            $social_option = option('social');
+                            if (!empty($social_option)) {
+                                $social_links = is_string($social_option) ? json_decode($social_option, true) : $social_option;
+                                if (!is_array($social_links)) {
+                                    $social_links = [];
+                                }
+                            }
+                            // Chỉ hiển thị 5 social networks cụ thể
+                            $allowed_networks = ['facebook', 'youtube', 'tiktok', 'x', 'zalo'];
+                            
+                            // Mapping network names to icons
+                            $icon_mapping = [
+                                'facebook' => 'https://static.vnncdn.net/v1/icon/facebook-black.svg',
+                                'youtube' => 'https://static.vnncdn.net/v1/icon/youtube-black.svg',
+                                'tiktok' => 'https://static.vnncdn.net/v1/icon/tiktok-black.svg',
+                                'x' => 'https://static.vnncdn.net/v1/icon/twitter-black.svg',
+                                'zalo' => 'https://static.vnncdn.net/v1/icon/zalo-black.svg'
+                            ];
+                            
+                            // Duyệt qua từng social link trong mảng
+                            if (!empty($social_links) && is_array($social_links)):
+                                foreach ($social_links as $social):
+                                    $network = $social['network'] ?? '';
+                                    $url = $social['url'] ?? '';
+                                    
+                                    // Chỉ hiển thị nếu network nằm trong danh sách cho phép
+                                    if (in_array($network, $allowed_networks) && !empty($url)):
+                                        $icon_url = $icon_mapping[$network] ?? '';
+                                        if (!empty($icon_url)):
+                            ?>
+                                <a title="<?= htmlspecialchars($network) ?> vietnamnet" 
+                                   target="_blank" 
+                                   href="<?= htmlspecialchars($url) ?>" 
+                                   class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                                    <img src="<?= htmlspecialchars($icon_url) ?>" 
+                                         alt="<?= htmlspecialchars($network) ?>" 
+                                         class="w-4 h-4 filter invert">
+                                </a>
+                            <?php 
+                                        endif;
+                                    endif;
+                                endforeach;
+                            endif;
+                            ?>
+                           
                         </div>
                     </div>
                     <div class="flex space-x-4">
