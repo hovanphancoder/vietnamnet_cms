@@ -515,9 +515,8 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                             'status' => 'active'
                                         ],
                                         'cat__in' => $category_ids,
-                                        'perPage' => 4,
-                                        'sort' => ['views', 'DESC'],
-                                        'withCategories' => true
+                                        'perPage' => 5,
+                                        'sort' => ['views', 'DESC']
                                     ]);
                                     // var_dump($hot_news_posts);
                                     
