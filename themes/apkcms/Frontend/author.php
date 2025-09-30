@@ -74,26 +74,30 @@ if (!$author_info) {
 
                         <!-- Author Info -->
                         <div class="info-author mb-2.5 px-0 sm:px-4">
-                            <div class="flex flex-row items-start sm:items-start">
+                            <div class="flex flex-row items-center ">
                                 <div class="info-author__image float-left mb-5 sm:mb-0 mr-5 relative">
                                     <?php if (!empty($author_info['avatar'])): ?>
                                         <img src="<?= htmlspecialchars($author_info['avatar']) ?>" 
                                              alt="<?= htmlspecialchars($author_info['fullname'] ?? $author_info['username']) ?>" 
-                                             class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full object-cover block">
-                                    <?php else: ?>
-                                        <div class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl lg:text-6xl font-bold">
+                                             class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full object-cover block"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full bg-[#2d67ad] flex items-center justify-center text-white text-4xl lg:text-6xl font-bold hidden">
                                             <?= strtoupper(substr($author_info['fullname'] ?? $author_info['username'], 0, 1)) ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full bg-[#2d67ad] flex items-center justify-center text-white text-4xl lg:text-6xl font-bold">
+                                        <img src="/themes/apkcms/Frontend/Assets/images/default-avatar.png" >
                                         </div>
                                     <?php endif; ?>
 
-                                    <button class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-gray-100 border border-[#ccc] rounded-[10px] text-gray-800 cursor-pointer h-6 px-2 z-100 flex items-center text-[12px]  justify-center transition-colors">
+                                    <!-- <button class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-gray-100 border border-[#ccc] rounded-[10px] text-gray-800 cursor-pointer h-6 px-2 z-100 flex items-center text-[12px]  justify-center transition-colors">
                                         <span class="icon w-3 h-3 mr-2 flex items-center justify-center">
                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                                             </svg>
                                         </span>
                                         <span class="text text-xs font-medium">Follow</span>
-                                    </button>
+                                    </button> -->
                                 </div>
 
                                 <div class="info-author__text flex-1">
@@ -388,12 +392,12 @@ if (!$author_info) {
                                 </a>
                             </div>
 
-                            <form action="/tac-gia" class="featured-author__form h-9.5 leading-7 mb-5 relative w-full h-[40px] max-w-66">
+                            <!-- <form action="/tac-gia" class="featured-author__form h-9.5 leading-7 mb-5 relative w-full h-[40px] max-w-66">
                                 <input type="text" name="q" placeholder="Search by author name" class="bg-[#efefef] border-none rounded-lg text-vnn-gray font-normal text-sm h-full outline-none pl-2.5 pr-9 w-full">
                                 <button type="submit" class="absolute right-2.5 top-1/2 transform -translate-y-1/2">
                                     <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon" class="w-4 h-4">
                                 </button>
-                            </form>
+                            </form> -->
 
                             <?php
                             // Lấy danh sách tác giả khác (loại trừ tác giả hiện tại)
@@ -402,6 +406,7 @@ if (!$author_info) {
                                 $usersModel = new UsersModel();
                                 $other_authors = $usersModel->newQuery()
                                     ->where('status', 'active')
+                                    ->where('role', 'author')
                                     ->where('id', '!=', $author_info['id'])
                                     ->orderBy('created_at', 'DESC')
                                     ->limit(5)
@@ -414,21 +419,27 @@ if (!$author_info) {
                             <div class="space-y-4">
                                 <?php if (!empty($other_authors)): ?>
                                     <?php foreach ($other_authors as $other_author): ?>
-                                        <div class="featured-author__article flex items-start gap-3">
+                                        <div class="featured-author__article flex items-center gap-3">
                                             <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
                                                 <a href="/author/<?= htmlspecialchars($other_author['username'] ?? $other_author['id']) ?>" title="<?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>">
                                                     <?php if (!empty($other_author['avatar'])): ?>
-                                                        <img src="<?= htmlspecialchars($other_author['avatar']) ?>" alt="<?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>" class="w-full h-full object-cover rounded-full">
+                                                        <img src="<?= htmlspecialchars($other_author['avatar']) ?>" 
+                                                             alt="<?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>" 
+                                                             class="w-full h-full object-cover rounded-full"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <div class="w-full h-full bg-[#2d67ad] rounded-full flex items-center justify-center text-white text-2xl font-bold hidden">
+                                                            <?= strtoupper(substr($other_author['fullname'] ?? $other_author['username'], 0, 1)) ?>
+                                                        </div>
                                                     <?php else: ?>
                                                         <div class="w-full h-full bg-[#2d67ad] rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                                            <?= strtoupper(substr($other_author['fullname'] ?? $other_author['username'], 0, 1)) ?>
+                                                            <img src="/themes/apkcms/Frontend/Assets/images/default-avatar.png" >
                                                         </div>
                                                     <?php endif; ?>
                                                 </a>
                                             </div>
                                             <div class="flex-1">
                                                 <div class="featured-author__name mb-1">
-                                                    <a href="/author/<?= htmlspecialchars($other_author['username'] ?? $other_author['id']) ?>" class="text-gray-700 font-bold text-base hover:underline">
+                                                    <a href="/author/<?= htmlspecialchars($other_author['username'] ?? $other_author['id']) ?>" class="text-gray-700 font-bold text-base ">
                                                         <?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>
                                                     </a>
                                                 </div>
