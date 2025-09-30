@@ -319,8 +319,8 @@ function scrollToTop() {
 // Add scroll to top button
 function addScrollToTopButton() {
     const scrollBtn = document.createElement('button');
-    scrollBtn.className = 'fixed bottom-4 right-4 bg-red-600 text-white p-3 rounded-full hover:bg-red-700 z-40';
-    scrollBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+    scrollBtn.className = 'fixed bottom-8 right-8 bg-white border-2 border-gray-300 text-gray-900 p-3  z-40';
+    scrollBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>';
     scrollBtn.addEventListener('click', scrollToTop);
 
     document.body.appendChild(scrollBtn);

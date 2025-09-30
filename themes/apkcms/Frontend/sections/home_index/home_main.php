@@ -93,7 +93,7 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                                     }
                                     ?>
                                     <a href="<?= link_single($featured_post['slug'], $featured_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($featured_post['title'] ?? '') ?>">
-                                        <img src="<?= $featured_image ?>" alt="<?= htmlspecialchars($featured_post['title'] ?? '') ?>" class="w-full h-48 sm:h-64 md:h-80 object-cover mb-4">
+                                        <img src="<?= $featured_image ?>" alt="<?= htmlspecialchars($featured_post['title'] ?? '') ?>" class=" w-full h-48 sm:h-64 md:h-80 object-cover mb-4">
                                 </a>
                                 <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 leading-tight">
                                         <a href="<?= link_single($featured_post['slug'], $featured_post['posttype'] ?? 'posts') ?>" title="<?= htmlspecialchars($featured_post['title'] ?? '') ?>" class="hover:text-[#2d67ad]">

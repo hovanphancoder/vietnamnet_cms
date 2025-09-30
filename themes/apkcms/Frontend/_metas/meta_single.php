@@ -47,16 +47,25 @@ $meta
     ->twitter('description', $post['seo_desc'])
     ->twitter('site', '@' .$post['seo_title']);
 
-// Add favicon if available
-if (option('site_logo')) {
-    $logoUrl = theme_assets(option('favicon')['path'] ?? '/images/logo-icon.webp');
+if (option('favicon')) {
+    $favicon_data = option('favicon');
+    
+    // Xử lý nếu favicon là JSON string
+    if (is_string($favicon_data)) {
+        $favicon_json = json_decode($favicon_data, true);
+        $favicon_path = $favicon_json['path'] ?? null;
+    } else {
+        $favicon_path = $favicon_data->path ?? null;
+    }
+    
+    $base_url = str_replace('/en', '', base_url());
+    $logoUrl = rtrim($base_url.'/uploads/'.$favicon_path, '/');
     $meta
         ->og('image', $logoUrl)
         ->twitter('image', $logoUrl)
         ->custom('<link rel="icon" href="' . $logoUrl . '" sizes="32x32" />')
         ->custom('<link rel="apple-touch-icon" href="' . $logoUrl . '" />');
 }
-
 // Create Schema Graph by format RankMath
 $schemaGraph = new SchemaGraph(base_url());
 

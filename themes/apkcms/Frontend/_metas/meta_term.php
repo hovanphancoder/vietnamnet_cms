@@ -12,7 +12,7 @@ use App\Blocks\Meta\MetaBlock;
 $meta = new MetaBlock();
 // $current_page = get_current_page();
 // $posttype = $current_page['page_slug'];
-$slug = get_current_slug();
+$slug =  S_GET('slug');
 
 // Lấy thông tin term từ slug
 $term = get_term_by_slug($slug, 'posts', 'category', APP_LANG, false);
@@ -64,9 +64,19 @@ $meta
     ->twitter('description', $term['seo_desc'])
     ->twitter('site', '@' . $term['seo_title']);
 
-// Add favicon if available
-if (option('site_logo')) {
-    $logoUrl = theme_assets(option('favicon')['path'] ?? '/images/logo-icon.webp');
+if (option('favicon')) {
+    $favicon_data = option('favicon');
+    
+    // Xử lý nếu favicon là JSON string
+    if (is_string($favicon_data)) {
+        $favicon_json = json_decode($favicon_data, true);
+        $favicon_path = $favicon_json['path'] ?? null;
+    } else {
+        $favicon_path = $favicon_data->path ?? null;
+    }
+    
+    $base_url = str_replace('/en', '', base_url());
+    $logoUrl = rtrim($base_url.'/uploads/'.$favicon_path, '/');
     $meta
         ->og('image', $logoUrl)
         ->twitter('image', $logoUrl)
