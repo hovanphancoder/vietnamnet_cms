@@ -17,16 +17,21 @@ $home_posts_data = get_posts([
 ]);
 
 // Debug raw data
+echo "<!-- Debug raw data: " . print_r($home_posts_data, true) . " -->";
 
 // Lấy dữ liệu từ key 'data' và thông tin phân trang
 if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
     $home_posts = $home_posts_data['data'];
     $total_posts = $home_posts_data['total'] ?? count($home_posts);
     $total_pages = $home_posts_data['last_page'] ?? 1;
+    
+    // Debug: Kiểm tra thông tin phân trang
+    echo "<!-- Debug: Total posts = $total_posts, Total pages = $total_pages, Current page = $current_page -->";
 } else {
     $home_posts = [];
     $total_posts = 0;
     $total_pages = 1;
+    echo "<!-- Debug: No posts data found -->";
 }
 
 ?>
@@ -284,20 +289,59 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                     <!-- Pagination - Mobile -->
                     <?php if ($total_pages > 1): ?>
                     <div class="sm:hidden flex justify-center items-center w-full mt-5 mb-10">
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-1">
                             <?php if ($current_page > 1): ?>
-                            <a href="<?= $current_page == 2 ? '/' : '/?page=' . ($current_page - 1) ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
-                                ← Previous
+                            <a href="<?= $current_page == 2 ? '/' : '/?page=' . ($current_page - 1) ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
                             </a>
                             <?php endif; ?>
                             
-                            <span class="px-3 py-2 text-sm text-gray-600">
-                                Page <?= $current_page ?> of <?= $total_pages ?>
-                            </span>
+                            <!-- Page numbers for mobile -->
+                            <?php
+                            $start_page = max(1, $current_page - 1);
+                            $end_page = min($total_pages, $current_page + 1);
+                            
+                            // Show first page if not in range
+                            if ($start_page > 1):
+                            ?>
+                            <a href="/" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                1
+                            </a>
+                            <?php if ($start_page > 2): ?>
+                            <span class="px-2 text-gray-500">...</span>
+                            <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php
+                            // Show page numbers in range
+                            for ($i = $start_page; $i <= $end_page; $i++):
+                                $page_url = $i == 1 ? '/' : '/?page=' . $i;
+                                $is_active = $i == $current_page;
+                            ?>
+                            <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <?= $i ?>
+                            </a>
+                            <?php endfor; ?>
+
+                            <?php
+                            // Show last page if not in range
+                            if ($end_page < $total_pages):
+                            ?>
+                            <?php if ($end_page < $total_pages - 1): ?>
+                            <span class="px-2 text-gray-500">...</span>
+                            <?php endif; ?>
+                            <a href="/?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <?= $total_pages ?>
+                            </a>
+                            <?php endif; ?>
                             
                             <?php if ($current_page < $total_pages): ?>
-                            <a href="/?page=<?= $current_page + 1 ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
-                                Next →
+                            <a href="/?page=<?= $current_page + 1 ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
                             </a>
                             <?php endif; ?>
                         </div>
@@ -371,18 +415,9 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                 <?php endif; ?>
 
                 <?php
-                // Page numbers - cải thiện logic hiển thị
+                // Page numbers
                 $start_page = max(1, $current_page - 2);
                 $end_page = min($total_pages, $current_page + 2);
-                
-                // Đảm bảo hiển thị ít nhất 5 trang nếu có thể
-                if ($end_page - $start_page < 4) {
-                    if ($start_page == 1) {
-                        $end_page = min($total_pages, $start_page + 4);
-                    } else {
-                        $start_page = max(1, $end_page - 4);
-                    }
-                }
                 
                 // Show first page if not in range
                 if ($start_page > 1):
@@ -401,7 +436,7 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                     $page_url = $i == 1 ? '/' : '/?page=' . $i;
                     $is_active = $i == $current_page;
                 ?>
-                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     <?= $i ?>
                 </a>
                 <?php endfor; ?>

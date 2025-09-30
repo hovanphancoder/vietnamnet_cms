@@ -41,8 +41,7 @@ $meta
     ->twitter('description', option('site_desc', APP_LANG))
     ->twitter('site', '@' . option('site_title', APP_LANG));
 
-// Add favicon if available
-// var_dump(option('favicon'));
+
 if (option('favicon')) {
     $favicon_data = option('favicon');
     
@@ -54,8 +53,8 @@ if (option('favicon')) {
         $favicon_path = $favicon_data->path ?? null;
     }
     
-    $logoUrl = theme_assets($favicon_path ?? '/images/logo-icon.webp');
-    
+    $base_url = str_replace('/en', '', base_url());
+    $logoUrl = rtrim($base_url.'/uploads/'.$favicon_path, '/');
     $meta
         ->og('image', $logoUrl)
         ->twitter('image', $logoUrl)

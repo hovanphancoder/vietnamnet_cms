@@ -323,20 +323,59 @@ if (!empty($term) && !empty($term['id'])) {
                     <!-- Pagination - Mobile -->
                     <?php if ($total_pages > 1): ?>
                     <div class="sm:hidden flex justify-center items-center w-full mt-5 mb-10">
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-1">
                             <?php if ($page_num > 1): ?>
-                            <a href="<?= $page_num == 2 ? $taxonomy_url : $taxonomy_url . '?page=' . ($page_num - 1) ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
-                                ← Previous
+                            <a href="<?= $page_num == 2 ? $taxonomy_url : $taxonomy_url . '?page=' . ($page_num - 1) ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
                             </a>
                             <?php endif; ?>
                             
-                            <span class="px-3 py-2 text-sm text-gray-600">
-                                Page <?= $page_num ?> of <?= $total_pages ?>
-                            </span>
+                            <!-- Page numbers for mobile -->
+                            <?php
+                            $start_page = max(1, $page_num - 1);
+                            $end_page = min($total_pages, $page_num + 1);
+                            
+                            // Show first page if not in range
+                            if ($start_page > 1):
+                            ?>
+                            <a href="<?= $taxonomy_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                1
+                            </a>
+                            <?php if ($start_page > 2): ?>
+                            <span class="px-2 text-gray-500">...</span>
+                            <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php
+                            // Show page numbers in range
+                            for ($i = $start_page; $i <= $end_page; $i++):
+                                $page_url = $i == 1 ? $taxonomy_url : $taxonomy_url . '?page=' . $i;
+                                $is_active = $i == $page_num;
+                            ?>
+                            <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <?= $i ?>
+                            </a>
+                            <?php endfor; ?>
+
+                            <?php
+                            // Show last page if not in range
+                            if ($end_page < $total_pages):
+                            ?>
+                            <?php if ($end_page < $total_pages - 1): ?>
+                            <span class="px-2 text-gray-500">...</span>
+                            <?php endif; ?>
+                            <a href="<?= $taxonomy_url ?>?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <?= $total_pages ?>
+                            </a>
+                            <?php endif; ?>
                             
                             <?php if ($page_num < $total_pages): ?>
-                            <a href="<?= $taxonomy_url ?>?page=<?= $page_num + 1 ?>" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
-                                Next →
+                            <a href="<?= $taxonomy_url ?>?page=<?= $page_num + 1 ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
                             </a>
                             <?php endif; ?>
                         </div>
@@ -430,7 +469,7 @@ if (!empty($term) && !empty($term['id'])) {
                     $page_url = $i == 1 ? $taxonomy_url : $taxonomy_url . '?page=' . $i;
                     $is_active = $i == $page_num;
                 ?>
-                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     <?= $i ?>
                 </a>
                 <?php endfor; ?>
