@@ -395,87 +395,56 @@ if (!$author_info) {
                                 </button>
                             </form>
 
+                            <?php
+                            // Lấy danh sách tác giả khác (loại trừ tác giả hiện tại)
+                            $other_authors = [];
+                            try {
+                                $usersModel = new UsersModel();
+                                $other_authors = $usersModel->newQuery()
+                                    ->where('status', 'active')
+                                    ->where('id', '!=', $author_info['id'])
+                                    ->orderBy('created_at', 'DESC')
+                                    ->limit(5)
+                                    ->get();
+                            } catch (Exception $e) {
+                                error_log("Error getting other authors: " . $e->getMessage());
+                            }
+                            ?>
+                            
                             <div class="space-y-4">
-                                <!-- Author 1 -->
-                                <div class="featured-author__article flex items-start gap-3">
-                                    <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
-                                        <a href="/tac-gia/thien-binh-0008OH.html" title="Thiên Bình">
-                                            <img src="https://static-images.vnncdn.net/files/2022/6/30/tac-gia-van-hung.jpg?width=0&s=YJE-whMIfcslKqw4Bo_qUA" alt="Thiên Bình" class="w-full h-full object-cover rounded-full">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="featured-author__name mb-1">
-                                            <a href="/tac-gia/thien-binh-0008OH.html" class="text-gray-700 font-bold text-base hover:underline">
-                                                Thiên Bình
-                                            </a>
+                                <?php if (!empty($other_authors)): ?>
+                                    <?php foreach ($other_authors as $other_author): ?>
+                                        <div class="featured-author__article flex items-start gap-3">
+                                            <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
+                                                <a href="/author/<?= htmlspecialchars($other_author['username'] ?? $other_author['id']) ?>" title="<?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>">
+                                                    <?php if (!empty($other_author['avatar'])): ?>
+                                                        <img src="<?= htmlspecialchars($other_author['avatar']) ?>" alt="<?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>" class="w-full h-full object-cover rounded-full">
+                                                    <?php else: ?>
+                                                        <div class="w-full h-full bg-[#2d67ad] rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                                            <?= strtoupper(substr($other_author['fullname'] ?? $other_author['username'], 0, 1)) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </a>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="featured-author__name mb-1">
+                                                    <a href="/author/<?= htmlspecialchars($other_author['username'] ?? $other_author['id']) ?>" class="text-gray-700 font-bold text-base hover:underline">
+                                                        <?= htmlspecialchars($other_author['fullname'] ?? $other_author['username']) ?>
+                                                    </a>
+                                                </div>
+                                                <?php if (!empty($other_author['about_me'])): ?>
+                                                    <p class="text-xs text-gray-500 line-clamp-2">
+                                                        <?= htmlspecialchars(substr($other_author['about_me'], 0, 60)) ?><?= strlen($other_author['about_me']) > 60 ? '...' : '' ?>
+                                                    </p>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
-
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="text-center py-4 text-gray-500 text-sm">
+                                        <p>No other authors available</p>
                                     </div>
-                                </div>
-
-                                <!-- Author 2 -->
-                                <div class="featured-author__article flex items-start gap-3">
-                                    <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
-                                        <a href="/tac-gia/tran-thuong-0008UB.html" title="Trần Thường">
-                                            <img src="https://static-images.vnncdn.net/files/2022/6/27/1-5.jpg?width=0&s=l5xrRW7lOHjzbUSBhSi9Yg" alt="Trần Thường" class="w-full h-full object-cover rounded-full">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="featured-author__name mb-1">
-                                            <a href="/tac-gia/tran-thuong-0008UB.html" class="text-gray-700 font-bold text-base hover:underline">
-                                                Trần Thường
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Author 3 -->
-                                <div class="featured-author__article flex items-start gap-3">
-                                    <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
-                                        <a href="/tac-gia/minh-thu-00093R.html" title="Minh Thu">
-                                            <img src="https://static-images.vnncdn.net/files/2023/1/18/unnamed-4.jpg?width=0&s=xCC0ijhcDIxtui0gnOso2g" alt="Minh Thu" class="w-full h-full object-cover rounded-full">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="featured-author__name mb-1">
-                                            <a href="/tac-gia/minh-thu-00093R.html" class="text-gray-700 font-bold text-base hover:underline">
-                                                Minh Thu
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Author 4 -->
-                                <div class="featured-author__article flex items-start gap-3">
-                                    <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
-                                        <a href="/tac-gia/phuong-thuy-000933.html" title="Phương Thuý ">
-                                            <img src="https://static-images.vnncdn.net/files/2023/1/9/anhe.png?width=0&s=PpFFQ1ePYRWKUhA7Kl4p5A" alt="Phương Thuý " class="w-full h-full object-cover rounded-full">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="featured-author__name mb-1">
-                                            <a href="/tac-gia/phuong-thuy-000933.html" class="text-gray-700 font-bold text-base hover:underline">
-                                                Phương Thuý
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Author 5 -->
-                                <div class="featured-author__article flex items-start gap-3">
-                                    <div class="featured-author__image relative overflow-hidden w-[88px] h-[88px] flex-shrink-0">
-                                        <a href="/tac-gia/du-lam-0008PN.html" title="Du Lam">
-                                            <img src="https://static-images.vnncdn.net/files/2022/7/7/avatar-1.png?width=0&s=GqEFtUM5YO4n-YeG849sSw" alt="Du Lam" class="w-full h-full object-cover rounded-full">
-                                        </a>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="featured-author__name mb-1">
-                                            <a href="/tac-gia/du-lam-0008PN.html" class="text-gray-700 font-bold text-base hover:underline">
-                                                Du Lam
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
