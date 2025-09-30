@@ -360,7 +360,11 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                                     'status' => 'active'
                                 ],
                                 'perPage' => 5,
-                                'sort' => ['views', 'DESC']
+                                'sort' => ['views', 'DESC'],
+                                'withCategories' => true,
+                                'withTags' => true
+
+
                             ]);
                             
                             // Lấy dữ liệu từ key 'data' nếu có

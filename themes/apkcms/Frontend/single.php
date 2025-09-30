@@ -5,6 +5,8 @@ App\Libraries\Fastlang::load('Homepage');
 // Include functions helper
 require_once __DIR__ . '/functions.php';
 
+
+
 // Include database helper
 // if (file_exists(FCPATH . 'helpers/Database_helper.php')) {
 //     require_once FCPATH . 'helpers/Database_helper.php';
@@ -382,7 +384,8 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                             
                             <?php 
                             // Lấy tags của bài viết
-                            $post_tags = get_tags($post['posttype'], $post['id']);
+                            // $po$post_tags = [];st_tags = get_tags($post['posttype'], $post['id']);
+                            $post_tags = [];
                             ?>
                             
                             <?php if (!empty($post_tags)): ?>
@@ -515,7 +518,9 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                         ],
                                         'cat__in' => $category_ids,
                                         'perPage' => 5,
-                                        'sort' => ['views', 'DESC']
+                                        'sort' => ['views', 'DESC'],
+                                        'withCategories' => true
+
                                     ]);
                                     // var_dump($hot_news_posts);
                                     

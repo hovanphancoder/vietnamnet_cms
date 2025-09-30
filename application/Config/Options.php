@@ -114,4 +114,19 @@ return array (
   'default_posttype' => array (
     'value' => 'posts',
   ),
+  'phone' => array (
+    'value' => '0987654321',
+  ),
+  'fax' => array (
+    'value' => '(024) 377222222',
+  ),
+  'mail' => array (
+    'value' => 'admin@vietnamnet2.vn',
+  ),
+  'seo_follow' => array (
+    'value' => 'index, follow',
+  ),
+  'site_lang' => array (
+    'value' => 'en',
+  ),
 );

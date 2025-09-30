@@ -4,13 +4,8 @@ App\Libraries\Fastlang::load('Homepage');
 
 // ===== LẤY THÔNG TIN PAGE =====
 // Lấy thông tin page theo slug sử dụng get_post function
-$slug = S_GET('slug');
-$page = get_post([
-    'slug' => $slug,
-    'posttype' => 'pages',
-    'active' => true,
-    'columns' => ['*']
-]);
+global $page;
+// var_dump($page);
 
 //Get Object Data for this Pages
 
