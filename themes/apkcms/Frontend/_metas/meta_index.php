@@ -42,6 +42,7 @@ $meta
     ->twitter('site', '@' . option('site_title', APP_LANG));
 
 // Add favicon if available
+var_dump(option('favicon'));
 if (option('favicon')) {
     $logoUrl = theme_assets(option('favicon')['path'] ?? '/images/logo-icon.webp');
     $meta
