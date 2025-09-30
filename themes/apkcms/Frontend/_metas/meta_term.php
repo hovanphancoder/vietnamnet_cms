@@ -12,10 +12,14 @@ use App\Blocks\Meta\MetaBlock;
 $meta = new MetaBlock();
 // $current_page = get_current_page();
 // $posttype = $current_page['page_slug'];
-$slug =  S_GET('slug');
+// Lấy slug từ URL (S_GET không hoạt động đúng)
+$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+$path_parts = explode('/', trim($request_uri, '/'));
+$slug = end($path_parts);
 
 // Lấy thông tin term từ slug
-$term = get_term_by_slug($slug, 'posts', 'category', APP_LANG, false);
+$term = get_term($slug, 'posts', 'category', APP_LANG, false);
+
 if(option('seo_follow') == 'nofollow'){
     $robots = 'noindex, nofollow';
 }else{
