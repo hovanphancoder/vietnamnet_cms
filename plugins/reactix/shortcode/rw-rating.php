@@ -27,7 +27,6 @@ add_shortcode('rw-rating', function ($posttype, $post_id) {
     foreach ($childComments as $child) {
         $groupedChildren[$child['par_comment']][] = $child;
     }    
-    ob_start();
     ?>
     <div class="wp-rating-container bg-white rounded-lg shadow-md p-6"
     data-posttype="<?= $posttype; ?>"
@@ -62,7 +61,7 @@ add_shortcode('rw-rating', function ($posttype, $post_id) {
                 Gửi bình luận
             </button>
         </form>
-
+                            
         <!-- Comments container -->
         <div id="comments-container" class="space-y-6 comment-container collapsed">
             <?php foreach ($comments['data'] as $index => $comment): 
@@ -195,5 +194,4 @@ add_shortcode('rw-rating', function ($posttype, $post_id) {
     <!-- Load JavaScript -->
     <script src="<?= assets_url('js/wp-rating.js', 'reactix'); ?>"></script>
     <?php
-    return ob_get_clean();
 });

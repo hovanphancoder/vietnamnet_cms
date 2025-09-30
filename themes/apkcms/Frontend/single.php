@@ -5,13 +5,6 @@ App\Libraries\Fastlang::load('Homepage');
 // Include functions helper
 require_once __DIR__ . '/functions.php';
 
-
-
-// Include database helper
-// if (file_exists(FCPATH . 'helpers/Database_helper.php')) {
-//     require_once FCPATH . 'helpers/Database_helper.php';
-// }
-
 global $post;
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
 
@@ -34,10 +27,6 @@ if (!empty($results) && is_array($results)) {
         }
     }
 }
-
-// Debug: hiển thị kết quả
-// echo "<!-- Debug: Query results count: " . count($results) . " -->";
-// echo "<!-- Debug: Rel IDs: " . print_r($rel_ids, true) . " -->";
 
 // Lấy social links từ options
 $social_links = [];
@@ -137,7 +126,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        target="_blank" 
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Chia sẻ lên Facebook">
+                                       title="Share on Facebook">
                                         <svg width="16px" height="16px" viewBox="-5 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000">
                                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -159,12 +148,12 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        target="_blank" 
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Chia sẻ lên Zalo">
+                                       title="Share on Zalo">
                                         <img src="/themes/apkcms/Frontend/Assets/icons/zalo-unactive-1.svg" alt="Zalo" class="w-[40px] h-[40px]">
                                     </a>
                                     <a href="mailto:?subject=<?= urlencode($post['title'] ?? '') ?>&body=<?= urlencode('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>" 
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Gửi email">
+                                       title="Send email">
                                         <svg class="w-[16px] h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                                         </svg>
@@ -246,7 +235,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 <div class="flex-grow">
                                     <h4 class="notosans-bold font-bold text-lg hover:text-[#2d67ad] ">
                                         <a href="<?= $author_url ?>" 
-                                           title="Xem tất cả bài viết của <?= htmlspecialchars($author_name) ?>"
+                                           title="View all posts by <?= htmlspecialchars($author_name) ?>"
                                            class="hover:text-blue-600 transition-colors">
                                             <?= htmlspecialchars($author_name) ?>
                                         </a>
@@ -314,7 +303,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 </ul>
                             <?php else: ?>
                             <div class="text-center py-4 text-gray-500 text-sm">
-                                <p>Không có bài viết khác của tác giả này</p>
+                                <p>No other posts by this author</p>
                             </div>
                             <?php endif; ?>
                         </div>
@@ -328,7 +317,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        target="_blank" 
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Chia sẻ lên Facebook">
+                                       title="Share on Facebook">
                                         <svg width="16px" height="16px" viewBox="-5 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000">
                                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -350,12 +339,12 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        target="_blank" 
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Chia sẻ lên Zalo">
+                                       title="Share on Zalo">
                                         <img src="/themes/apkcms/Frontend/Assets/icons/zalo-unactive-1.svg" alt="Zalo" class="w-[40px] h-[40px]">
                                     </a>
                                     <a href="mailto:?subject=<?= urlencode($post['title'] ?? '') ?>&body=<?= urlencode('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>" 
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                                       title="Gửi email">
+                                       title="Send email">
                                         <svg class="w-[16px] h-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                                         </svg>
@@ -408,6 +397,12 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                         <h3 class="text-lg notosans-bold mb-4 text-gray-h3 uppercase text-[#0a569d] font-bold">Comments</h3>
                         <!-- <div class="block h-[70px] w-full border border-[#CDE3FF] bg-[#EEF5FF] rounded-[5px] cursor-text "><input class=" bg-[#EEF5FF] h-[40px] w-full rounded-[5px] py-[10px] px-[10px] focus:outline-none " type="text" placeholder="Your comment...."></div> -->
                         <?php// do_shortcode('rw-rating',$post['posttype'], $post['id']); ?>
+                        <!-- comment facebook -->
+                        <div class="fb-comments" 
+                            data-href="<?= 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ?>" 
+                            data-width="100%" 
+                            data-numposts="5">
+                        </div>
                     </div>
                 </div>
                 <!-- Right Column - Sidebar -->
@@ -599,7 +594,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                             </div>
                             <?php else: ?>
                             <div class="text-center py-8 text-gray-500">
-                                <p>Không có bài viết liên quan</p>
+                                <p>No related posts</p>
                             </div>
                             <?php endif; ?>
                         </div>
@@ -624,7 +619,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>Link đã được copy vào clipboard!</span>
+                <span>Link copied to clipboard!</span>
             </div>
         </div>
 

@@ -70,7 +70,7 @@ return array (
     'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache_uri"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
   ),
   'cache_config' => array (
-    'value' => '[{"cache_function":"blog","cache_caching":true,"cache_mobile":true,"cache_login":true,"cache_level":"default","cache_type":"html","cache_clear_time":"0"}]',
+    'value' => '[{"cache_function":"index","cache_caching":true,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":"0"},{"cache_function":"search","cache_caching":true,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"taxonomy","cache_caching":true,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"single","cache_caching":true,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"author","cache_caching":true,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""}]',
   ),
   'cache_gzip' => array (
     'value' => 5,

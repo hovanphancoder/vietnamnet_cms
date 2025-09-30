@@ -18,12 +18,15 @@ class FrontendController extends BaseController
 
     public function index($layout = '', ...$params)
     {
-        load_helpers(['frontend', 'images', 'string', 'database', 'shortcode', 'languages']);
-        $this->cachingDefaultLevel = option('cache_gzip') ?? 0;
-        $layout = $this->_detectLayout();
+
         $cache = $this->caching($layout);
-        $cachedata = $cache ?  $cache->get() : false;
+        // $cachedata = $cache ?  $cache->get() : false;
+        $cachedata = false;
         if(empty($cachedata)) {
+
+            load_helpers(['frontend', 'images', 'string', 'database', 'shortcode', 'languages']);
+            $this->cachingDefaultLevel = option('cache_gzip') ?? 0;
+    
             //Render::asset('css', 'css/blaze-slider.css', ['area' => 'frontend', 'location' => 'head']);
             //Render::asset('css', 'css/swiper-bundle.min.css', ['area' => 'frontend', 'location' => 'head']);
             // Render::asset('css', 'css/main.css', ['area' => 'frontend', 'location' => 'head']);
@@ -39,6 +42,7 @@ class FrontendController extends BaseController
             Flang::load('CMS', APP_LANG);
             $this->load_theme_functions();
 
+            $layout = $this->_detectLayout();
 
             $this->data['params'] = $params;
 

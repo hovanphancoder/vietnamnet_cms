@@ -192,5 +192,9 @@ use App\Models\FastModel;
     <!-- <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script> -->
 
 </body>
-
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" 
+  src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v19.0&appId=1537683350555064" 
+  nonce="abc123">
+</script>
 </html>

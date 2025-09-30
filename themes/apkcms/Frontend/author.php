@@ -8,7 +8,6 @@ use App\Models\UsersModel;
 //Get Object Data for this Pages
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
-
 get_template('_metas/meta_index', ['locale' => $locale]);
 
 $current_page = (int)(S_GET('page', 1));
@@ -39,10 +38,6 @@ if (!$author_info) {
     exit;
 }
 ?>
-
-
-
-
 
 <div class="max-w-7xl mx-auto">
             <div class="main bg-white mx-auto">
