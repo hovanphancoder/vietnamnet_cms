@@ -381,6 +381,39 @@ if (!function_exists('countAuthorThemesPlugins')) {
     }
 }
 
+if (!function_exists('get_tags')) {
+    /**
+     * Lấy tags của một bài viết
+     * 
+     * @param string $posttype Loại posttype
+     * @param int $post_id ID của bài viết
+     * @param string $lang Mã ngôn ngữ
+     * @return array Danh sách tags
+     */
+    function get_tags($posttype, $post_id, $lang = APP_LANG)
+    {
+        try {
+            $pivotTable = table_posttype_relationship($posttype);
+            $termTable = 'fast_terms';
+            
+            // Lấy tags từ bảng relationship
+            $qb = (new FastModel($pivotTable))
+                ->newQuery()
+                ->join($termTable, "{$termTable}.id_main", '=', "{$pivotTable}.rel_id")
+                ->where("{$pivotTable}.post_id", $post_id)
+                ->where("{$termTable}.type", 'tags')
+                ->where("{$termTable}.posttype", $posttype)
+                ->where("{$termTable}.lang", $lang)
+                ->select(["{$termTable}.id_main", "{$termTable}.name", "{$termTable}.slug"]);
+            
+            return $qb->get();
+        } catch (Exception $e) {
+            error_log("Error getting tags: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
 if (!function_exists('searching')) {
     function searching($keyword = '')
     {
