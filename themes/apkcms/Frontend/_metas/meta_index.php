@@ -42,9 +42,20 @@ $meta
     ->twitter('site', '@' . option('site_title', APP_LANG));
 
 // Add favicon if available
-var_dump(option('favicon'));
+// var_dump(option('favicon'));
 if (option('favicon')) {
-    $logoUrl = theme_assets(option('favicon')['path'] ?? '/images/logo-icon.webp');
+    $favicon_data = option('favicon');
+    
+    // Xử lý nếu favicon là JSON string
+    if (is_string($favicon_data)) {
+        $favicon_json = json_decode($favicon_data, true);
+        $favicon_path = $favicon_json['path'] ?? null;
+    } else {
+        $favicon_path = $favicon_data->path ?? null;
+    }
+    
+    $logoUrl = theme_assets($favicon_path ?? '/images/logo-icon.webp');
+    
     $meta
         ->og('image', $logoUrl)
         ->twitter('image', $logoUrl)

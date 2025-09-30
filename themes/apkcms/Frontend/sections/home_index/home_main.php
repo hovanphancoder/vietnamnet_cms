@@ -18,20 +18,15 @@ $home_posts_data = get_posts([
 
 // Debug raw data
 
-// Lấy dữ liệu từ key 'data' nếu có
+// Lấy dữ liệu từ key 'data' và thông tin phân trang
 if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
     $home_posts = $home_posts_data['data'];
     $total_posts = $home_posts_data['total'] ?? count($home_posts);
-    $total_pages = $home_posts_data['totalpage'] ?? ceil($total_posts / $per_page);
+    $total_pages = $home_posts_data['last_page'] ?? 1;
 } else {
     $home_posts = [];
     $total_posts = 0;
     $total_pages = 1;
-}
-
-// Tính toán lại total_pages nếu cần
-if ($total_pages == 1 && $total_posts > $per_page) {
-    $total_pages = ceil($total_posts / $per_page);
 }
 
 ?>
@@ -376,9 +371,18 @@ if ($total_pages == 1 && $total_posts > $per_page) {
                 <?php endif; ?>
 
                 <?php
-                // Page numbers
+                // Page numbers - cải thiện logic hiển thị
                 $start_page = max(1, $current_page - 2);
                 $end_page = min($total_pages, $current_page + 2);
+                
+                // Đảm bảo hiển thị ít nhất 5 trang nếu có thể
+                if ($end_page - $start_page < 4) {
+                    if ($start_page == 1) {
+                        $end_page = min($total_pages, $start_page + 4);
+                    } else {
+                        $start_page = max(1, $end_page - 4);
+                    }
+                }
                 
                 // Show first page if not in range
                 if ($start_page > 1):
@@ -397,7 +401,7 @@ if ($total_pages == 1 && $total_posts > $per_page) {
                     $page_url = $i == 1 ? '/' : '/?page=' . $i;
                     $is_active = $i == $current_page;
                 ?>
-                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
+                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
                     <?= $i ?>
                 </a>
                 <?php endfor; ?>
