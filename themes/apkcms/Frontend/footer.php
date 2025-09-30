@@ -188,7 +188,7 @@ use App\Models\FastModel;
     <!-- JavaScript Files -->
     <script src="/themes/apkcms/Frontend/Assets/js/script.js"></script>
     <script src="/themes/apkcms/Frontend/Assets/js/index.js"></script>
-    <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script>
+    <script src="/themes/apkcms/Frontend/Assets/js/main.min.js"></script>
     <!-- <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script> -->
 
 </body>

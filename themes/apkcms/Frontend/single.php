@@ -373,14 +373,13 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                             
                             <?php 
                             // Lấy tags của bài viết
-                            // $po$post_tags = [];st_tags = get_tags($post['posttype'], $post['id']);
-                            $post_tags = [];
+                            $post_tags = get_tags($post['posttype'], $post['id']); 
+                         
                             ?>
-                            
                             <?php if (!empty($post_tags)): ?>
-                                <span class="text-sm text-gray-500 font-medium ml-4">Topics:</span>
+                                <span class="text-sm text-gray-500 font-medium">Topics:</span>
                                 <?php foreach ($post_tags as $tag): ?>
-                                    <a href="<?= link_cat($tag['slug'], $post['posttype'] ?? 'posts') ?>" 
+                                    <a href="<?= link_tag($tag['slug'], $post['posttype'] ?? 'posts') ?>" 
                                        class="text-[#555] text-sm inline-block px-[10px] py-[2px] no-underline hover:underline transition-colors border border-gray-300 rounded-full">
                                         <?= htmlspecialchars($tag['name']) ?>
                                     </a>

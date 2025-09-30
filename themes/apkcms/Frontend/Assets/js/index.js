@@ -59,7 +59,6 @@ function initializeImageSlider() {
                     showSlide(currentSlide);
                 }
             }
-
             isDragging = false;
             startSlideShow();
         }

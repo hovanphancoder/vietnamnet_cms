@@ -572,6 +572,28 @@ if (!function_exists('link_cat')) {
     }
 }
 
+if (!function_exists('link_tag')) {
+    function link_tag($slug, $posttype = 'posts')
+    {
+        // Đảm bảo slug không rỗng
+        if (empty($slug)) {
+            return '#';
+        }
+        
+        // Loại bỏ ký tự đặc biệt và chuẩn hóa slug
+        $slug = trim($slug, '/');
+        $slug = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
+        
+        // Chuẩn hóa posttype
+        $posttype = trim($posttype, '/');
+        $posttype = preg_replace('/[^a-zA-Z0-9\-_]/', '', $posttype);
+        
+        // Tạo URL với format: /$posttype/category/$slug
+        $url = "/{$posttype}/tag/{$slug}/";
+        
+        return $url;
+    }
+}
 /**
  * Generate post link with proper URL format
  * Tạo link post với format URL đúng
