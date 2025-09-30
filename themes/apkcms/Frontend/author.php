@@ -151,23 +151,23 @@ if (!$author_info) {
                             echo "<!-- Debug: All posts count = " . (isset($test_posts['data']) ? count($test_posts['data']) : 'No data key') . " -->";
                         }
                         
-                        // Lấy dữ liệu từ key 'data'
+                        // Lấy dữ liệu từ key 'data' và thông tin phân trang
                         if (isset($author_posts['data']) && is_array($author_posts['data'])) {
-                            $author_posts = $author_posts['data'];
-                            $total_pages = $author_posts['totalpage'] ?? 1;
+                            $posts_data = $author_posts['data'];
+                            $total_pages = $author_posts['last_page'] ?? 1;
+                            $total_posts = $author_posts['total'] ?? count($posts_data);
                         } else {
-                            $author_posts = [];
+                            $posts_data = [];
                             $total_pages = 1;
+                            $total_posts = 0;
                         }
                         
-                        // Nếu totalpage không có, tính toán dựa trên số lượng bài viết
-                        if ($total_pages <= 1 && !empty($author_posts)) {
-                            $total_posts_count = count($author_posts);
-                            $total_pages = ceil($total_posts_count / $per_page);
-                        }
+                        // Gán lại để sử dụng trong vòng lặp
+                        $author_posts = $posts_data;
                         
                         // Debug: Kiểm tra phân trang
-                        echo "<!-- Debug: Total pages = $total_pages, Current page = $current_page -->";
+                        echo "<!-- Debug: Total posts = $total_posts, Total pages = $total_pages, Current page = $current_page -->";
+                        echo "<!-- Debug: Posts found = " . count($author_posts) . " -->";
                         
                       
                         ?>
@@ -327,10 +327,10 @@ if (!$author_info) {
 
                         <!-- Pagination -->
                         <?php 
-                        echo "<!-- Debug Pagination: Posts count = " . count($author_posts) . ", Total pages = $total_pages, Current page = $current_page -->";
+                        echo "<!-- Debug Pagination: Posts count = " . count($author_posts) . ", Total pages = $total_pages, Current page = $current_page, Total posts = $total_posts -->";
                         
-                        // Force hiển thị phân trang nếu có nhiều hơn 1 trang
-                        $should_show_pagination = !empty($author_posts) && ($total_pages > 1 || count($author_posts) >= $per_page);
+                        // Hiển thị phân trang nếu có nhiều hơn 1 trang
+                        $should_show_pagination = $total_pages > 1;
                         
                         if ($should_show_pagination): ?>
                         <div class="mt-8 flex justify-center">
@@ -343,8 +343,18 @@ if (!$author_info) {
                                 <?php endif; ?>
                                 
                                 <?php
+                                // Tính toán số trang để hiển thị
                                 $start_page = max(1, $current_page - 2);
                                 $end_page = min($total_pages, $current_page + 2);
+                                
+                                // Đảm bảo hiển thị ít nhất 5 trang nếu có thể
+                                if ($end_page - $start_page < 4) {
+                                    if ($start_page == 1) {
+                                        $end_page = min($total_pages, $start_page + 4);
+                                    } else {
+                                        $start_page = max(1, $end_page - 4);
+                                    }
+                                }
                                 
                                 for ($i = $start_page; $i <= $end_page; $i++): ?>
                                     <a href="?page=<?= $i ?>" 
