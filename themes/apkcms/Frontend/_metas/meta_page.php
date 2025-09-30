@@ -16,7 +16,7 @@ $meta = new MetaBlock();
 
 // $current_page = get_current_page();
 // $posttype = $current_page['page_slug'];
-$slug = get_current_slug();
+$slug = S_GET('slug');
 $page = get_post([
     'slug' => $slug,
     'posttype' => 'pages',
@@ -24,7 +24,11 @@ $page = get_post([
     'lang' => APP_LANG ,
     'columns' => ['*']
 ]);
-
+if(option('seo_follow') == 'nofollow'){
+    $robots = 'noindex, nofollow';
+}else{
+    $robots = 'index, follow';
+}
 
 
 
@@ -47,7 +51,7 @@ if (!$page) {
 $meta
     ->title($page['seo_title'])
     ->description($page['seo_desc'])
-    ->robots('index, follow')
+    ->robots($robots)
     ->canonical(base_url($_SERVER['REQUEST_URI']));
 // Add basic meta tags
 $meta

@@ -13,11 +13,15 @@ global $posttype, $post;
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
 $meta = new MetaBlock();
-
+if(option('seo_follow') == 'nofollow'){
+    $robots = 'noindex, nofollow';
+}else{
+    $robots = 'index, follow';
+}
 $meta
     ->title($post['seo_title'])
     ->description( $post['seo_desc'])
-    ->robots('index, follow')
+    ->robots($robots)
     ->canonical(base_url($_SERVER['REQUEST_URI']));
 // Add basic meta tags
 $meta

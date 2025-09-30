@@ -16,7 +16,11 @@ $slug = get_current_slug();
 
 // Lấy thông tin term từ slug
 $term = get_term_by_slug($slug, 'posts', 'category', APP_LANG, false);
-
+if(option('seo_follow') == 'nofollow'){
+    $robots = 'noindex, nofollow';
+}else{
+    $robots = 'index, follow';
+}
 // var_dump($term);
 
 // Check if page exists, if not use default values
@@ -34,7 +38,7 @@ if (!$term) {
 $meta
     ->title($term['seo_title'])
     ->description($term['seo_desc'])
-    ->robots('index, follow')
+    ->robots($robots)
     ->canonical($_SERVER['REQUEST_URI']);
 // Add basic meta tags
 $meta

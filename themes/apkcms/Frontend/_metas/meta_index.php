@@ -11,11 +11,16 @@ use App\Blocks\Meta\MetaBlock;
 // Create meta tags for homepage directly from MetaBlock
 $meta = new MetaBlock();
 
-// var_dump(option('favicon'));
+if(option('seo_follow') == 'nofollow'){
+    $robots = 'noindex, nofollow';
+}else{
+    $robots = 'index, follow';
+}
+
 $meta
     ->title(option('site_title', APP_LANG))
     ->description(option('site_desc', APP_LANG))
-    ->robots('index, follow')
+    ->robots($robots)
     ->canonical(base_url());
 // Add basic meta tags
 $meta

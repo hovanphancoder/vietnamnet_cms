@@ -108,9 +108,9 @@ use App\Models\FastModel;
                     <div class="footer-en__bottom-list text-sm text-gray-600 space-y-2">
                         <div class="footer-en__bottom-item font-medium">© Copyright of VietNamNet Global</div>
                         <div class="footer-en__bottom-item text-xs leading-relaxed">
-                            <span>Tel: <?= option('site_phone') ?> Fax: <?= option('site_fax') ?></span>
+                            <span>Tel: <?= option('phone') ?> Fax: <?= option('fax') ?></span>
                             <span>, </span>
-                            <span>Email: <?= option('site_email') ?></span>
+                            <span>Email: <?= option('mail') ?></span>
                         </div>
                     </div>
                 </div>
@@ -189,6 +189,7 @@ use App\Models\FastModel;
     <script src="/themes/apkcms/Frontend/Assets/js/script.js"></script>
     <script src="/themes/apkcms/Frontend/Assets/js/index.js"></script>
     <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script>
+    <!-- <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script> -->
 
 </body>
 

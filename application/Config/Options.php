@@ -88,7 +88,7 @@ return array (
     'value' => 1,
   ),
   'site_email' => array (
-    'value' => 'contact@cmsfullform.com',
+    'value' => 'admin@vietnamnet2.vn',
   ),
   'site_logo' => array (
     'value' => '{"id":115,"name":"logoVietnamNet (1).png","path":"2025/09/29/logoVietnamNet (1).png"}',

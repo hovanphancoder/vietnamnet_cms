@@ -405,7 +405,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                     <div class="mt-8 pt-6 ">
                         <h3 class="text-lg notosans-bold mb-4 text-gray-h3 uppercase text-[#0a569d] font-bold">Comments</h3>
                         <!-- <div class="block h-[70px] w-full border border-[#CDE3FF] bg-[#EEF5FF] rounded-[5px] cursor-text "><input class=" bg-[#EEF5FF] h-[40px] w-full rounded-[5px] py-[10px] px-[10px] focus:outline-none " type="text" placeholder="Your comment...."></div> -->
-                        <?php //do_shortcode('rw-rating',$post['posttype'], $post['id']); ?>
+                        <?php do_shortcode('rw-rating',$post['posttype'], $post['id']); ?>
                     </div>
                 </div>
                 <!-- Right Column - Sidebar -->
@@ -651,5 +651,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
             }, 3000);
         }
         </script>
+        <script src="/plugins/reactix/Asstets/js/wp-rating.js"></script>
+        <script src="/plugins/reactix/Asstets/js/swiper-bundle.min.js"></script>
 
 <?php get_footer(); ?>
