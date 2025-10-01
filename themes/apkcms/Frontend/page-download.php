@@ -18,7 +18,7 @@ Flang::load('CMS', APP_LANG);
 Flang::load('General', APP_LANG);
 Flang::load('Download', APP_LANG);
 // cdn tailwind
-Render::asset('css', '/themes/cmsfullform/Frontend/assets/css/features_styles.css', ['area' => 'frontend', 'location' => 'head']);
+Render::asset('css', theme_assets('css/features_styles.css'), ['area' => 'frontend', 'location' => 'head']);
 
 use App\Blocks\Meta\MetaBlock;
 

@@ -82,7 +82,7 @@ if (!$author_info) {
                                         </div>
                                     <?php else: ?>
                                         <div class="w-[100px] h-[100px] lg:w-[170px] lg:h-[170px] rounded-full bg-[#2d67ad] flex items-center justify-center text-white text-4xl lg:text-6xl font-bold">
-                                        <img src="/themes/apkcms/Frontend/Assets/images/default-avatar.png" >
+                                        <img src="<?= theme_assets('images/default-avatar.png') ?>" >
                                         </div>
                                     <?php endif; ?>
 
@@ -425,7 +425,7 @@ if (!$author_info) {
                                                         </div>
                                                     <?php else: ?>
                                                         <div class="w-full h-full bg-[#2d67ad] rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                                            <img src="/themes/apkcms/Frontend/Assets/images/default-avatar.png" >
+                                                            <img src="<?= theme_assets('images/default-avatar.png') ?>" >
                                                         </div>
                                                     <?php endif; ?>
                                                 </a>

@@ -42,7 +42,7 @@ add_shortcode('rw-rating', function ($posttype, $post_id) {
                 <div class="flex items-center star-rating">
                     <div class="flex">
                         <?php for($i = 1; $i <= 5; $i++): ?>
-                            <img data-src-start="<?= assets_url('images/star.svg'); ?>" src="<?= assets_url('images/star-empty.svg'); ?>" alt="star" class="star">
+                            <img data-src-start="<?= theme_assets('images/star.svg'); ?>" src="<?= theme_assets('images/star-empty.svg'); ?>" alt="star" class="star">
                         <?php endfor; ?>
                     </div>
                     <span id="rating-display" class="ml-2 text-sm text-gray-600">Chưa đánh giá</span>
@@ -193,7 +193,7 @@ add_shortcode('rw-rating', function ($posttype, $post_id) {
     </div>
 
     <!-- Load JavaScript -->
-    <script src="<?= assets_url('js/wp-rating.js', 'reactix'); ?>"></script>
+    <script src="<?= theme_assets('js/wp-rating.js', 'reactix'); ?>"></script>
     <?php
     return ob_get_clean();
 });

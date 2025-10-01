@@ -17,7 +17,7 @@ use App\Models\FastModel;
                     </svg>
                 </button>
                 <div class="flex-1 flex justify-center">
-                    <img src="https://static.vnncdn.net/v1/icon/VietnamNet-bridge-vien-trang.svg" alt="VietnamNet" class="h-10">
+                    <img src="<?= public_url('uploads/2025/09/29/logoVietnamNet%20(1).png') ?>" alt="VietnamNet" class="h-10">
                 </div>
                 <div class="w-6"></div>
             </div>
@@ -28,7 +28,7 @@ use App\Models\FastModel;
                 <div class="p-4 border-b border-gray-200">
                     <form action="/search/" method="get">
                         <div class="relative">
-                            <input name="key" type="text" placeholder="Type keywords...." class="w-full px-4 py-2 pl-4 pr-10 bg-white border border-gray-300 rounded-[999px] text-sm focus:outline-none">
+                            <input name="q" type="text" placeholder="Type keywords...." class="w-full px-4 py-2 pl-4 pr-10 bg-white border border-gray-300 rounded-[999px] text-sm focus:outline-none">
                             <button class="btn-search absolute right-2 top-1/2 transform -translate-y-1/2" type="submit">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -134,11 +134,11 @@ use App\Models\FastModel;
                             
                             // Mapping network names to icons (sử dụng file local)
                             $icon_mapping = [
-                                'facebook' => '/themes/apkcms/Frontend/Assets/icons/facebook-black.svg',
-                                'youtube' => '/themes/apkcms/Frontend/Assets/icons/youtube-black.svg',
-                                'tiktok' => '/themes/apkcms/Frontend/Assets/icons/tiktok-black.svg',
-                                'x' => '/themes/apkcms/Frontend/Assets/icons/twitter-black.svg',
-                                'zalo' => '/themes/apkcms/Frontend/Assets/icons/zalo-black.svg'
+                                'facebook' => theme_assets('icons/facebook-black.svg'),
+                                'youtube' => theme_assets('icons/youtube-black.svg'),
+                                'tiktok' => theme_assets('icons/tiktok-black.svg'),
+                                'x' => theme_assets('icons/twitter-black.svg'),
+                                'zalo' => theme_assets('icons/zalo-black.svg')
                             ];
                             
                             
@@ -184,17 +184,5 @@ use App\Models\FastModel;
 
 
     </footer>
-
-    <!-- JavaScript Files -->
-    <script src="/themes/apkcms/Frontend/Assets/js/script.js"></script>
-    <script src="/themes/apkcms/Frontend/Assets/js/index.js"></script>
-    <script src="/themes/apkcms/Frontend/Assets/js/main.min.js"></script>
-    <!-- <script src="/themes/apkcms/Frontend/Assets/js/main.js"></script> -->
-
 </body>
-<div id="fb-root"></div>
-<script async defer crossorigin="anonymous" 
-  src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v19.0&appId=1537683350555064" 
-  nonce="abc123">
-</script>
 </html>

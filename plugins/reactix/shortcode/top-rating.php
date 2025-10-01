@@ -90,14 +90,14 @@ add_shortcode('top-rating', function ($posttype, $post_id) {
                 var link = document.createElement('link');
                 link.id = 'swiper-css';
                 link.rel = 'stylesheet';
-                link.href = '<?php echo assets_url('css/swiper-bundle.min.css', 'reactix'); ?>';
+                link.href = '<?php echo theme_assets('css/swiper-bundle.min.css', 'reactix'); ?>';
                 document.head.appendChild(link);
             }
             // Add JS
             if (!document.getElementById('swiper-js')) {
                 var script = document.createElement('script');
                 script.id = 'swiper-js';
-                script.src = '<?php echo assets_url('js/swiper-bundle.min.js', 'reactix'); ?>';
+                script.src = '<?php echo theme_assets('js/swiper-bundle.min.js', 'reactix'); ?>';
                 script.onload = callback;
                 document.body.appendChild(script);
             } else {

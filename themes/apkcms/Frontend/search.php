@@ -1,12 +1,13 @@
 <?php
 App\Libraries\Fastlang::load('Homepage');
+\System\Libraries\Render::asset('css', 'css/search.css', ['area' => 'frontend', 'location' => 'head']);
 //Render::asset('js', 'js/home-index.js', ['area' => 'frontend', 'location' => 'footer']);
 
 //Get Object Data for this Pages
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 
 // Lấy dữ liệu search
-$search_keyword = trim(S_GET('key', ''));
+$search_keyword = trim(S_GET('q', ''));
 $search_order = S_GET('od', '2'); // 1 = oldest, 2 = newest
 $search_sort = S_GET('sort', 'all');
 $search_category = S_GET('cate', 'all');
@@ -112,7 +113,7 @@ get_template('_metas/meta_all', ['locale' => $locale]);
                 <form action="/search" method="get" class="">
                     <!-- Search Bar -->
                     <div class="relative mb-6">
-                        <input type="text" name="key" value="<?= htmlspecialchars($search_keyword) ?>" placeholder="Enter keywords..." class="w-full px-4 py-3 pr-12 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" name="q" value="<?= htmlspecialchars($search_keyword) ?>" placeholder="Enter keywords..." class="w-full px-4 py-3 pr-12 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded">
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -184,7 +185,7 @@ get_template('_metas/meta_all', ['locale' => $locale]);
                         <?php foreach ($search_results as $index => $post): ?>
                             <?php
                             // Xử lý hình ảnh
-                            $image_url = '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp'; // Default image
+                            $image_url = theme_assets('images/lng-expansion.webp'); // Default image
                             
                             // Kiểm tra feature image trước
                             if (!empty($post['feature'])) {
@@ -205,7 +206,7 @@ get_template('_metas/meta_all', ['locale' => $locale]);
                             }
                             
                             // Nếu chưa có feature, kiểm tra banner
-                            if ($image_url === '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp' && !empty($post['banner'])) {
+                            if ($image_url === theme_assets('images/lng-expansion.webp') && !empty($post['banner'])) {
                                 $banner_data = json_decode($post['banner'], true);
                                 if (is_array($banner_data)) {
                                     // Kiểm tra các trường có thể có trong banner data

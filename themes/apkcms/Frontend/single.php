@@ -51,6 +51,12 @@ if (!empty($social_option)) {
 $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 get_template('_metas/meta_single', ['locale' => $locale]);
 ?>
+<style type="text/css">
+#maincontent img{
+    max-width: 95% !important;
+    margin:0 auto;
+}
+</style>
         <div class="max-w-7xl mx-auto">
             <!-- Main Content Layout -->
             <div class="flex flex-col lg:flex-row gap-0 lg:gap-8 pt-0 lg:pt-6">
@@ -146,7 +152,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
                                        title="Share on Zalo">
-                                        <?= _img('/themes/apkcms/Frontend/Assets/icons/zalo-unactive-1.svg', 'Zalo', false, 'w-[40px] h-[40px]') ?>
+                                        <?= _img(theme_assets('icons/zalo-unactive-1.svg'), 'Zalo', false, 'w-[40px] h-[40px]') ?>
                                     </a>
                                     <a href="mailto:?subject=<?= urlencode($post['title'] ?? '') ?>&body=<?= urlencode('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>" 
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
@@ -172,7 +178,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                    target="_blank" 
                                    rel="noopener nofollow"
                                    title="Google News">
-                                    <?= _img('/themes/apkcms/Frontend/Assets/icons/google-news-en.svg', 'Google News', false, 'h-[30px] ml-0') ?>
+                                    <?= _img(theme_assets('icons/google-news-en.svg'), 'Google News', false, 'h-[30px] ml-0') ?>
                                         
                                 </a>
                             </div>
@@ -233,7 +239,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 <!-- Avatar -->
                                 <div class="flex-shrink-0">
 
-                                    <?= _img( !empty($author_info['avatar']) ? $author_info['avatar'] : '/themes/apkcms/Frontend/assets/images/default-avatar.png', $author_info['fullname'], true, 'w-8 h-8 rounded-full object-cover border-2 border-gray-200', ) ?>
+                                    <?= _img( !empty($author_info['avatar']) ? $author_info['avatar'] : theme_assets('images/default-avatar.png'), $author_info['fullname'], true, 'w-8 h-8 rounded-full object-cover border-2 border-gray-200', ) ?>
                                 
                                 </div>
                                 
@@ -348,7 +354,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                        rel="noopener noreferrer"
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
                                        title="Share on Zalo">
-                                        <?= _img('/themes/apkcms/Frontend/Assets/icons/zalo-unactive-1.svg', 'Zalo', false, 'w-[40px] h-[40px]') ?>
+                                        <?= _img(theme_assets('icons/zalo-unactive-1.svg'), 'Zalo', false, 'w-[40px] h-[40px]') ?>
                                     </a>
                                     <a href="mailto:?subject=<?= urlencode($post['title'] ?? '') ?>&body=<?= urlencode('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>" 
                                        class="flex items-center justify-center min-w-[30px] w-[30px] h-[30px] border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
@@ -400,7 +406,6 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                     <div class="mt-8 pt-6 ">
                         <h3 class="text-lg notosans-bold mb-4 text-gray-h3 uppercase text-[#0a569d] font-bold">Comments</h3>
                         <!-- <div class="block h-[70px] w-full border border-[#CDE3FF] bg-[#EEF5FF] rounded-[5px] cursor-text "><input class=" bg-[#EEF5FF] h-[40px] w-full rounded-[5px] py-[10px] px-[10px] focus:outline-none " type="text" placeholder="Your comment...."></div> -->
-                        <?php// do_shortcode('rw-rating',$post['posttype'], $post['id']); ?>
                         <!-- comment facebook -->
                         <div class="fb-comments" 
                             data-href="<?= 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ?>" 
@@ -456,7 +461,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                                     
                                                     // Fallback image nếu không có ảnh
                                                     if (empty($feature_image)) {
-                                                        $feature_image = '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp';
+                                                        $feature_image = theme_assets('images/lng-expansion.webp');
                                                     }
                                                     ?>
                                                     <?= _img($feature_image, htmlspecialchars($related_post['title'] ?? ''), false, 'w-[135px] h-[90px] object-cover') ?>
@@ -524,7 +529,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                                     
                                                     // Fallback image nếu không có ảnh
                                                     if (empty($feature_image)) {
-                                                        $feature_image = '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp';
+                                                        $feature_image = theme_assets('images/lng-expansion.webp');
                                                     }
                                                     ?>
                                                     <?= _img($feature_image, htmlspecialchars($related_post['title'] ?? ''), false, 'w-[135px] h-[90px] object-cover') ?>
@@ -624,7 +629,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 
                                 // Nếu không có ảnh, dùng ảnh mặc định
                                 if (empty($image_url)) {
-                                    $image_url = '/themes/apkcms/Frontend/Assets/images/fpt-ceo.jpg';
+                                    $image_url = theme_assets('images/fpt-ceo.jpg');
                                 }
                                 ?>
                                 <div class="flex gap-4 pb-0">
@@ -668,7 +673,7 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                     <div class="my-12 text-center">
                         <!-- <button class="vnn-load-more btn-outline-gray border text-xs notosans-bold uppercase text-blue-primary mb-2 items-center border border-blue-primary px-4 py-1 rounded-full">
                             See more
-                             <img class="icon-loading hidden" src="/themes/apkcms/Frontend/Assets/icons/loading.svg" alt="icon loading">
+                             <img class="icon-loading hidden" src="<?= theme_assets('icons/loading.svg') ?>" alt="icon loading">
                         </button> -->
                     </div>
                 </div>
@@ -718,5 +723,11 @@ get_template('_metas/meta_single', ['locale' => $locale]);
         </script>
         <script src="/plugins/reactix/Asstets/js/wp-rating.js"></script>
         <script src="/plugins/reactix/Asstets/js/swiper-bundle.min.js"></script>
+
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" 
+  src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v19.0&appId=1537683350555064" 
+  nonce="abc123">
+</script>
 
 <?php get_footer(); ?>

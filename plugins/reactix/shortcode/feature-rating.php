@@ -76,7 +76,7 @@ add_shortcode('feature-rating', function (
                                     for ($i = 1; $i <= 5; $i++):
                                         $isFilled = $i <= $rating;
                                 ?>
-                                   <img src="<?= assets_url($isFilled ? 'images/star.svg' : 'images/star-empty.svg'); ?>" alt="star" class="star">
+                                   <img src="<?= theme_assets($isFilled ? 'images/star.svg' : 'images/star-empty.svg'); ?>" alt="star" class="star">
                                 <?php endfor; ?>
                             </div>
                             <p class="text-sm text-gray-700 mb-3">

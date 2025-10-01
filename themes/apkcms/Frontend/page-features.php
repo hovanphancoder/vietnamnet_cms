@@ -18,8 +18,8 @@ use App\Blocks\Schema\Templates\Organization;
 
 Flang::load('CMS', APP_LANG);
 Flang::load('Features', APP_LANG);
-Render::asset('css', '/themes/cmsfullform/Frontend/assets/css/features_styles.css', ['area' => 'frontend', 'location' => 'head']);
-Render::asset('js', '/themes/cmsfullform/Frontend/assets/js/features.js', ['area' => 'frontend', 'location' => 'footer']);
+Render::asset('css', theme_assets('css/features_styles.css'), ['area' => 'frontend', 'location' => 'head']);
+Render::asset('js', theme_assets('js/features.js'), ['area' => 'frontend', 'location' => 'footer']);
 
 use App\Blocks\Meta\MetaBlock;
 

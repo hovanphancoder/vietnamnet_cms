@@ -1,6 +1,9 @@
 <?php
 use App\Models\FastModel;
 require_once __DIR__ . '/functions.php';
+\System\Libraries\Render::asset('js', 'js/lazysizes.min.js', ['area' => 'frontend', 'location' => 'head']);
+\System\Libraries\Render::asset('js', 'js/main.js', ['area' => 'frontend', 'location' => 'head']);
+// Render::asset('js', 'js/blaze-slider.min.js', ['area' => 'frontend', 'location' => 'head']);
 
 // Use global categories initialized in functions.php
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
@@ -18,7 +21,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
     ?>
     <?= \System\Libraries\Render::renderAsset('head', 'frontend') ?>
     <!-- cdn tailwind css -->
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"> -->
     <!-- <link href="css/style.css" rel="stylesheet"> -->
@@ -48,7 +51,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                             </a>
 
                             <!-- Mobile: Hamburger menu icon -->
-                            <button class="lg:hidden inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900" onclick="toggleMobileMenu()">
+                            <button aria-label="Menu Mobile" class="lg:hidden inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900" onclick="toggleMobileMenu()">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                                 </svg>
@@ -85,7 +88,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                             <!-- Desktop: Expandable search form -->
                             <div class="hidden md:block relative">
                                 <form class="search-small__form  flex items-center" action="/search/">
-                                    <input id="searchInput" class="search-small__form-input w-0 h-[28px] px-0 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out" name="key" type="text" placeholder="Type keywords....">
+                                    <input id="searchInput" class="search-small__form-input w-0 h-[28px] px-0 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out" name="q" type="text" placeholder="Type keywords....">
                                     <button id="searchToggleDesktop" class="search-small__form-btn absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="button">
                                         <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon search" class="w-4 h-4">
                                     </button>
@@ -102,7 +105,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                                 <div id="searchDropdown" class="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50">
                                     <form class="p-4" action="/search/">
                                         <div class="relative">
-                                            <input class="w-full h-10 px-4 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="key" type="text" placeholder="Type keywords....">
+                                            <input class="w-full h-10 px-4 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="q" type="text" placeholder="Type keywords....">
                                             <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="submit">
                                                 <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon search" class="w-4 h-4">
                                             </button>

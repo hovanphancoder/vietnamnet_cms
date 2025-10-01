@@ -41,7 +41,7 @@
                                                     
                                                     // Fallback image nếu không có ảnh
                                                     if (empty($feature_image)) {
-                                                        $feature_image = '/themes/apkcms/Frontend/Assets/images/lng-expansion.webp';
+                                                        $feature_image = theme_assets('images/lng-expansion.webp');
                                                     }
                                                     ?>
                                                     <?= _img($feature_image, htmlspecialchars($related_post['title'] ?? ''), false, 'w-[135px] h-[90px] object-cover') ?>

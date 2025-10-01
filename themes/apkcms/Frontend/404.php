@@ -17,8 +17,8 @@ Flang::load('CMS', APP_LANG);
 Flang::load('404', APP_LANG);
 
 // Load CSS và JS cho trang 404
-Render::asset('css', '/themes/cmsfullform/Frontend/assets/css/404_styles.css', ['area' => 'frontend', 'location' => 'head']);
-Render::asset('js', '/themes/cmsfullform/Frontend/assets/js/404.js', ['area' => 'frontend', 'location' => 'footer']);
+Render::asset('css', theme_assets('css/404_styles.css'), ['area' => 'frontend', 'location' => 'head']);
+Render::asset('js', theme_assets('js/404.js'), ['area' => 'frontend', 'location' => 'footer']);
 // Prepare errors data for sections
 $errorsLanguageData = [
     'meta' => [

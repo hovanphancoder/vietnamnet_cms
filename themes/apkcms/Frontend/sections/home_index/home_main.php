@@ -55,7 +55,7 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                     <!-- Right Side - Search Form -->
                     <div class="search-small">
                         <form class="search-small__form relative" action="/search/">
-                            <input class="search-small__form-input w-60 h-[28px] px-4 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="key" type="text" placeholder="Type keywords....">
+                            <input class="search-small__form-input w-60 h-[28px] px-4 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="q" type="text" placeholder="Type keywords....">
                             <button class="search-small__form-btn absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="submit">
                                 <?= _img('https://static.vnncdn.net/v1/icon/search.png', 'icon search', false, 'w-4 h-4') ?>
                             </button>
@@ -287,60 +287,15 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
                     <?php if ($total_pages > 1): ?>
                     <div class="sm:hidden flex justify-center items-center w-full mt-5 mb-10">
                         <div class="flex items-center space-x-1">
-                            <?php if ($current_page > 1): ?>
-                            <a href="<?= $current_page == 2 ? '/' : '/?page=' . ($current_page - 1) ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                </svg>
-                            </a>
-                            <?php endif; ?>
-                            
-                            <!-- Page numbers for mobile -->
                             <?php
-                            $start_page = max(1, $current_page - 1);
-                            $end_page = min($total_pages, $current_page + 1);
-                            
-                            // Show first page if not in range
-                            if ($start_page > 1):
+                                $query_params = [];
+                                if (!empty($search)) $query_params['q'] = $search;
+                                $query_params['limit'] = 10;
+                                if (!empty($status)) $query_params['status'] = $status;
+                                if (!empty($sort)) $query_params['sort'] = $sort;
+                                if (!empty($order)) $query_params['order'] = $order;
+                                echo \System\Libraries\Render::pagination(base_url(), $current_page, ($current_page < $total_pages), $query_params);
                             ?>
-                            <a href="/" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                                1
-                            </a>
-                            <?php if ($start_page > 2): ?>
-                            <span class="px-2 text-gray-500">...</span>
-                            <?php endif; ?>
-                            <?php endif; ?>
-
-                            <?php
-                            // Show page numbers in range
-                            for ($i = $start_page; $i <= $end_page; $i++):
-                                $page_url = $i == 1 ? '/' : '/?page=' . $i;
-                                $is_active = $i == $current_page;
-                            ?>
-                            <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-[#2d67ad] text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                                <?= $i ?>
-                            </a>
-                            <?php endfor; ?>
-
-                            <?php
-                            // Show last page if not in range
-                            if ($end_page < $total_pages):
-                            ?>
-                            <?php if ($end_page < $total_pages - 1): ?>
-                            <span class="px-2 text-gray-500">...</span>
-                            <?php endif; ?>
-                            <a href="/?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                                <?= $total_pages ?>
-                            </a>
-                            <?php endif; ?>
-                            
-                            <?php if ($current_page < $total_pages): ?>
-                            <a href="/?page=<?= $current_page + 1 ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-                            <?php endif; ?>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -398,70 +353,15 @@ if (isset($home_posts_data['data']) && is_array($home_posts_data['data'])) {
         <?php if ($total_pages > 1): ?>
         <div class="hidden sm:flex justify-center items-center w-full mt-5 mb-10">
             <div class="flex items-center space-x-2">
-                <?php
-                // Previous button
-                if ($current_page > 1):
-                    $prev_page = $current_page - 1;
-                    $prev_url = $prev_page == 1 ? '/' : '/?page=' . $prev_page;
-                ?>
-                <a href="<?= $prev_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </a>
-                <?php endif; ?>
-
-                <?php
-                // Page numbers
-                $start_page = max(1, $current_page - 2);
-                $end_page = min($total_pages, $current_page + 2);
-                
-                // Show first page if not in range
-                if ($start_page > 1):
-                ?>
-                <a href="/" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    1
-                </a>
-                <?php if ($start_page > 2): ?>
-                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
-                <?php endif; ?>
-                <?php endif; ?>
-
-                <?php
-                // Show page numbers in range
-                for ($i = $start_page; $i <= $end_page; $i++):
-                    $page_url = $i == 1 ? '/' : '/?page=' . $i;
-                    $is_active = $i == $current_page;
-                ?>
-                <a href="<?= $page_url ?>" class="w-10 h-10 <?= $is_active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' ?> rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    <?= $i ?>
-                </a>
-                <?php endfor; ?>
-
-                <?php
-                // Show last page if not in range
-                if ($end_page < $total_pages):
-                ?>
-                <?php if ($end_page < $total_pages - 1): ?>
-                <span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
-                <?php endif; ?>
-                <a href="/?page=<?= $total_pages ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    <?= $total_pages ?>
-                </a>
-                <?php endif; ?>
-
-                <?php
-                // Next button
-                if ($current_page < $total_pages):
-                    $next_page = $current_page + 1;
-                    $next_url = '/?page=' . $next_page;
-                ?>
-                <a href="<?= $next_url ?>" class="w-10 h-10 bg-white text-gray-700 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium hover:bg-gray-50 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </a>
-                <?php endif; ?>
+            <?php
+                //Muốn đưa ?parameter nao vao thi dua vao $query_params, ví dụ muốn có ?limit thi $query_params['limit'] = 10;
+                $query_params = [];
+                if (!empty($search)) $query_params['q'] = $search;
+                if (!empty($status)) $query_params['status'] = $status;
+                if (!empty($sort)) $query_params['sort'] = $sort;
+                if (!empty($order)) $query_params['order'] = $order;
+                echo \System\Libraries\Render::pagination(base_url(), $current_page, ($current_page < $total_pages), $query_params);
+            ?>
             </div>
         </div>
         <?php endif; ?>

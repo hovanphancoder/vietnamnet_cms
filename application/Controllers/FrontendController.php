@@ -24,11 +24,6 @@ class FrontendController extends BaseController
         $cache = $this->caching($layout);
         $cachedata = $cache ?  $cache->get() : false;
         if(empty($cachedata)) {
-
-            Render::asset('js', 'js/lazysizes.min.js', ['area' => 'frontend', 'location' => 'head']);
-            Render::asset('js', 'js/main.js', ['area' => 'frontend', 'location' => 'head']);
-            // Render::asset('js', 'js/blaze-slider.min.js', ['area' => 'frontend', 'location' => 'head']);
-
             Flang::load('CMS', APP_LANG);
             $this->load_theme_functions();
 
