@@ -4,7 +4,6 @@ namespace App\Controllers;
 use System\Core\BaseController;
 use App\Libraries\Fastlang as Flang;
 use System\Libraries\Session;
-use App\Models\UsersModel;
 
 /**
  * AppController
@@ -28,12 +27,12 @@ class BackendController extends BaseController
         parent::__construct();
         // User ID Global variable
         global $me_info;
-        if (empty($me_id)){
+        if (empty($me_info)){
             $me_id = Session::get('user_id');
-            $usersModel = new UsersModel();
+            $usersModel = new \App\Models\UsersModel();
             $me_info = $usersModel->getUserById($me_id);
             if (empty($me_info)) {
-                // redirect(auth_url('logout'));
+                redirect(auth_url('logout'));
             }
         }
         // Load 'backend' helper

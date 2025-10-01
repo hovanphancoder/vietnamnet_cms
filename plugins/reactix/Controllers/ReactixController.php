@@ -93,14 +93,14 @@ class ReactixController extends ApiController
             }
 
             // check if user exists by checking token or session
-            $user = $this->_authen_check();
+            $user = $this->_auth();
             if (!$user) {
                $user_id = 0;
             } else {
                 $user_id = $user['id'];
             }
 
-            // if rating > 0 then update both fast_posts_{posttype} $post rating_count, rating_total, rating_avg
+            // if rating > 0 then update both APP_PREFIX.posts_{posttype} $post rating_count, rating_total, rating_avg
             if ($rating > 0) {
                 // rating_avg = (rating_total + rating) / (rating_count + 1) round to first decimal and multiply by 10 to become integer
                 $rating_avg = round(($post['rating_total'] + $rating) / ($post['rating_count'] + 1) * 10, 0);
@@ -165,20 +165,16 @@ class ReactixController extends ApiController
         }
     }
 
-    protected function _authen_check() {
-        $access_token = Fasttoken::getToken();
+    protected function _auth() {
+        $access_token = Fasttoken::headerToken();
         if(Session::has('user_id')) {
             $user_id = clean_input(Session::get('user_id'));
         } elseif (!empty($access_token)) {
-            $config_security = config('security');
-            $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-            if (!isset($me_data['success'])) {
+            $me_data = Fasttoken::checkToken($access_token);
+            if (empty($me_data)) {
                 return false;
             }
-            $user_id = $me_data['data']['user_id'] ?? null;
-            if (empty($user_id)) {
-                return false;
-            }
+            $user_id = $me_data['user_id'] ?? null;
         } else {
             return false;
         }

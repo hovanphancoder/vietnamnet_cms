@@ -160,826 +160,827 @@
     <script>
         // PHP sẽ truyền data vào window object
         window.ACF_DATA = {
-  "lang": "vi",
-  "inputConfig": {
-    "border": {
-      "width": 1,
-      "style": "solid",
-      "color": "#e2e8f0",
-      "radius": 6
-    },
-    "background": {
-      "color": "#ffffff",
-      "hover": "#f8fafc",
-      "focus": "#ffffff"
-    },
-    "text": {
-      "color": "#1e293b",
-      "fontSize": 14,
-      "fontWeight": "normal"
-    },
-    "spacing": {
-      "padding": { "x": 12, "y": 8 },
-      "margin": { "x": 0, "y": 2 },
-      "fieldGap": 16
-    },
-    "size": {
-      "height": 38,
-      "minHeight": 38
-    },
-    "wrapper": {
-      "enabled": true,
-      "border": {
-        "width": 1,
-        "style": "solid",
-        "color": "#f1f5f9",
-        "radius": 6
-      },
-      "background": "#ffffff",
-      "padding": { "x": 12, "y": 12 },
-      "margin": { "x": 0, "y": 8 }
-    },
-    "label": {
-      "color": "#374151",
-      "fontSize": 14,
-      "fontWeight": "medium",
-      "marginBottom": 4
-    },
-    "effects": {
-      "transition": "all 0.2s ease",
-      "focusRing": true,
-      "hoverEnabled": true
-    },
-    "outerWrapper": {
-      "enabled": true,
-      "border": {
-        "width": 0,
-        "style": "solid",
-        "color": "transparent",
-        "radius": 8
-      },
-      "background": "#fafafa",
-      "padding": { "x": 0, "y": 0 },
-      "margin": { "x": 0, "y": 0 },
-      "shadow": true
-    }
-  },
-  "postType": {
-    "id": "185",
-    "current_id": "10",
-    "name": "Complete Form Demo - All Field Types",
-    "slug": "complete_form_demo",
-    "fields": [
-        {
-        "id": 0,
-        "type": "Text",
-        "label": "Title",
-        "field_name": "title",
-        "description": "This field appears at the top",
-        "required": true,
-        "order": 1,
-        "min": 10,
-        "max": 100,
-        "position": "top"
-      },
-      {
-        "id": 510,
-        "type": "Text",
-        "label": "Slug",
-        "field_name": "slug",
-        "description": "This field appears at the top",
-        "required": true,
-        "autofill": "title",
-        "autofill_type": "slug",
-        "order": 1,
-        "max": 100,
-        "position": "top"
-      },
-      {
-        "id": 511,
-        "type": "Text",
-        "label": "Search",
-        "field_name": "search_string",
-        "description": "This field appears at the top",
-        "required": true,
-        "autofill": "title",
-        "autofill_type": "keyword",
-        "order": 1,
-        "max": 100,
-        "position": "top"
-      },
-      {
-        "id": 1,
-        "type": "Text",
-        "label": "Main Title",
-        "field_name": "main_title",
-        "description": "This field appears at the top",
-        "required": true,
-        "autofill": "title",
-        "autofill_type": "normal",
-        "order": 1,
-        "max": 100,
-        "position": "top"
-      },
-      {
-        "id": 2,
-        "type": "Textarea",
-        "label": "Header Content",
-        "field_name": "header_content",
-        "description": "Rich text editor at the top",
-        "required": false,
-        "order": 2,
-        "rows": 4,
-        "position": "top"
-      },
-      {
-        "id": 12000,
-        "type": "User",
-        "label": "User",
-        "field_name": "user",
-        "description": "User field at the top",
-        "required": true,
-        "order": 3,
-        "rows": 4,
-        "position": "top"
-      },
-      {
-        "id": 20,
-        "type": "Point",
-        "label": "Point",
-        "field_name": "point",
-        "description": "Point field at the top",
-        "required": false,
-        "order": 2,
-        "rows": 4,
-        "position": "top"
-      },
-      {
-        "id": 4,
-        "type": "WYSIWYG",
-        "label": "Editor Visual",
-        "field_name": "rich_content",
-        "description": "Full WYSIWYG editor at the top",
-        "required": false,
-        "order": 3,
-        "position": "top",
-        "visual": true
-      },
-      {
-        "id": 5,
-        "type": "WYSIWYG",
-        "label": "Editorx Visual",
-        "field_name": "richx_content",
-        "description": "Full WYSIWYG editor at the top",
-        "required": false,
-        "order": 3,
-        "position": "top",
-        "visual": true
-      },
-      {
-        "id": 10,
-        "type": "Text",
-        "label": "Left Text Field",
-        "field_name": "left_text",
-        "description": "Text field on the left side (70% width)",
-        "required": false,
-        "order": 10,
-        "max": 200,
-        "position": "left"
-      },
-      {
-        "id": 11,
-        "type": "Textarea",
-        "label": "Description",
-        "field_name": "description",
-        "description": "Textarea on the left",
-        "required": false,
-        "order": 11,
-        "rows": 4,
-        "position": "left"
-      },
-      {
-        "id": 12,
-        "type": "Email",
-        "label": "Contact Email",
-        "field_name": "contact_email",
-        "description": "Email field with validation",
-        "required": true,
-        "order": 12,
-        "position": "left"
-      },
-      {
-        "id": 13,
-        "type": "Password",
-        "label": "Password",
-        "field_name": "password",
-        "description": "Password with strength meter",
-        "required": false,
-        "order": 13,
-        "show_strength": true,
-        "position": "left"
-      },
-      {
-        "id": 14,
-        "type": "URL",
-        "label": "Website URL",
-        "field_name": "website_url",
-        "description": "URL field with validation",
-        "required": false,
-        "order": 14,
-        "position": "left"
-      },
-      {
-        "id": 15,
-        "type": "Number",
-        "label": "Age",
-        "field_name": "age",
-        "description": "Number input",
-        "required": false,
-        "order": 15,
-        "min": 1,
-        "max": 120,
-        "position": "left"
-      },
-      {
-        "id": 16,
-        "type": "Select",
-        "label": "Country",
-        "field_name": "country",
-        "description": "Select dropdown",
-        "required": false,
-        "order": 16,
-        "options": [
-          { "label": "Vietnam", "value": "vn" },
-          { "label": "United States", "value": "us" },
-          { "label": "United Kingdom", "value": "uk" },
-          { "label": "Japan", "value": "jp" }
-        ],
-        "position": "left"
-      },
-      {
-        "id": 17,
-        "type": "Checkbox",
-        "label": "Skills",
-        "field_name": "skills",
-        "description": "Multiple checkbox selection",
-        "required": false,
-        "order": 17,
-        "options": [
-          { "label": "JavaScript", "value": "js" },
-          { "label": "React", "value": "react" },
-          { "label": "Vue.js", "value": "vue" },
-          { "label": "Angular", "value": "angular" },
-          { "label": "Node.js", "value": "node" }
-        ],
-        "position": "left"
-      },
-      {
-        "id": 18,
-        "type": "Radio",
-        "label": "Experience Level",
-        "field_name": "experience",
-        "description": "Radio button selection",
-        "required": false,
-        "order": 18,
-        "options": [
-          { "label": "Beginner", "value": "beginner" },
-          { "label": "Intermediate", "value": "intermediate" },
-          { "label": "Advanced", "value": "advanced" },
-          { "label": "Expert", "value": "expert" }
-        ],
-        "position": "right"
-      },
-      {
-        "id": 19,
-        "type": "Image",
-        "label": "Profile Picture",
-        "field_name": "profile_image",
-        "description": "Upload your profile picture",
-        "required": false,
-        "order": 19,
-        "allow_types": ["jpg", "jpeg", "png", "webp"],
-        "max_file_size": 5,
-        "position": "right"
-      },
-      {
-        "id": 19000,
-        "type": "Image",
-        "label": "Gallery",
-        "field_name": "gallery",
-        "description": "Upload your gallery",
-        "required": false,
-        "order": 19000,
-        "allow_types": ["jpg", "jpeg", "png", "webp"],
-        "max_file_size": 5,
-        "position": "right",
-        "multiple": true
-      },
-      {
-        "id": 20,
-        "type": "Boolean",
-        "label": "Featured",
-        "field_name": "is_featured",
-        "description": "Toggle switch on the right",
-        "required": false,
-        "order": 20,
-        "ui": true,
-        "ui_on_text": "Featured",
-        "ui_off_text": "Normal",
-        "position": "right"
-      },
-      {
-        "id": 21,
-        "type": "Date",
-        "label": "Birth Date",
-        "field_name": "birth_date",
-        "description": "Date picker with Y-m-d format",
-        "required": false,
-        "order": 21,
-        "format": "Y-m-d",
-        "position": "right"
-      },
-      {
-        "id": 22,
-        "type": "DateTime",
-        "label": "Event DateTime",
-        "field_name": "event_datetime",
-        "description": "DateTime picker with Y-m-d H:i:s format",
-        "required": false,
-        "order": 22,
-        "format": "Y-m-d H:i:s",
-        "position": "right"
-      },
-      {
-        "id": 23,
-        "type": "Time",
-        "label": "Meeting Time",
-        "field_name": "meeting_time",
-        "description": "Time picker",
-        "required": false,
-        "order": 23,
-        "position": "right"
-      },
-      {
-        "id": 24,
-        "type": "Range",
-        "label": "Priority Level",
-        "field_name": "priority",
-        "description": "Range slider",
-        "required": false,
-        "order": 24,
-        "min": 1,
-        "max": 10,
-        "step": 1,
-        "prepend": "Low",
-        "append": "High",
-        "position": "right"
-      },
-      {
-        "id": 25,
-        "type": "ColorPicker",
-        "label": "Brand Color",
-        "field_name": "brand_color",
-        "description": "Color picker",
-        "required": false,
-        "order": 25,
-        "default_value": "#3b82f6",
-        "position": "right"
-      },
-      {
-        "id": 26,
-        "type": "Taxonomy",
-        "label": "Categories",
-        "field_name": "categories",
-        "description": "Hierarchical taxonomy",
-        "required": false,
-        "order": 26,
-        "posttype": "themes",
-        "taxonomy": "categories",
-        "field_type": "checkbox",
-        "add_term": true,
-        "position": "right"
-      },
-      {
-        "id": 27,
-        "type": "File",
-        "label": "Documents",
-        "field_name": "documents",
-        "description": "Upload multiple files",
-        "required": false,
-        "order": 27,
-        "multiple": true,
-        "allow_types": ["pdf", "doc", "docx", "txt"],
-        "max_file_size": 10,
-        "position": "right"
-      },
-      {
-        "id": 28,
-        "type": "Reference",
-        "label": "Related Themes",
-        "field_name": "related_theme",
-        "description": "Reference to other theme",
-        "required": false,
-        "order": 28,
-        "post_type_reference": "themes",
-        "multiple": true,
-        "position": "right"
-      },
-      {
-        "id": 29,
-        "type": "Date",
-        "label": "Alternative Date",
-        "field_name": "alt_date",
-        "description": "Date with d/m/Y format",
-        "required": false,
-        "order": 29,
-        "format": "d/m/Y",
-        "position": "right"
-      },
-      {
-        "id": 30,
-        "type": "Textarea",
-        "label": "Main Content",
-        "field_name": "main_content",
-        "description": "Full width rich text editor",
-        "required": true,
-        "order": 30,
-        "rows": 6,
-        "position": "full"
-      },
-      {
-        "id": 31,
-        "type": "Text",
-        "label": "Full Width Text",
-        "field_name": "full_width_text",
-        "description": "Full width text field",
-        "required": false,
-        "order": 31,
-        "max": 500,
-        "position": "full"
-      },
-      {
-        "id": 32,
-        "type": "DateTime",
-        "label": "Meeting DateTime",
-        "field_name": "meeting_datetime",
-        "description": "DateTime with d/m/Y H:i format",
-        "required": false,
-        "order": 32,
-        "format": "d/m/Y H:i",
-        "position": "bottom"
-      },
-      {
-        "id": 40,
-        "type": "Textarea",
-        "label": "Footer Notes",
-        "field_name": "footer_notes",
-        "description": "This field appears at the bottom",
-        "required": false,
-        "order": 40,
-        "rows": 3,
-        "position": "bottom"
-      },
-      {
-        "id": 41,
-        "type": "Tags",
-        "label": "Meta Keywords",
-        "field_name": "meta_keywords",
-        "description": "SEO keywords at the bottom",
-        "required": false,
-        "order": 41,
-        "max": 300,
-        "position": "bottom"
-      },
-      {
-        "id": 50,
-        "type": "Repeater",
-        "label": "Main Repeater",
-        "field_name": "repeater_main",
-        "description": "Main repeater with nested fields",
-        "required": false,
-        "order": 50,
-        "position": "top",
-        "button_label": "Add Row",
-        "min_layouts": null,
-        "max_layouts": null,
-        "fields": [
-          {
-            "id": 501,
-            "type": "Text",
-            "label": "Repeater Text",
-            "field_name": "repeater_text",
-            "description": "Text field in repeater",
-            "required": false,
-            "order": 1,
-            "position": "left"
+          "lang": "vi",
+          "BASE_URL": "https://cmsfullform.net/",
+          "inputConfig": {
+            "border": {
+              "width": 1,
+              "style": "solid",
+              "color": "#e2e8f0",
+              "radius": 6
+            },
+            "background": {
+              "color": "#ffffff",
+              "hover": "#f8fafc",
+              "focus": "#ffffff"
+            },
+            "text": {
+              "color": "#1e293b",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            "spacing": {
+              "padding": { "x": 12, "y": 8 },
+              "margin": { "x": 0, "y": 2 },
+              "fieldGap": 16
+            },
+            "size": {
+              "height": 38,
+              "minHeight": 38
+            },
+            "wrapper": {
+              "enabled": true,
+              "border": {
+                "width": 1,
+                "style": "solid",
+                "color": "#f1f5f9",
+                "radius": 6
+              },
+              "background": "#ffffff",
+              "padding": { "x": 12, "y": 12 },
+              "margin": { "x": 0, "y": 8 }
+            },
+            "label": {
+              "color": "#374151",
+              "fontSize": 14,
+              "fontWeight": "medium",
+              "marginBottom": 4
+            },
+            "effects": {
+              "transition": "all 0.2s ease",
+              "focusRing": true,
+              "hoverEnabled": true
+            },
+            "outerWrapper": {
+              "enabled": true,
+              "border": {
+                "width": 0,
+                "style": "solid",
+                "color": "transparent",
+                "radius": 8
+              },
+              "background": "#fafafa",
+              "padding": { "x": 0, "y": 0 },
+              "margin": { "x": 0, "y": 0 },
+              "shadow": true
+            }
           },
-          {
-            "id": 502,
-            "type": "Text",
-            "label": "Repeater Text 2",
-            "field_name": "repeater_text2",
-            "description": "Second text field",
-            "required": false,
-            "order": 2,
-            "position": "left"
-          },
-          {
-            "id": 503,
-            "type": "Repeater",
-            "label": "Nested Repeater",
-            "field_name": "repeater_repeater",
-            "description": "Repeater inside repeater",
-            "required": false,
-            "order": 3,
-            "position": "left",
+          "postType": {
+            "id": "185",
+            "current_id": "10",
+            "name": "Complete Form Demo - All Field Types",
+            "slug": "complete_form_demo",
             "fields": [
-              {
-                "id": 5031,
+                {
+                "id": 0,
                 "type": "Text",
-                "label": "Nested Text 1",
-                "field_name": "repeater_repeater_text1",
-                "description": "Text in nested repeater",
-                "required": false,
+                "label": "Title",
+                "field_name": "title",
+                "description": "This field appears at the top",
+                "required": true,
                 "order": 1,
-                "position": "left"
+                "min": 10,
+                "max": 100,
+                "position": "top"
               },
               {
-                "id": 5032,
+                "id": 510,
                 "type": "Text",
-                "label": "Nested Text 2",
-                "field_name": "repeater_repeater_text2",
-                "description": "Second text in nested repeater",
-                "required": false,
-                "order": 2,
-                "position": "left"
-              }
-            ]
-          },
-          {
-            "id": 504,
-            "type": "Flexible",
-            "label": "Flexible Main",
-            "field_name": "flexiblemain",
-            "description": "Flexible content inside repeater",
-            "required": false,
-            "order": 4,
-            "position": "top",
-            "button_label": "Add Layout",
-            "layouts": [
-              {
-                "id": 5041,
-                "name": "flexiblemain_layout1",
-                "label": "Layout 1",
-                "display": "block",
-                "limit": null,
-                "icon": "Layers",
-                "color": "blue",
-                "fields": [
-                  {
-                    "id": 50411,
-                    "type": "Text",
-                    "label": "Layout 1 Text",
-                    "field_name": "flexiblemain_layout1_text1",
-                    "description": "Text in layout 1",
-                    "required": false,
-                    "order": 1,
-                    "position": "left"
-                  }
-                ]
-              },
-              {
-                "id": 5042,
-                "name": "flexiblemain_layout2",
-                "label": "Layout 2",
-                "display": "block",
-                "limit": null,
-                "icon": "Layers",
-                "color": "green",
-                "fields": [
-                  {
-                    "id": 50421,
-                    "type": "Text",
-                    "label": "Layout 2 Text",
-                    "field_name": "flexiblemain_layout2_text1",
-                    "description": "Text in layout 2",
-                    "required": false,
-                    "order": 1,
-                    "position": "left"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": 60,
-        "type": "Flexible",
-        "label": "Variable Content",
-        "field_name": "field_variable",
-        "description": "Flexible content with multiple layouts",
-        "required": false,
-        "order": 60,
-        "position": "top",
-        "button_label": "Add Layout",
-        "min_layouts": null,
-        "max_layouts": null,
-        "layouts": [
-          {
-            "id": 601,
-            "name": "electronic",
-            "label": "Electronic",
-            "display": "block",
-            "limit": null,
-            "icon": "Layers",
-            "color": "blue",
-            "fields": [
-              {
-                "id": 6011,
-                "type": "Text",
-                "label": "Electronic Field 1",
-                "field_name": "flex_electron_1",
-                "description": "First electronic field",
-                "required": false,
+                "label": "Slug",
+                "field_name": "slug",
+                "description": "This field appears at the top",
+                "required": true,
+                "autofill": "title",
+                "autofill_type": "slug",
                 "order": 1,
-                "position": "left"
+                "max": 100,
+                "position": "top"
               },
               {
-                "id": 6012,
+                "id": 511,
                 "type": "Text",
-                "label": "Electronic Field 2",
-                "field_name": "flex_electron_2",
-                "description": "Second electronic field",
-                "required": false,
-                "order": 2,
-                "position": "left"
-              }
-            ]
-          },
-          {
-            "id": 602,
-            "name": "content_block",
-            "label": "Content Block",
-            "display": "block",
-            "limit": null,
-            "icon": "Layers",
-            "color": "green",
-            "fields": [
+                "label": "Search",
+                "field_name": "search_string",
+                "description": "This field appears at the top",
+                "required": true,
+                "autofill": "title",
+                "autofill_type": "keyword",
+                "order": 1,
+                "max": 100,
+                "position": "top"
+              },
               {
-                "id": 6021,
+                "id": 1,
+                "type": "Text",
+                "label": "Main Title",
+                "field_name": "main_title",
+                "description": "This field appears at the top",
+                "required": true,
+                "autofill": "title",
+                "autofill_type": "normal",
+                "order": 1,
+                "max": 100,
+                "position": "top"
+              },
+              {
+                "id": 2,
                 "type": "Textarea",
-                "label": "Content",
-                "field_name": "content_text",
-                "description": "Main content area",
-                "required": false,
-                "order": 1,
-                "position": "left",
-                "rows": 4
-              },
-              {
-                "id": 6022,
-                "type": "Repeater",
-                "label": "Content Items",
-                "field_name": "content_items",
-                "description": "Repeatable content items",
+                "label": "Header Content",
+                "field_name": "header_content",
+                "description": "Rich text editor at the top",
                 "required": false,
                 "order": 2,
-                "position": "left",
+                "rows": 4,
+                "position": "top"
+              },
+              {
+                "id": 12000,
+                "type": "User",
+                "label": "User",
+                "field_name": "user",
+                "description": "User field at the top",
+                "required": true,
+                "order": 3,
+                "rows": 4,
+                "position": "top"
+              },
+              {
+                "id": 20,
+                "type": "Point",
+                "label": "Point",
+                "field_name": "point",
+                "description": "Point field at the top",
+                "required": false,
+                "order": 2,
+                "rows": 4,
+                "position": "top"
+              },
+              {
+                "id": 4,
+                "type": "WYSIWYG",
+                "label": "Editor Visual",
+                "field_name": "rich_content",
+                "description": "Full WYSIWYG editor at the top",
+                "required": false,
+                "order": 3,
+                "position": "top",
+                "visual": true
+              },
+              {
+                "id": 5,
+                "type": "WYSIWYG",
+                "label": "Editorx Visual",
+                "field_name": "richx_content",
+                "description": "Full WYSIWYG editor at the top",
+                "required": false,
+                "order": 3,
+                "position": "top",
+                "visual": true
+              },
+              {
+                "id": 10,
+                "type": "Text",
+                "label": "Left Text Field",
+                "field_name": "left_text",
+                "description": "Text field on the left side (70% width)",
+                "required": false,
+                "order": 10,
+                "max": 200,
+                "position": "left"
+              },
+              {
+                "id": 11,
+                "type": "Textarea",
+                "label": "Description",
+                "field_name": "description",
+                "description": "Textarea on the left",
+                "required": false,
+                "order": 11,
+                "rows": 4,
+                "position": "left"
+              },
+              {
+                "id": 12,
+                "type": "Email",
+                "label": "Contact Email",
+                "field_name": "contact_email",
+                "description": "Email field with validation",
+                "required": true,
+                "order": 12,
+                "position": "left"
+              },
+              {
+                "id": 13,
+                "type": "Password",
+                "label": "Password",
+                "field_name": "password",
+                "description": "Password with strength meter",
+                "required": false,
+                "order": 13,
+                "show_strength": true,
+                "position": "left"
+              },
+              {
+                "id": 14,
+                "type": "URL",
+                "label": "Website URL",
+                "field_name": "website_url",
+                "description": "URL field with validation",
+                "required": false,
+                "order": 14,
+                "position": "left"
+              },
+              {
+                "id": 15,
+                "type": "Number",
+                "label": "Age",
+                "field_name": "age",
+                "description": "Number input",
+                "required": false,
+                "order": 15,
+                "min": 1,
+                "max": 120,
+                "position": "left"
+              },
+              {
+                "id": 16,
+                "type": "Select",
+                "label": "Country",
+                "field_name": "country",
+                "description": "Select dropdown",
+                "required": false,
+                "order": 16,
+                "options": [
+                  { "label": "Vietnam", "value": "vn" },
+                  { "label": "United States", "value": "us" },
+                  { "label": "United Kingdom", "value": "uk" },
+                  { "label": "Japan", "value": "jp" }
+                ],
+                "position": "left"
+              },
+              {
+                "id": 17,
+                "type": "Checkbox",
+                "label": "Skills",
+                "field_name": "skills",
+                "description": "Multiple checkbox selection",
+                "required": false,
+                "order": 17,
+                "options": [
+                  { "label": "JavaScript", "value": "js" },
+                  { "label": "React", "value": "react" },
+                  { "label": "Vue.js", "value": "vue" },
+                  { "label": "Angular", "value": "angular" },
+                  { "label": "Node.js", "value": "node" }
+                ],
+                "position": "left"
+              },
+              {
+                "id": 18,
+                "type": "Radio",
+                "label": "Experience Level",
+                "field_name": "experience",
+                "description": "Radio button selection",
+                "required": false,
+                "order": 18,
+                "options": [
+                  { "label": "Beginner", "value": "beginner" },
+                  { "label": "Intermediate", "value": "intermediate" },
+                  { "label": "Advanced", "value": "advanced" },
+                  { "label": "Expert", "value": "expert" }
+                ],
+                "position": "right"
+              },
+              {
+                "id": 19,
+                "type": "Image",
+                "label": "Profile Picture",
+                "field_name": "profile_image",
+                "description": "Upload your profile picture",
+                "required": false,
+                "order": 19,
+                "allow_types": ["jpg", "jpeg", "png", "webp"],
+                "max_file_size": 5,
+                "position": "right"
+              },
+              {
+                "id": 19000,
+                "type": "Image",
+                "label": "Gallery",
+                "field_name": "gallery",
+                "description": "Upload your gallery",
+                "required": false,
+                "order": 19000,
+                "allow_types": ["jpg", "jpeg", "png", "webp"],
+                "max_file_size": 5,
+                "position": "right",
+                "multiple": true
+              },
+              {
+                "id": 20,
+                "type": "Boolean",
+                "label": "Featured",
+                "field_name": "is_featured",
+                "description": "Toggle switch on the right",
+                "required": false,
+                "order": 20,
+                "ui": true,
+                "ui_on_text": "Featured",
+                "ui_off_text": "Normal",
+                "position": "right"
+              },
+              {
+                "id": 21,
+                "type": "Date",
+                "label": "Birth Date",
+                "field_name": "birth_date",
+                "description": "Date picker with Y-m-d format",
+                "required": false,
+                "order": 21,
+                "format": "Y-m-d",
+                "position": "right"
+              },
+              {
+                "id": 22,
+                "type": "DateTime",
+                "label": "Event DateTime",
+                "field_name": "event_datetime",
+                "description": "DateTime picker with Y-m-d H:i:s format",
+                "required": false,
+                "order": 22,
+                "format": "Y-m-d H:i:s",
+                "position": "right"
+              },
+              {
+                "id": 23,
+                "type": "Time",
+                "label": "Meeting Time",
+                "field_name": "meeting_time",
+                "description": "Time picker",
+                "required": false,
+                "order": 23,
+                "position": "right"
+              },
+              {
+                "id": 24,
+                "type": "Range",
+                "label": "Priority Level",
+                "field_name": "priority",
+                "description": "Range slider",
+                "required": false,
+                "order": 24,
+                "min": 1,
+                "max": 10,
+                "step": 1,
+                "prepend": "Low",
+                "append": "High",
+                "position": "right"
+              },
+              {
+                "id": 25,
+                "type": "ColorPicker",
+                "label": "Brand Color",
+                "field_name": "brand_color",
+                "description": "Color picker",
+                "required": false,
+                "order": 25,
+                "default_value": "#3b82f6",
+                "position": "right"
+              },
+              {
+                "id": 26,
+                "type": "Taxonomy",
+                "label": "Categories",
+                "field_name": "categories",
+                "description": "Hierarchical taxonomy",
+                "required": false,
+                "order": 26,
+                "posttype": "themes",
+                "taxonomy": "categories",
+                "field_type": "checkbox",
+                "add_term": true,
+                "position": "right"
+              },
+              {
+                "id": 27,
+                "type": "File",
+                "label": "Documents",
+                "field_name": "documents",
+                "description": "Upload multiple files",
+                "required": false,
+                "order": 27,
+                "multiple": true,
+                "allow_types": ["pdf", "doc", "docx", "txt"],
+                "max_file_size": 10,
+                "position": "right"
+              },
+              {
+                "id": 28,
+                "type": "Reference",
+                "label": "Related Themes",
+                "field_name": "related_theme",
+                "description": "Reference to other theme",
+                "required": false,
+                "order": 28,
+                "post_type_reference": "themes",
+                "multiple": true,
+                "position": "right"
+              },
+              {
+                "id": 29,
+                "type": "Date",
+                "label": "Alternative Date",
+                "field_name": "alt_date",
+                "description": "Date with d/m/Y format",
+                "required": false,
+                "order": 29,
+                "format": "d/m/Y",
+                "position": "right"
+              },
+              {
+                "id": 30,
+                "type": "Textarea",
+                "label": "Main Content",
+                "field_name": "main_content",
+                "description": "Full width rich text editor",
+                "required": true,
+                "order": 30,
+                "rows": 6,
+                "position": "full"
+              },
+              {
+                "id": 31,
+                "type": "Text",
+                "label": "Full Width Text",
+                "field_name": "full_width_text",
+                "description": "Full width text field",
+                "required": false,
+                "order": 31,
+                "max": 500,
+                "position": "full"
+              },
+              {
+                "id": 32,
+                "type": "DateTime",
+                "label": "Meeting DateTime",
+                "field_name": "meeting_datetime",
+                "description": "DateTime with d/m/Y H:i format",
+                "required": false,
+                "order": 32,
+                "format": "d/m/Y H:i",
+                "position": "bottom"
+              },
+              {
+                "id": 40,
+                "type": "Textarea",
+                "label": "Footer Notes",
+                "field_name": "footer_notes",
+                "description": "This field appears at the bottom",
+                "required": false,
+                "order": 40,
+                "rows": 3,
+                "position": "bottom"
+              },
+              {
+                "id": 41,
+                "type": "Tags",
+                "label": "Meta Keywords",
+                "field_name": "meta_keywords",
+                "description": "SEO keywords at the bottom",
+                "required": false,
+                "order": 41,
+                "max": 300,
+                "position": "bottom"
+              },
+              {
+                "id": 50,
+                "type": "Repeater",
+                "label": "Main Repeater",
+                "field_name": "repeater_main",
+                "description": "Main repeater with nested fields",
+                "required": false,
+                "order": 50,
+                "position": "top",
+                "button_label": "Add Row",
+                "min_layouts": null,
+                "max_layouts": null,
                 "fields": [
                   {
-                    "id": 60221,
+                    "id": 501,
                     "type": "Text",
-                    "label": "Item Title",
-                    "field_name": "item_title",
-                    "description": "Title for this item",
+                    "label": "Repeater Text",
+                    "field_name": "repeater_text",
+                    "description": "Text field in repeater",
                     "required": false,
                     "order": 1,
                     "position": "left"
                   },
                   {
-                    "id": 60222,
-                    "type": "Textarea",
-                    "label": "Item Description",
-                    "field_name": "item_description",
-                    "description": "Description for this item",
+                    "id": 502,
+                    "type": "Text",
+                    "label": "Repeater Text 2",
+                    "field_name": "repeater_text2",
+                    "description": "Second text field",
                     "required": false,
                     "order": 2,
+                    "position": "left"
+                  },
+                  {
+                    "id": 503,
+                    "type": "Repeater",
+                    "label": "Nested Repeater",
+                    "field_name": "repeater_repeater",
+                    "description": "Repeater inside repeater",
+                    "required": false,
+                    "order": 3,
                     "position": "left",
-                    "rows": 3
+                    "fields": [
+                      {
+                        "id": 5031,
+                        "type": "Text",
+                        "label": "Nested Text 1",
+                        "field_name": "repeater_repeater_text1",
+                        "description": "Text in nested repeater",
+                        "required": false,
+                        "order": 1,
+                        "position": "left"
+                      },
+                      {
+                        "id": 5032,
+                        "type": "Text",
+                        "label": "Nested Text 2",
+                        "field_name": "repeater_repeater_text2",
+                        "description": "Second text in nested repeater",
+                        "required": false,
+                        "order": 2,
+                        "position": "left"
+                      }
+                    ]
+                  },
+                  {
+                    "id": 504,
+                    "type": "Flexible",
+                    "label": "Flexible Main",
+                    "field_name": "flexiblemain",
+                    "description": "Flexible content inside repeater",
+                    "required": false,
+                    "order": 4,
+                    "position": "top",
+                    "button_label": "Add Layout",
+                    "layouts": [
+                      {
+                        "id": 5041,
+                        "name": "flexiblemain_layout1",
+                        "label": "Layout 1",
+                        "display": "block",
+                        "limit": null,
+                        "icon": "Layers",
+                        "color": "blue",
+                        "fields": [
+                          {
+                            "id": 50411,
+                            "type": "Text",
+                            "label": "Layout 1 Text",
+                            "field_name": "flexiblemain_layout1_text1",
+                            "description": "Text in layout 1",
+                            "required": false,
+                            "order": 1,
+                            "position": "left"
+                          }
+                        ]
+                      },
+                      {
+                        "id": 5042,
+                        "name": "flexiblemain_layout2",
+                        "label": "Layout 2",
+                        "display": "block",
+                        "limit": null,
+                        "icon": "Layers",
+                        "color": "green",
+                        "fields": [
+                          {
+                            "id": 50421,
+                            "type": "Text",
+                            "label": "Layout 2 Text",
+                            "field_name": "flexiblemain_layout2_text1",
+                            "description": "Text in layout 2",
+                            "required": false,
+                            "order": 1,
+                            "position": "left"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": 60,
+                "type": "Flexible",
+                "label": "Variable Content",
+                "field_name": "field_variable",
+                "description": "Flexible content with multiple layouts",
+                "required": false,
+                "order": 60,
+                "position": "top",
+                "button_label": "Add Layout",
+                "min_layouts": null,
+                "max_layouts": null,
+                "layouts": [
+                  {
+                    "id": 601,
+                    "name": "electronic",
+                    "label": "Electronic",
+                    "display": "block",
+                    "limit": null,
+                    "icon": "Layers",
+                    "color": "blue",
+                    "fields": [
+                      {
+                        "id": 6011,
+                        "type": "Text",
+                        "label": "Electronic Field 1",
+                        "field_name": "flex_electron_1",
+                        "description": "First electronic field",
+                        "required": false,
+                        "order": 1,
+                        "position": "left"
+                      },
+                      {
+                        "id": 6012,
+                        "type": "Text",
+                        "label": "Electronic Field 2",
+                        "field_name": "flex_electron_2",
+                        "description": "Second electronic field",
+                        "required": false,
+                        "order": 2,
+                        "position": "left"
+                      }
+                    ]
+                  },
+                  {
+                    "id": 602,
+                    "name": "content_block",
+                    "label": "Content Block",
+                    "display": "block",
+                    "limit": null,
+                    "icon": "Layers",
+                    "color": "green",
+                    "fields": [
+                      {
+                        "id": 6021,
+                        "type": "Textarea",
+                        "label": "Content",
+                        "field_name": "content_text",
+                        "description": "Main content area",
+                        "required": false,
+                        "order": 1,
+                        "position": "left",
+                        "rows": 4
+                      },
+                      {
+                        "id": 6022,
+                        "type": "Repeater",
+                        "label": "Content Items",
+                        "field_name": "content_items",
+                        "description": "Repeatable content items",
+                        "required": false,
+                        "order": 2,
+                        "position": "left",
+                        "fields": [
+                          {
+                            "id": 60221,
+                            "type": "Text",
+                            "label": "Item Title",
+                            "field_name": "item_title",
+                            "description": "Title for this item",
+                            "required": false,
+                            "order": 1,
+                            "position": "left"
+                          },
+                          {
+                            "id": 60222,
+                            "type": "Textarea",
+                            "label": "Item Description",
+                            "field_name": "item_description",
+                            "description": "Description for this item",
+                            "required": false,
+                            "order": 2,
+                            "position": "left",
+                            "rows": 3
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
             ]
+          },
+          "postEdit": {
+            "id": "10",
+            "title": "Complete Form Demo",
+            "slug": "complete-form-demo",
+            "status": "active",
+            "created_at": "2025-01-12 10:00:00",
+            "updated_at": "2025-01-12 10:00:00",
+            "main_title": "Welcome to our platform",
+            "user": 39,
+            "header_content": "This is header content at the top.",
+            "rich_content": "fsd sfdsfdf ",
+            "left_text": "This is a left-aligned text field",
+            "description": "This is a description in the textarea field on the left side.",
+            "contact_email": "demo@example.com",
+            "password": "",
+            "website_url": "https://example.com",
+            "age": 25,
+            "country": "vn",
+            "skills": ["js", "react", "node"],
+            "experience": "intermediate",
+            "profile_image": null,
+            "is_featured": true,
+            "birth_date": "1998-01-15",
+            "event_datetime": "2025-02-15 14:30:00",
+            "meeting_time": "09:30",
+            "priority": 7,
+            "brand_color": "#3b82f6",
+            "terms": [ 1,2,3,4 ],
+            "documents": [],
+            "related_users": [
+              {
+                "id": 1,
+                "title": "John Doe",
+                "email": "john@example.com"
+              }
+            ],
+            "gallery": [
+                {
+                    "id": 9,
+                    "name": "imgi-187-9973191.png",
+                    "path": "2025/07/26/imgi-187-9973191.png"
+                },
+                {
+                    "id": 8,
+                    "name": "imgi-100-original-e7e9de9f18cff883b4f8da9c6d73b07c.png",
+                    "path": "2025/07/26/imgi-100-original-e7e9de9f18cff883b4f8da9c6d73b07c.png"
+                },
+                {
+                    "id": 7,
+                    "name": "screenshot-2025-03-01-144755.png",
+                    "path": "2025/07/07/screenshot-2025-03-01-144755.png"
+                },
+                {
+                    "id": 3,
+                    "name": "anh-dang-ky.webp",
+                    "path": "2025/06/13/anh-dang-ky.webp"
+                }
+            ],
+            "main_content": "This is the main content area with full width. You can add rich text content here.",
+            "full_width_text": "This is a full width text field that spans the entire container width.",
+            "footer_notes": "These are footer notes that appear at the bottom of the form.",
+            "meta_keywords": "form, builder, demo, acf, react, javascript",
+            "repeater_main": [
+              {
+                "repeater_text": "First row text",
+                "repeater_text2": "First row text 2",
+                "repeater_repeater": [
+                  {
+                    "repeater_repeater_text1": "Nested row 1 text 1",
+                    "repeater_repeater_text2": "Nested row 1 text 2"
+                  }
+                ],
+                "flexiblemain": [
+                  {
+                    "acf_fc_layout": "flexiblemain_layout1",
+                    "layout_id": 1001,
+                    "flexiblemain_layout1_text1": "Layout 1 content"
+                  }
+                ]
+              }
+            ],
+            "field_variable": [
+              {
+                "acf_fc_layout": "electronic",
+                "layout_id": 2001,
+                "flex_electron_1": "Electronic value 1",
+                "flex_electron_2": "Electronic value 2"
+              },
+              {
+                "acf_fc_layout": "content_block",
+                "layout_id": 2002,
+                "content_text": "This is content block text",
+                "content_items": [
+                  {
+                    "item_title": "Item 1",
+                    "item_description": "Description for item 1"
+                  }
+                ]
+              }
+            ],
+            "alt_date": "15/01/1998",
+            "meeting_datetime": "15/02/2025 14:30"
           }
-        ]
-      }
-    ]
-  },
-  "postEdit": {
-    "id": "10",
-    "title": "Complete Form Demo",
-    "slug": "complete-form-demo",
-    "status": "active",
-    "created_at": "2025-01-12 10:00:00",
-    "updated_at": "2025-01-12 10:00:00",
-    "main_title": "Welcome to our platform",
-    "user": 39,
-    "header_content": "This is header content at the top.",
-    "rich_content": "fsd sfdsfdf ",
-    "left_text": "This is a left-aligned text field",
-    "description": "This is a description in the textarea field on the left side.",
-    "contact_email": "demo@example.com",
-    "password": "",
-    "website_url": "https://example.com",
-    "age": 25,
-    "country": "vn",
-    "skills": ["js", "react", "node"],
-    "experience": "intermediate",
-    "profile_image": null,
-    "is_featured": true,
-    "birth_date": "1998-01-15",
-    "event_datetime": "2025-02-15 14:30:00",
-    "meeting_time": "09:30",
-    "priority": 7,
-    "brand_color": "#3b82f6",
-    "terms": [ 1,2,3,4 ],
-    "documents": [],
-    "related_users": [
-      {
-        "id": 1,
-        "title": "John Doe",
-        "email": "john@example.com"
-      }
-    ],
-    "gallery": [
-        {
-            "id": 9,
-            "name": "imgi-187-9973191.png",
-            "path": "2025/07/26/imgi-187-9973191.png"
-        },
-        {
-            "id": 8,
-            "name": "imgi-100-original-e7e9de9f18cff883b4f8da9c6d73b07c.png",
-            "path": "2025/07/26/imgi-100-original-e7e9de9f18cff883b4f8da9c6d73b07c.png"
-        },
-        {
-            "id": 7,
-            "name": "screenshot-2025-03-01-144755.png",
-            "path": "2025/07/07/screenshot-2025-03-01-144755.png"
-        },
-        {
-            "id": 3,
-            "name": "anh-dang-ky.webp",
-            "path": "2025/06/13/anh-dang-ky.webp"
-        }
-    ],
-    "main_content": "This is the main content area with full width. You can add rich text content here.",
-    "full_width_text": "This is a full width text field that spans the entire container width.",
-    "footer_notes": "These are footer notes that appear at the bottom of the form.",
-    "meta_keywords": "form, builder, demo, acf, react, javascript",
-    "repeater_main": [
-      {
-        "repeater_text": "First row text",
-        "repeater_text2": "First row text 2",
-        "repeater_repeater": [
-          {
-            "repeater_repeater_text1": "Nested row 1 text 1",
-            "repeater_repeater_text2": "Nested row 1 text 2"
-          }
-        ],
-        "flexiblemain": [
-          {
-            "acf_fc_layout": "flexiblemain_layout1",
-            "layout_id": 1001,
-            "flexiblemain_layout1_text1": "Layout 1 content"
-          }
-        ]
-      }
-    ],
-    "field_variable": [
-      {
-        "acf_fc_layout": "electronic",
-        "layout_id": 2001,
-        "flex_electron_1": "Electronic value 1",
-        "flex_electron_2": "Electronic value 2"
-      },
-      {
-        "acf_fc_layout": "content_block",
-        "layout_id": 2002,
-        "content_text": "This is content block text",
-        "content_items": [
-          {
-            "item_title": "Item 1",
-            "item_description": "Description for item 1"
-          }
-        ]
-      }
-    ],
-    "alt_date": "15/01/1998",
-    "meeting_datetime": "15/02/2025 14:30"
-  }
-};
+        };
 
         // Set mặc định cho input datetime-local là thời gian hiện tại
         const dtInput = document.getElementById('last-updated-input');

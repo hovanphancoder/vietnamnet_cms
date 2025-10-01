@@ -50,11 +50,22 @@ abstract class BaseBlock
     }
     if(file_exists($themeBlockPath)) {
         $data = $this->handleData();
+        $___block_start_time = microtime(true);
         if(is_array($data)) {
             extract($data);
             include $themeBlockPath;
         } else {
             echo "Data of Block ". $this->getName() . " is not array!";
+        }
+        $___block_duration_ms = (microtime(true) - $___block_start_time) * 1000;
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) {
+            \System\Libraries\Render::trackView(
+                'block',
+                $this->getName() . '/' . $layout,
+                $themeBlockPath,
+                is_array($data) ? $data : [],
+                $___block_duration_ms
+            );
         }
     } else {
         echo "File Layout: {$themeBlockPath} of Block ". $this->getName() . " not found!";
@@ -80,10 +91,22 @@ public function json() {
     }
     if(file_exists($themeBlockPath)) {
         $data = $this->handleData();
+        $___block_start_time = microtime(true);
         extract($data);
         ob_start();
         include $themeBlockPath;
         $preview_html = ob_get_clean();
+        $___block_duration_ms = (microtime(true) - $___block_start_time) * 1000;
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) {
+            \System\Libraries\Render::trackView(
+                'block',
+                $this->getName() . '/' . $layout,
+                $themeBlockPath,
+                array_merge(is_array($data) ? $data : [], [
+                    'duration_ms' => round($___block_duration_ms, 2)
+                ])
+            );
+        }
     } else {
         $preview_html = "File Layout: {$layout}.php of Block ". $this->getName() . " not found!";
     }

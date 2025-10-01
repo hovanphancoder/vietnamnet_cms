@@ -7,46 +7,47 @@ use System\Libraries\Render;
 Flang::load('Terms', APP_LANG);
 $breadcrumbs = array(
   [
-      'name' => __('Dashboard'),
-      'url' => admin_url('home')
+    'name' => __('Dashboard'),
+    'url' => admin_url('home')
   ],
   [
-      'name' => __('Terms'),
-      'url' => admin_url('terms'),
-      'active' => true
+    'name' => __('Terms'),
+    'url' => admin_url('terms'),
+    'active' => true
   ]
 );
-Render::block('Backend\Header', ['layout' => 'default', 'title' => __('Terms Management'), 'breadcrumb' => $breadcrumbs]);
+Render::block('Backend\Header', ['layout' => 'default', 'title' => $title, 'breadcrumb' => $breadcrumbs]);
+
 function buildOptions($tree, $level = 0, $current_id = null, $parent = null)
 {
-    $output = '';
+  $output = '';
 
-    foreach ($tree as $node) {
-        // Tạo dấu gạch dựa theo cấp độ
-        $prefix = str_repeat('-', $level);
-        // Không hiển thị chính node hiện tại trong danh sách cha
-        if ($node['id'] == $current_id) {
-            continue;
-        }
-
-        // Thiết lập `selected` nếu node hiện tại là `parent_id`
-        $selected = ($node['id'] == $parent) ? ' selected' : '';
-        // Xây dựng option
-        $output .= '<option value="' . $node['id'] . '"' . $selected . '>' . $prefix . ' ' . $node['name'] . '</option>';
-
-        // Nếu có children, đệ quy để xây dựng tiếp các options
-        if (!empty($node['children'])) {
-            $output .= buildOptions($node['children'], $level + 1, $current_id, $parent);
-        }
+  foreach ($tree as $node) {
+    // Tạo dấu gạch dựa theo cấp độ
+    $prefix = str_repeat('-', $level);
+    // Không hiển thị chính node hiện tại trong danh sách cha
+    if ($node['id'] == $current_id) {
+      continue;
     }
 
-    return $output;
+    // Thiết lập `selected` nếu node hiện tại là `parent_id`
+    $selected = ($node['id'] == $parent) ? ' selected' : '';
+    // Xây dựng option
+    $output .= '<option value="' . $node['id'] . '"' . $selected . '>' . $prefix . ' ' . $node['name'] . '</option>';
+
+    // Nếu có children, đệ quy để xây dựng tiếp các options
+    if (!empty($node['children'])) {
+      $output .= buildOptions($node['children'], $level + 1, $current_id, $parent);
+    }
+  }
+
+  return $output;
 }
 
 // allTerm to options for languages tức là chuyển thành option select cho từng ngôn ngữ
 $termsLanguages = [];
 foreach ($allTerm as $term) {
-    $termsLanguages[$term['lang']][] = $term;
+  $termsLanguages[$term['lang']][] = $term;
 }
 // Lấy các tham số GET
 $search      = $_GET['q']        ?? '';
@@ -55,12 +56,12 @@ $sort        = $_GET['sort']     ?? 'id';
 $order       = $_GET['order']    ?? 'desc';
 $type        = $_GET['type']     ?? 'default';
 $posttype    = $_GET['posttype'] ?? 'default';
+$post_lang   = $_GET['post_lang'] ?? 'default';
 ?>
 
-  <div class="" x-data="{ 
-    showForm: false,
-    selectedItems: [], 
-    isDeleting: false,
+<div class="" x-data="{ 
+  selectedItems: [], 
+  isDeleting: false,
   
   toggleSelectAll() {
     const checkboxes = document.querySelectorAll('.row-checkbox');
@@ -131,22 +132,6 @@ $posttype    = $_GET['posttype'] ?? 'default';
     } finally {
       this.isDeleting = false;
     }
-  },
-  
-  generateSlug() {
-    const nameInput = document.getElementById('name');
-    const slugInput = document.getElementById('slug');
-    
-    if (nameInput && slugInput) {
-      const name = nameInput.value;
-      if (name && typeof url_slug === 'function') {
-        slugInput.value = url_slug(name, {
-          delimiter: '-',
-          lowercase: true,
-          limit: 50
-        });
-      }
-    }
   }
 }">
 
@@ -165,19 +150,39 @@ $posttype    = $_GET['posttype'] ?? 'default';
       <?php Render::block('Backend\Notification', ['layout' => 'default', 'type' => 'error', 'message' => Session::flash('error')]) ?>
     <?php endif; ?>
 
+    <!-- box switch language -->
+    <div class="flex items-center gap-2">
+      <?php if (!empty($posttypeData['languages'])): ?>
+        <?php $currentLang = is_string($posttypeData['languages']) ? json_decode($posttypeData['languages'], true) : $posttypeData['languages']; ?>
+        <?php foreach ($currentLang as $langcode): ?>
+          <?php if ($langcode !== $post_lang): ?>
+            <a href="<?= admin_url('terms?posttype=' . $posttype . '&type=' . $type . '&post_lang=' . $langcode) ?>" class="inline-flex items-center px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+              <span class="text-sm font-medium uppercase"><?= $langcode ?></span>
+            </a>
+          <?php else: ?>
+            <div class="inline-flex items-center px-3 py-2 rounded-md bg-primary text-primary-foreground shadow-sm">
+              <span class="text-sm font-medium uppercase"><?= $langcode ?></span>
+              <span class="ml-2">
+                <i data-lucide="check-circle" class="h-4 w-4"></i>
+              </span>
+            </div>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+
     <!-- Search and Filter Section -->
     <div class="bg-card rounded-xl mb-4">
       <form method="GET" class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1 w-full lg:w-auto">
           <div class="relative flex-1 min-w-[200px] w-full sm:w-auto">
             <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4"></i>
-            <input 
-              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10" 
-              placeholder="<?= __('Search') ?>..." 
-              name="q" 
+            <input
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
+              placeholder="<?= __('Search') ?>..."
+              name="q"
               value="<?= htmlspecialchars($search) ?>"
-              @keydown.enter="$event.target.closest('form').submit()"
-            />
+              @keydown.enter="$event.target.closest('form').submit()" />
           </div>
           <div class="min-w-[100px] w-full sm:w-auto">
             <select name="limit" class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" onchange="this.form.submit()">
@@ -192,122 +197,36 @@ $posttype    = $_GET['posttype'] ?? 'default';
             </select>
           </div>
         </div>
-        
+
         <!-- Hidden inputs to preserve other params -->
         <?php if (!empty($type)) echo '<input type="hidden" name="type" value="' . htmlspecialchars($type) . '">'; ?>
         <?php if (!empty($posttype)) echo '<input type="hidden" name="posttype" value="' . htmlspecialchars($posttype) . '">'; ?>
-        
+
         <div class="flex gap-2">
           <!-- Delete Selected Button -->
-          <button 
+          <button
             type="button"
-            @click="deleteSelected()" 
+            @click="deleteSelected()"
             class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-4 py-2 whitespace-nowrap"
             :class="selectedItems.length > 0 ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-200 text-gray-500 cursor-not-allowed'"
-            :disabled="isDeleting || selectedItems.length === 0"
-          >
+            :disabled="isDeleting || selectedItems.length === 0">
             <i x-show="!isDeleting" data-lucide="trash2" class="h-4 w-4 mr-2"></i>
             <i x-show="isDeleting" data-lucide="loader-2" class="h-4 w-4 mr-2 animate-spin"></i>
             <span x-text="isDeleting ? '<?= __('Deleting...') ?>' : '<?= __('Delete Selected') ?>'"></span>
           </button>
-          
+
           <!-- Add New Button -->
-          <button 
-            type="button"
-            @click="showForm = !showForm" 
+          <a
+            href="<?= admin_url('terms/add?posttype=' . $posttype . '&type=' . $type . '&post_lang=' . ($post_lang)) ?>"
             class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 whitespace-nowrap w-full lg:w-auto">
-            <i x-show="!showForm" data-lucide="plus" class="h-4 w-4 mr-2"></i>
-            <i x-show="showForm" data-lucide="x" class="h-4 w-4 mr-2"></i>
-            <span x-text="showForm ? '<?= __('Hide Form') ?>' : '<?= __('Add Term') ?>'"></span>
-          </button>
+            <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+            <span><?= __('Add Term')?></span>
+          </a>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Add Term Form -->
-  <div x-show="showForm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="bg-card rounded-xl mb-4 p-6 border">
-    <form action="<?= admin_url('terms/add') ?>" method="POST" id="addTermForm">
-      <input type="hidden" name="csrf_token" value="<?= Session::csrf_token(600) ?>">
-      <input type="hidden" name="type" value="<?= $type ?? 'default' ?>">
-      <input type="hidden" name="posttype" value="<?= $posttype ?? 'default' ?>">
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <!-- Name -->
-        <div>
-          <label for="name" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_name') ?><span class="text-red-500">*</span></label>
-          <input type="text" id="name" name="name" @input="generateSlug()" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
-        </div>
-        
-        <!-- Slug -->
-        <div>
-          <label for="slug" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_slug') ?></label>
-          <input type="text" id="slug" name="slug" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
-        </div>
-        
-        <!-- Language -->
-        <div>
-          <label for="lang" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_lang') ?></label>
-          <select id="lang" name="lang" class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" required>
-            <?php foreach ($langActive as $lang) { ?>
-              <option value="<?= $lang['code'] ?>" <?= $lang['code'] == APP_LANG ? 'selected' : '' ?>><?= $lang['name'] ?></option>
-            <?php } ?>
-          </select>
-        </div>
-        
-        <!-- Parent -->
-        <?php if (isset($currentTermInfo['hierarchical']) && $currentTermInfo['hierarchical']) { ?>
-          <div id="parent-container">
-            <label for="parent" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_parent') ?></label>
-            <select id="parent" name="parent" class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-              <option value=""><?= Flang::_e('select_parent') ?></option>
-            </select>
-          </div>
-        <?php } ?>
-      </div>
-      
-      <!-- Description -->
-      <div class="mb-4">
-        <label for="description" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_description') ?></label>
-        <textarea id="description" name="description" rows="3" class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"></textarea>
-      </div>
-      
-      <!-- SEO Fields -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label for="seo_title" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_seo_title') ?></label>
-          <input type="text" id="seo_title" name="seo_title" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-        </div>
-        
-        <div>
-          <label for="id_main" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_id_main') ?></label>
-          <select id="id_main" name="id_main" class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-            <option value="0"><?= Flang::_e('select_main_term') ?></option>
-            <?php if (isset($mainterms)) {
-              echo buildOptions($mainterms);
-            } ?>
-          </select>
-        </div>
-      </div>
-      
-      <!-- SEO Description -->
-      <div class="mb-4">
-        <label for="seo_desc" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_seo_desc') ?></label>
-        <textarea id="seo_desc" name="seo_desc" rows="2" class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"></textarea>
-      </div>
-      
-      <!-- Submit Button -->
-      <div class="flex justify-end gap-2">
-        <button type="button" @click="showForm = false" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-          <?= Flang::_e('cancel') ?? 'Cancel' ?>
-        </button>
-        <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-          <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
-          <?= Flang::_e('add') ?>
-        </button>
-      </div>
-    </form>
-  </div>
 
   <!-- Bảng danh sách -->
   <div class="bg-card card-content !p-0 border overflow-hidden">
@@ -321,103 +240,178 @@ $posttype    = $_GET['posttype'] ?? 'default';
                 <input type="checkbox" id="selectAll" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" @change="toggleSelectAll()">
               </th>
               <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-16 whitespace-nowrap"><?= __('ID') ?></th>
-              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-80 whitespace-nowrap"><?= __('Name') ?></th>
-              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-32 whitespace-nowrap"><?= __('Slug') ?></th>
-              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-24 whitespace-nowrap"><?= __('Post Type') ?></th>
+              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium m-w-40 whitespace-nowrap"><?= __('Name') ?></th>
+              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium m-w-24 whitespace-nowrap"><?= __('Slug') ?></th>
+              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium m-w-24 whitespace-nowrap"><?= __('Post Type') ?></th>
               <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-24 whitespace-nowrap"><?= __('Type') ?></th>
-              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-20 whitespace-nowrap"><?= __('Language') ?></th>
-              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium w-32 whitespace-nowrap"><?= __('Parent') ?></th>
+              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium m-w-80 whitespace-nowrap"><?= __('Languages') ?></th>
+              <th class="px-4 py-3 text-left align-middle bg-menu-background-hover text-menu-text-hover font-medium m-w-32 whitespace-nowrap"><?= __('Parent') ?></th>
+              <th class="px-4 py-3 text-center align-middle bg-menu-background-hover text-menu-text-hover font-medium w-24 whitespace-nowrap"><?= __('Status') ?></th>
               <th class="px-4 py-3 text-center align-middle bg-menu-background-hover text-menu-text-hover font-medium w-24 whitespace-nowrap"><?= __('Actions') ?></th>
             </tr>
           </thead>
           <tbody class="[&_tr:last-child]:border-0">
-            <?php 
-            function renderTermRows($nodes, $level = 0) {
-    foreach ($nodes as $node) {
+            <?php
+            function renderTermRows($nodes, $level = 0, $currentLang = [], $post_lang = '')
+            {
+              foreach ($nodes as $node) {
                 if (!$node) continue;
             ?>
-                              <tr class="border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50">
+                <tr class="border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50">
                   <!-- Checkbox -->
                   <td class="px-4 py-1 align-middle text-center">
-                    <input type="checkbox" class="row-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" 
-                           value="<?= $node['id'] ?>" @change="updateSelectedItems()">
+                    <input type="checkbox"
+                      class="row-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      value="<?= $node['id'] ?>"
+                      @change="updateSelectedItems()">
                   </td>
-                  <td class="px-4 py-1 align-middle font-medium text-foreground whitespace-nowrap"><?= htmlspecialchars($node['id'] ?? 'N/A') ?></td>
-                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[300px]" title="<?= htmlspecialchars($node['name']) ?>">
-                    <a href="<?= admin_url('terms/edit/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>" class="text-primary hover:underline hover:text-primary/80 transition-colors">
+
+                  <!-- ID -->
+                  <td class="px-4 py-1 align-middle font-medium text-foreground whitespace-nowrap">
+                    <?= htmlspecialchars($node['id'] ?? 'N/A') ?>
+                  </td>
+
+                  <!-- Name -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[300px]"
+                    title="<?= htmlspecialchars($node['name']) ?>">
+                    <a href="<?= admin_url('terms/edit/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>"
+                      class="text-primary hover:underline hover:text-primary/80 transition-colors">
                       <?= str_repeat('&mdash; ', $level) . htmlspecialchars($node['name']); ?>
                     </a>
                   </td>
-                <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[120px]" title="<?= htmlspecialchars($node['slug']) ?>"><?= htmlspecialchars($node['slug']); ?></td>
-                <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[80px]" title="<?= htmlspecialchars($node['posttype']) ?>"><?= htmlspecialchars($node['posttype']); ?></td>
-                <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[80px]" title="<?= htmlspecialchars($node['type']) ?>"><?= htmlspecialchars($node['type']); ?></td>
-                <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[60px]" title="<?= htmlspecialchars($node['lang_name']) ?>"><?= htmlspecialchars($node['lang_name']); ?></td>
-                <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[120px]" title="<?= htmlspecialchars($node['parent_name'] ?? 'No') ?>"><?= htmlspecialchars($node['parent_name'] ?? 'No'); ?></td>
-                <td class="px-4 py-1 align-middle text-center">
-                  <div class="flex items-center gap-1 justify-center">
-                    <a href="<?= admin_url('terms/edit/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>" class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md h-8 w-8 p-0 flex-shrink-0" title="<?= __('Edit Term') ?>">
-                      <i data-lucide="square-pen" class="h-4 w-4"></i>
-                    </a>
-                    <a href="<?= admin_url('terms/delete/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>" class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md h-8 w-8 p-0 flex-shrink-0" onclick="return confirm('<?= __('Are you sure you want to delete this item?') ?>')" title="<?= __('Delete Term') ?>">
-                      <i data-lucide="trash2" class="h-4 w-4"></i>
-                    </a>
-                </div>
-            </td>
-        </tr>
-<?php
-        // Nếu có children, tiếp tục gọi đệ quy để render các children
-        if (!empty($node['children'])) {
-            renderTermRows($node['children'], $level + 1);
-        }
-    }
-}
-            
+
+                  <!-- Slug -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[120px]"
+                    title="<?= htmlspecialchars($node['slug']) ?>">
+                    <?= htmlspecialchars($node['slug']); ?>
+                  </td>
+
+                  <!-- Post Type -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[80px]"
+                    title="<?= htmlspecialchars($node['posttype']) ?>">
+                    <?= htmlspecialchars($node['posttype']); ?>
+                  </td>
+
+                  <!-- Type -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[80px]"
+                    title="<?= htmlspecialchars($node['type']) ?>">
+                    <?= htmlspecialchars($node['type']); ?>
+                  </td>
+
+                  <!-- Language -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[60px]">
+                    <!-- show lang_terms -->
+                    <?php if(!empty($currentLang)): ?>
+                      <div class="flex flex-wrap gap-1 max-w-full">
+                        <?php foreach($currentLang as $lang_term): ?>
+                          <?php if(!empty($node['lang_terms'][$lang_term])): ?>
+                            <a href="<?= admin_url('terms/edit/' . $node['lang_terms'][$lang_term]['id'] . '?posttype=' . $node['lang_terms'][$lang_term]['posttype'] . '&type=' . $node['lang_terms'][$lang_term]['type']); ?>" 
+                              class="flex items-center gap-1 bg-primary text-primary-foreground rounded-md px-2 py-1"
+                              data-tooltip="<?= __('Edit Term') . ' ' . $node['lang_terms'][$lang_term]['name'] ?>">
+                              <!-- icon + với ngôn ngữ là tag có nền đệp đẹp  -->
+                              <i data-lucide="square-pen" class="h-4 w-4"></i>
+                              <?= strtoupper($lang_term) ?>
+                            </a>
+                          <?php elseif($lang_term == $post_lang): 
+                            continue;
+                          else: ?>
+                            <a href="<?= admin_url('terms/add/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type'] . '&post_lang=' . $lang_term . '&mainterm=' . $node['id_main']); ?>" 
+                              class="flex items-center gap-1 bg-primary text-primary-foreground rounded-md px-2 py-1"
+                              data-tooltip="<?= __('Add Term') . ' ' . strtoupper($lang_term) ?>">
+                              <!-- icon + với ngôn ngữ là tag có nền đệp đẹp  -->
+                              <i data-lucide="plus" class="h-4 w-4"></i>
+                              <?= strtoupper($lang_term) ?>
+                            </a>
+                          <?php endif; ?>
+                        <?php endforeach; ?>
+                      </div>
+                    <?php endif; ?>
+                  </td>
+
+                  <!-- Parent -->
+                  <td class="px-4 py-1 align-middle text-foreground whitespace-nowrap truncate max-w-[120px]"
+                    title="<?= htmlspecialchars($node['parent_name'] ?? 'No') ?>">
+                    <?= htmlspecialchars($node['parent_name'] ?? 'No'); ?>
+                  </td>
+
+                  <!-- Status -->
+                  <td class="px-4 py-1 align-middle text-center">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium <?= ($node['status'] ?? 'active') === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                      <?= ucfirst($node['status'] ?? 'active') ?>
+                    </span>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-4 py-1 align-middle text-center">
+                    <div class="flex items-center gap-1 justify-center">
+                      <a href="<?= admin_url('terms/edit/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>"
+                        class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md h-8 w-8 p-0 flex-shrink-0"
+                        title="<?= __('Edit Term') ?>">
+                        <i data-lucide="square-pen" class="h-4 w-4"></i>
+                      </a>
+                      <a href="<?= admin_url('terms/delete/' . $node['id'] . '?posttype=' . $node['posttype'] . '&type=' . $node['type']); ?>"
+                        class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md h-8 w-8 p-0 flex-shrink-0"
+                        onclick="return confirm('<?= __('Are you sure you want to delete this item?') ?>')"
+                        title="<?= __('Delete Term') ?>">
+                        <i data-lucide="trash2" class="h-4 w-4"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              <?php
+                // Nếu có children, tiếp tục gọi đệ quy để render các children
+                if (!empty($node['children'])) {
+                  renderTermRows($node['children'], $level + 1, $currentLang, $post_lang);
+                }
+              }
+            }
+
             if (!empty($tree)) {
-              renderTermRows($tree);
-        } else {
-            ?>
-              <tr><td colspan="9" class="text-center py-4 text-muted-foreground"><?= __('No terms found.') ?></td></tr>
-                                            <?php } ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+              renderTermRows($tree, 0, $currentLang, $post_lang);
+            } else {
+              ?>
+              <tr>
+                <td colspan="10" class="text-center py-4 text-muted-foreground">
+                  <?= __('No terms found.') ?>
+                </td>
+              </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+.tooltip-box {
+  position: absolute;
+  background: #333;
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 9999;
+  pointer-events: none;
+}
+</style>
 
 <script>
-    const dataTermsLanguages = <?= json_encode($termsLanguages) ?>;
-    
-    // Hàm cập nhật parent options
-    function updateParentOptions(selectedLang) {
-        const parentSelect = document.getElementById('parent');
-        
-        // Xóa tất cả options hiện tại (trừ option đầu tiên)
-        parentSelect.innerHTML = '<option value=""><?= Flang::_e('select_parent') ?></option>';
-        
-        // Thêm options từ ngôn ngữ được chọn
-        if (dataTermsLanguages[selectedLang]) {
-            dataTermsLanguages[selectedLang].forEach(function(term) {
-                const option = document.createElement('option');
-                option.value = term.id;
-                option.textContent = term.name;
-                parentSelect.appendChild(option);
-            });
-        }
-    }
-    
-    // Load parent options khi trang được tải
-    document.addEventListener('DOMContentLoaded', function() {
-        const langSelect = document.getElementById('lang');
-        if (langSelect) {
-            updateParentOptions(langSelect.value);
-        }
-    });
-    
-    // Cập nhật parent options khi lang thay đổi
-    document.getElementById('lang').addEventListener('change', function() {
-        updateParentOptions(this.value);
-    });
+document.querySelectorAll("[data-tooltip]").forEach(el => {
+  el.addEventListener("mouseenter", e => {
+    let tip = document.createElement("div");
+    tip.className = "tooltip-box";
+    tip.textContent = el.dataset.tooltip;
+    document.body.appendChild(tip);
+    let rect = el.getBoundingClientRect();
+    tip.style.top = (rect.top - tip.offsetHeight - 5 + window.scrollY) + "px";
+    tip.style.left = (rect.left + rect.width/2 - tip.offsetWidth/2 + window.scrollX) + "px";
+    el._tooltip = tip;
+  });
+  el.addEventListener("mouseleave", e => {
+    el._tooltip?.remove();
+  });
+});
 </script>
 
 <?php Render::block('Backend\Footer', ['layout' => 'default']); ?>

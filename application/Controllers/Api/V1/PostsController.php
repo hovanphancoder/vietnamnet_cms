@@ -73,7 +73,7 @@ class PostsController extends ApiController {
                     if (!$this->postsModel->checkPosttypeExists()) {
                         return $this->error("posttype_does_not_exist", [], 404);
                     }
-                    // $posttype_data = $this->postsModel->getPostBySlug('fast_posttype', $posttype);
+                    // $posttype_data = $this->postsModel->getPostBySlug(APP_PREFIX.'posttype', $posttype);
                     
                     $sort = S_GET('sortby') ?? '';
                     $sort = strtolower($sort);
@@ -319,7 +319,7 @@ class PostsController extends ApiController {
                 if (!$this->postsModel->checkPosttypeExists()) {
                     return $this->error("posttype_does_not_exist", [], 404);
                 }
-                $posttype_data = $this->postsModel->getPostBySlug('fast_posttype', $posttype);
+                $posttype_data = $this->postsModel->getPostBySlug(APP_PREFIX.'posttype', $posttype);
                 $posttype_fields = json_decode($posttype_data['fields'], true);
                         $fields_ralationship = [];
                         foreach($posttype_fields as $field) {
@@ -364,7 +364,7 @@ class PostsController extends ApiController {
                 }
             } else {
                 $ultilsModel = new UtilsModel();
-                $posttype_list = $ultilsModel->getDatasByTable('fast_posttype');
+                $posttype_list = $ultilsModel->getDatasByTable(APP_PREFIX.'posttype');
                 $all_posts = [];
                 if(!empty($posttype_list)) {
                     $is_next = false;
@@ -521,7 +521,7 @@ class PostsController extends ApiController {
                     }
                     $idCheck = (int)$id;
                     
-                    $posttype = $this->postsModel->getPostBySlug('fast_posttype', $posttype_slug);
+                    $posttype = $this->postsModel->getPostBySlug(APP_PREFIX.'posttype', $posttype_slug);
                     if (!empty($posttype) || !empty($posttype['fields'])){
                         $posttype_fields = json_decode($posttype['fields']);
                     }else{
@@ -536,7 +536,7 @@ class PostsController extends ApiController {
                     if($idCheck == $id) {
                         $detail = $this->postsModel->getPostByIdTable($id);
                     }else{
-                        $detail = $this->postsModel->getPostBySlug('fast_posts_' . $posttype_slug . '_' . $lang, $id);
+                        $detail = $this->postsModel->getPostBySlug(APP_PREFIX.'posts_' . $posttype_slug . '_' . $lang, $id);
                     }
 
                     if (empty($detail) || empty($detail['id'])){
@@ -735,7 +735,7 @@ class PostsController extends ApiController {
                         if(!empty($related_post)) {
                             $postTmp['related_post'] = $related_post;
                         }
-                        $postTmp['url'] = single_url($postTmp['slug'], $posttype_slug);
+                        $postTmp['url'] = base_url($posttype_slug.'/'.$postTmp['slug']);
                         $postTmp['posttype'] = $posttype_slug;
                         $detail = $postTmp;
                     }
@@ -834,7 +834,7 @@ class PostsController extends ApiController {
 
         if(!empty($chapter['data'])) {
             $chapter['data'] = json_decode($chapter['data'], true);
-            $content = format_data_comic_otruyen($chapter['data']);
+            $content = $chapter['data'];
             $chapter['content'] = $content;
         } else {
             if(!empty($chapter['content'])) {
@@ -993,19 +993,15 @@ class PostsController extends ApiController {
     private function _save_action($posttype = '')
     {
         try {
-            $access_token = Fasttoken::getToken();
+            $access_token = Fasttoken::headerToken();
             if (Session::has('user_id')) {
                 $user_id = clean_input(Session::get('user_id'));
             } elseif (!empty($access_token)) {
-                $config_security = config('security');
-                $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-                if (!$me_data['success']) {
-                    return $this->error(Flang::_e('auth_token_invalid'), [$me_data['message']], 401);
+                $me_data = Fasttoken::checkToken($access_token);
+                if (empty($me_data)) {
+                    return false;
                 }
-                $user_id = $me_data['data']['user_id'] ?? null;
-                if (empty($user_id)) {
-                    return $this->error(Flang::_e('Tô kèn sai'), [], 401);
-                }
+                $user_id = $me_data['user_id'] ?? null;
             } else {
                 return $this->error(Flang::_e('Không nhận được token'), [], 403);
             }
@@ -1093,19 +1089,13 @@ class PostsController extends ApiController {
             // if (!Session::csrf_verify($csrf_token)) {
             //         return $this->error(Flang::_e('csrf_failed'), [], 400);
             // }
-            $access_token = Fasttoken::getToken();
+            $access_token = Fasttoken::headerToken();
             if(!empty($access_token)) {
-                $config_security = config('security');
-
-                $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-                if (!$me_data['success']) {
-                    return $this->error(Flang::_e('auth_token_invalid'), [$me_data['message']], 401);
+                $me_data = Fasttoken::checkToken($access_token);
+                if (empty($me_data)) {
+                    return false;
                 }
-
-                $user_id = $me_data['data']['user_id'] ?? null;
-                if (empty($user_id)) {
-                    return $this->error(Flang::_e('token_invalid'), [], 401);
-                }
+                $user_id = $me_data['user_id'] ?? null;
                 $user = $this->usersModel->getUserById($user_id);
                 if (empty($user)) {
                     return $this->error(Flang::_e('user_not_found'), [], 404);
@@ -1259,7 +1249,7 @@ class PostsController extends ApiController {
             $params[] = 'yes';
         } else {
             $sql = 'WHERE posttype = "' . $posttype . '" AND slug = "' . $category . '" AND lang = "' . $lang . '"';
-            $terms = $this->postsModel->getPostByQuery('fast_terms', $sql );
+            $terms = $this->postsModel->getPostByQuery(APP_PREFIX.'terms', $sql );
             if(!empty($terms)) {
                 $term_id = $terms[0]['id_main'];
                 $post_ids = $this->postsModel->getPostIdByTerm($posttype, $term_id, $lang);

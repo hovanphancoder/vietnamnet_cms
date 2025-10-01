@@ -16,12 +16,11 @@ class AuthMiddleware {
         if (\System\Libraries\Session::has('user_id')) {
             $isLogin = true;
         }
-        if (!$isLogin && $access_token = Fasttoken::getToken()){
-            $config_security = config('security');
-            $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-            if (isset($me_data['success']) && isset($me_data['data']['user_id']) && isset($me_data['data']['exp']) && $me_data['data']['exp'] > time()){
-                \System\Libraries\Session::set('user_id', $me_data['data']['user_id']);
-                \System\Libraries\Session::set('role', $me_data['data']['role']);
+        if (!$isLogin && $access_token = Fasttoken::headerToken()){
+            $me_data = Fasttoken::checkToken($access_token);
+            if (!empty($me_data)){
+                \System\Libraries\Session::set('user_id', $me_data['user_id']);
+                \System\Libraries\Session::set('role', $me_data['role']);
                 // Regenerate session ID to prevent session fixation
                 \System\Libraries\Session::regenerate();
                 $isLogin = true;
@@ -30,6 +29,10 @@ class AuthMiddleware {
             }
         }
         if (!$isLogin){
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                echo json_encode(['success' => false, 'message' => 'Login Required', 'errors' => ['auth_middleware'=>['Login Required']]]);
+                exit();
+            }
             // If not logged in, redirect to login page
             redirect(base_url('account/login'));
         }

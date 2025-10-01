@@ -4,10 +4,10 @@ use System\Core\BaseModel;
 
 class UsersModel extends BaseModel {
 
-    protected $table = 'fast_users';
+    protected $table = APP_PREFIX.'users';
 
     // Columns allowed to add or edit
-    protected $fillable = ['username', 'email', 'password', 'fullname', 'avatar', 'phone', 'whatsapp', 'telegram', 'skype', 'role', 'permissions', 'optional', 'status', 'birthday', 'gender', 'about_me', 'location', 'display', 'personal', 'online'];
+    protected $fillable = ['username', 'email', 'password', 'fullname', 'avatar', 'phone', 'whatsapp', 'telegram', 'skype', 'role', 'permissions', 'optional', 'status', 'birthday', 'gender', 'about_me', 'location', 'display', 'personal', 'online', 'address', 'country', 'activity_at'];
 
     // Columns not allowed to edit
     protected $guarded = ['id', 'created_at', 'updated_at'];
@@ -82,7 +82,7 @@ class UsersModel extends BaseModel {
                 'null' => true
             ],
             'status' => [
-                'type' => 'enum(\'active\', \'inactive\', \'banned\')',
+                'type' => 'enum(\'active\', \'inactive\', \'banned\' , \'deleted\')',
                 'null' => true,
                 'default' => 'active'
             ],
@@ -119,6 +119,11 @@ class UsersModel extends BaseModel {
                 'type' => 'boolean',
                 'default' => '0'
             ],
+            'activity_at' => [
+                'type' => 'datetime',
+                'null' => true,
+                'default' => 'CURRENT_TIMESTAMP'
+            ],
             'created_at' => [
                 'type' => 'datetime',
                 'null' => true,
@@ -129,6 +134,16 @@ class UsersModel extends BaseModel {
                 'null' => true,
                 'default' => 'CURRENT_TIMESTAMP',
                 'on_update' => 'CURRENT_TIMESTAMP'
+            ],
+            'address' => [
+                'type' => 'varchar(255)',
+                'null' => true,
+                'default' => ''
+            ],
+            'country' => [
+                'type' => 'varchar(2)',
+                'null' => true,
+                'default' => ''
             ]
         ];
     }
@@ -266,7 +281,7 @@ class UsersModel extends BaseModel {
         // Check and clean input parameter
         $userId = (int)$userId;
     
-        // Fields to get from fast_users table
+        // Fields to get from APP_PREFIX.users table
         $fields = "ST_X(location) AS longitude, ST_Y(location) AS latitude";
     
         // SQL query with fully parameterized
@@ -320,8 +335,8 @@ class UsersModel extends BaseModel {
                 'updated_at' => date('Y-m-d H:i:s')
             ];
 
-            // Add to fast_user_relations table
-            return $this->add('fast_user_relations', $data);
+            // Add to APP_PREFIX.user_relations table
+            return $this->add(APP_PREFIX.'user_relations', $data);
         } catch (\Exception $e) {
             // Log error if needed
             // error_log($e->getMessage());
@@ -337,12 +352,14 @@ class UsersModel extends BaseModel {
         $limit = max((int)$limit, 1);
         $offset = ($page - 1) * $limit;
     
+        $table_user_relations = APP_PREFIX.'user_relations';
+        $table = APP_PREFIX.'users';
         // Query Using Window Functions to Get Data and Total Count
         $sql = "
             SELECT 
                 r.user_id,
                 COUNT(*) OVER() AS total_count
-            FROM fast_user_relations r
+            FROM {$table_user_relations} r
             WHERE r.target_user_id = ?
               AND r.relation_type = ?
             ORDER BY r.created_at desc
@@ -396,7 +413,7 @@ class UsersModel extends BaseModel {
         ";
         $detailsSql = "
             SELECT $fields
-            FROM fast_users
+            FROM {$table}
             WHERE id IN ($placeholders)
               AND status = 'active'
         ";
@@ -417,9 +434,10 @@ class UsersModel extends BaseModel {
     public function get_user_matching($userId,  $limit = 10, $page = 1) 
     {
         // 1. Get list of users that $userId has "like" or "super_like"
+        $table_user_relations = APP_PREFIX.'user_relations';
         $sqlLiked = "
             SELECT target_user_id
-            FROM fast_user_relations
+            FROM {$table_user_relations}
             WHERE user_id = ?
             AND relation_type IN ('like', 'super_like')
         ";
@@ -431,7 +449,7 @@ class UsersModel extends BaseModel {
         // 2. Get list of users who have "like" or "super_like" back to $userId
         $sqlLikedMe = "
             SELECT user_id
-            FROM fast_user_relations
+            FROM {$table_user_relations}
             WHERE target_user_id = ?
             AND relation_type IN ('like', 'super_like')
         ";
@@ -465,7 +483,7 @@ class UsersModel extends BaseModel {
         // Determine if there is next page
         $is_next = ($offset + $limit < $total);
 
-        // 5. Get detailed information of matched users from fast_users table
+        // 5. Get detailed information of matched users from APP_PREFIX.users table
         // Create placeholders for IN statement
         $placeholders = implode(',', array_fill(0, count($pagedMatchedUserIds), '?'));
         $fields = "
@@ -485,9 +503,10 @@ class UsersModel extends BaseModel {
             personal,
             online
         ";
+        $table = APP_PREFIX.'users';
         $detailsSql = "
             SELECT $fields
-            FROM fast_users
+            FROM {$table}
             WHERE id IN ($placeholders)
             AND status = 'active'
         ";

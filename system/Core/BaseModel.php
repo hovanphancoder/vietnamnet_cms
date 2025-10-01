@@ -48,10 +48,6 @@ abstract class BaseModel
         }
     }
 
-
-    public function _table(){
-        return $this->table;
-    }
     // Initialize QueryBuilder for current model
     public function newQuery(): QueryBuilder
     {
@@ -77,7 +73,7 @@ abstract class BaseModel
 
 
     // /**
-    //  * Factory query for fast_users table
+    //  * Factory query for APP_PREFIX.users table
     //  *
     //  * @return QueryBuilder
     //  */

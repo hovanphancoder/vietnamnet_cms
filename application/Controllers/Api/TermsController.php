@@ -18,8 +18,8 @@ class TermsController extends ApiController
     public function __construct() {
         parent::__construct();
         load_helpers(['string']);
-        $this->posttypeModel = new FastModel('fast_posttype');
-        $this->termsModel = new FastModel('fast_terms');
+        $this->posttypeModel = new FastModel(APP_PREFIX.'posttype');
+        $this->termsModel = new FastModel(APP_PREFIX.'terms');
     }
 
     public function list($posttype = '', $type = '') {
@@ -47,5 +47,40 @@ class TermsController extends ApiController
         } catch (\Exception $e) {
             $this->error('Internal server error', [], 500);
         }
+    }
+
+
+    protected function _check_posttype($posttype) {
+
+        if(empty($posttype)) {
+            return false;
+        }
+        $posttype = $this->_get_posttype($posttype);
+        if(empty($posttype)) {
+            return false;
+        }
+        $posttype_lang = isset($posttype['languages']) && is_string($posttype['languages']) ? json_decode($posttype['languages'], true) : [];
+        if($posttype_lang[0] == 'all') {
+            $this->postModel = new FastModel(posttype_name($posttype['slug']));
+            return $posttype;
+        } elseif(in_array(APP_LANG, $posttype_lang)) {
+            $this->postModel = new FastModel(posttype_name($posttype['slug'], APP_LANG));
+            return $posttype;
+        } else {
+            return false;
+        }
+    }
+
+
+    protected function _get_posttype($posttype_slug) {
+        // put in global to avoid calling repeatedly like $posttype['slug']
+        global $posttype;
+        if(!isset($posttype['slug'])) {
+            $posttype = $this->posttypeModel->where('slug', $posttype_slug)->first();
+            if (!$posttype) {
+                return false;
+            }
+        }
+        return $posttype;
     }
 }

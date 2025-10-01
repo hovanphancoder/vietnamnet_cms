@@ -1,5 +1,7 @@
 <?php
+
 namespace System\Libraries;
+
 use System\Core\AppException;
 use Exception;
 use MatthiasMullie\Minify;
@@ -9,7 +11,8 @@ if (!defined('PATH_ROOT')) {
     exit('No direct access allowed.');
 }
 
-class Render {
+class Render
+{
     // Name of the theme
     private static $themeName;
     // Path to theme directory
@@ -17,6 +20,8 @@ class Render {
     // Path to public/assets directory
     private static $assetsPath;
 
+    // Views tracking for debugbar
+    private static $views = [];
     /*
      * Manage assets with structure:
      * assets[area][asset_type][location]
@@ -37,15 +42,16 @@ class Render {
         ],
     ];
 
-     /**
+    /**
      * Initialize and load theme configuration only once
      */
-    private static function init() {
+    private static function init()
+    {
         if (self::$themeName === null || self::$themePath === null) {
             // Get theme configuration from config file
             // Save theme name and theme path
             self::$themeName = APP_THEME_NAME;
-            
+
             self::$themePath = APP_THEME_PATH;
             if (self::$assetsPath === null) {
                 self::$assetsPath = PATH_ROOT . '/public/assets/';
@@ -58,7 +64,8 @@ class Render {
      *
      * @return string Theme name
      */
-    private static function _name() {
+    private static function _name()
+    {
         self::init();
         return self::$themeName;
     }
@@ -68,7 +75,8 @@ class Render {
      *
      * @return string Path to theme directory
      */
-    private static function _path_theme() {
+    private static function _path_theme()
+    {
         self::init();
         return self::$themePath;
     }
@@ -90,11 +98,45 @@ class Render {
      * @param string $controller Name of the controller
      * @return string Path to the theme folder of the controller
      */
-    public static function _path_controller($controller) {
+    public static function _path_controller($controller)
+    {
         return self::_path_theme() . strtolower($controller) . '/';
     }
 
-     
+    /**
+     * Track view for debugbar
+     *
+     * @param string $type Type of view (layout, component, view)
+     * @param string $name Name/path of the view
+     * @param string $fullPath Full file path
+     * @param array $data Data passed to view
+     */
+    public static function trackView($type, $name, $fullPath, $data = [], $duration = 0)
+    {
+        self::$views[] = [
+            'type' => $type,
+            'name' => $name,
+            'path' => $fullPath,
+            'file_size' => file_exists($fullPath) ? filesize($fullPath) : 0,
+            'file_modified' => file_exists($fullPath) ? filemtime($fullPath) : 0,
+            'data_keys' => array_keys($data),
+            'data_count' => count($data),
+            'duration_ms' => $duration > 0 ? round($duration, 3) : null,
+            'render_time' => microtime(true)
+        ];
+    }
+
+    /**
+     * Get tracked views for debugbar
+     *
+     * @return array
+     */
+    public static function getViews()
+    {
+        return self::$views;
+    }
+
+
     /**
      * Render the entire layout and view with data.
      *
@@ -102,14 +144,15 @@ class Render {
      * @param array $data Data passed to the view
      * @throws \Exception
      */
-    public static function render($layout, $data = []) {
+    public static function render($layout, $data = [])
+    {
         self::init(); // Ensure configuration is loaded
-        if(!empty($data['view'])){
+        if (!empty($data['view'])) {
             $viewPath = self::_path_theme() . $data['view'] . '.php';
             if (!file_exists($viewPath)) {
                 throw new AppException("View '{$data['view']}' not found at Path: '{$viewPath}'.");
             }
-             // Add view path to data to pass to layout
+            // Add view path to data to pass to layout
             $data['view'] = $viewPath;
         }
         $layoutPath = self::_path_theme() . $layout . '.php';
@@ -121,8 +164,21 @@ class Render {
         // Start buffer to store output in string
         ob_start();
         // Call main layout and display content
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) $___start_time = microtime(true);
         require_once $layoutPath;
-        return ob_get_clean();  // Return string
+        $__html = ob_get_clean();
+
+        // Track AFTER render with duration
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) {
+            $tracked = is_array($data) ? $data : [];
+            self::trackView('layout', $layout, $layoutPath, $tracked, (microtime(true) - $___start_time) * 1000);
+            if (!empty($viewPath)) {
+                $viewTracked = is_array($data) ? $data : [];
+                self::trackView('view', $data['view'], $viewPath, $viewTracked, (microtime(true) - $___start_time) * 1000);
+            }
+        }
+
+        return $__html;  // Return string
     }
 
     /**
@@ -132,7 +188,8 @@ class Render {
      * @param array $data Data passed to the view
      * @throws \Exception
      */
-    public static function html($layout, $data = []) {
+    public static function html($layout, $data = [])
+    {
         self::init(); // Ensure configuration is loaded
         $layoutPath = self::_path_theme() . $layout . '.php';
         if (!file_exists($layoutPath)) {
@@ -140,9 +197,16 @@ class Render {
         }
         extract($data);
         ob_start();
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) $___start_time = microtime(true);
         require_once $layoutPath;
         $html = ob_get_clean();
-        if (APP_DEBUGBAR && stripos($html, '</body>') !== false  && strpos($_SERVER['REQUEST_URI'], '/api/') === false) {
+        // Track layout AFTER render with duration
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) {
+            $tracked = $data;
+            if (!is_array($tracked)) { $tracked = []; }
+            self::trackView('layout', $layout, $layoutPath, $tracked, (microtime(true) - $___start_time) * 1000);
+        }
+        if (APP_DEBUGBAR && (!defined('APP_DEBUGBAR_SKIP') || !APP_DEBUGBAR_SKIP) && stripos($html, '</body>') !== false  && strpos($_SERVER['REQUEST_URI'], '/api/') === false) {
             $debugBarHtml = self::component('Common/Debugbar/debugbar');
             $html = str_replace('</body>', $debugBarHtml . '</body>', $html);
         }
@@ -157,7 +221,8 @@ class Render {
      * @return string Rendered component result
      * @throws \Exception
      */
-    public static function component($component, $data = []) {
+    public static function component($component, $data = [])
+    {
         self::init(); // Ensure configuration is loaded
 
         $componentPath = self::_path_theme() . $component . '.php';
@@ -165,14 +230,17 @@ class Render {
         if (!file_exists($componentPath)) {
             throw new \Exception("Component '{$component}' does not exist at path '{$componentPath}'.");
         }
-
-        // Pass data to component
-        extract($data);
+        if (defined('APP_DEBUGBAR') && APP_DEBUGBAR) {
+            self::trackView('component', $component, $componentPath, $data, 1);
+        }
 
         // Start buffer to store output
+        // Pass data to component
+        extract($data);
         ob_start();
         require $componentPath;
-        return ob_get_clean();
+        $componentHtml = ob_get_clean();        
+        return $componentHtml;
     }
 
 
@@ -184,15 +252,16 @@ class Render {
      *
      * @return string HTML data rendered from the Block
      */
-    public static function block($blockName, $data = []) {
+    public static function block($blockName, $data = [])
+    {
         $blockFolder = ucfirst($blockName);
         if (strpos($blockName, '\\') !== false) {
             $blockName = explode("\\", $blockName);
-            $blockName = ucfirst( end($blockName) );
-        }else{
+            $blockName = ucfirst(end($blockName));
+        } else {
             $blockName = ucfirst($blockName);
         }
-        $blockClass = "\App\Blocks\\".$blockFolder."\\".$blockName."Block";
+        $blockClass = "\App\Blocks\\" . $blockFolder . "\\" . $blockName . "Block";
         if (class_exists($blockClass)) {
             $block = new $blockClass();
             $block->setProps($data);
@@ -203,9 +272,10 @@ class Render {
         }
     }
 
-    public static function getblock($blockName) {
+    public static function getblock($blockName)
+    {
         $blockName = ucfirst($blockName);
-        $blockClass = "\App\Blocks\\".$blockName."\\".$blockName."Block";
+        $blockClass = "\App\Blocks\\" . $blockName . "\\" . $blockName . "Block";
         if (class_exists($blockClass)) {
             $block = new $blockClass();
             return $block;
@@ -221,7 +291,8 @@ class Render {
      * @param array $props Props data passed to block
      * @return array|null
      */
-    public static function getDataFromBlock($blockName, $props = []) {
+    public static function getDataFromBlock($blockName, $props = [])
+    {
         $blockFolder = ucfirst($blockName);
         if (strpos($blockName, '\\') !== false) {
             $parts = explode("\\", $blockName);
@@ -242,8 +313,8 @@ class Render {
 
         return null;
     }
-    
-    
+
+
     ////////////////////// ASSET MANAGEMENT (CSS, JS) //////////////////////
 
     /**
@@ -255,7 +326,8 @@ class Render {
      *                          - 'area': (default 'frontend')
      *                          - 'location': (default 'head' or 'footer')
      */
-    public static function asset($assetType, $file, $options = []) {
+    public static function asset($assetType, $file, $options = [])
+    {
         self::init();
         $assetType = strtolower($assetType);
         if (!in_array($assetType, ['css', 'js'])) {
@@ -274,7 +346,7 @@ class Render {
                 'inlineJs'  => ['head' => [], 'footer' => []],
             ];
         }
-       
+
         self::$assets[$area][$assetType][$location][] = $file;
     }
 
@@ -287,7 +359,8 @@ class Render {
      *                          - 'area': (default 'frontend')
      *                          - 'location': (default 'head' or 'footer')
      */
-    public static function inline($assetType, $content, $options = []) {
+    public static function inline($assetType, $content, $options = [])
+    {
         self::init();
         $assetType = strtolower($assetType);
         if (!in_array($assetType, ['css', 'js'])) {
@@ -330,7 +403,7 @@ class Render {
                 return $file;
             }
             // Relative path → combine with theme directory
-            return public_url('themes/'.self::$themeName.'/'. ucfirst($area) . '/' .  'assets/'.ltrim($file, '/') );
+            return public_url('themes/' . self::$themeName . '/' . ucfirst($area) . '/' .  'assets/' . ltrim($file, '/'));
         };
         // ---------- CSS ----------
         if (!empty(self::$assets[$area]['css'][$location])) {
@@ -361,7 +434,7 @@ class Render {
         return $output;
     }
 
-    
+
     /**
      * Pagination method: create Previous/Next pagination
      * 
@@ -373,20 +446,21 @@ class Render {
      * 
      * @return string Previous/Next pagination HTML
      */
-    public static function pagination($base_url, $current_page, $is_next, $query_params = ['limit' =>  10], $custom_names = []) {
+    public static function pagination($base_url, $current_page, $is_next, $query_params = ['limit' =>  10], $custom_names = [])
+    {
         self::init();
-    
+
         // Default variable names for pagination
         $default_names = [
             'page' => 'page',
         ];
-    
+
         // Combine custom variables with default variable names
         $custom_names = array_merge($default_names, $custom_names);
-    
+
         // Create query string for other parameters (excluding page)
         $query_string = http_build_query($query_params);
-    
+
         // Remove ?page=1 if currently on page 1
         if ($current_page == 1) {
             $page_query_string = $query_string ? '?' . $query_string : ''; // No ? if no other query string
@@ -396,15 +470,15 @@ class Render {
                 $page_query_string .= '&' . $query_string;
             }
         }
-    
+
         // URLs for previous and next pages
         $prev_page_url = $current_page > 2 ? $base_url . '?' . $custom_names['page'] . '=' . ($current_page - 1) . '&' . $query_string : ($query_string ? $base_url . '?' . $query_string : $base_url);
         $next_page_url = $base_url . '?' . $custom_names['page'] . '=' . ($current_page + 1) . '&' . $query_string;
-    
+
         // Remove trailing & characters
         $prev_page_url = rtrim($prev_page_url, '&');
         $next_page_url = rtrim($next_page_url, '&');
-    
+
         $data = [
             'base_url'       => $base_url,
             'current_page'   => $current_page,
@@ -413,7 +487,7 @@ class Render {
             'next_page_url'  => $next_page_url,
             'custom_names'   => $custom_names,
             'query_params'   => $query_string
-        ];    
+        ];
 
         // Use pagination2.php view to render pagination HTML
         return self::component('Common/Pagination/pagination', $data);
@@ -431,7 +505,8 @@ class Render {
      * @return string Input HTML string
      * @throws \Exception
      */
-    public static function input($field, $field_value = null, $error_message = null, $prefix = null, $index = null) {
+    public static function input($field, $field_value = null, $error_message = null, $prefix = null, $index = null)
+    {
         self::init(); // Ensure configuration is loaded
         $html = '';
         // Get field type and convert to lowercase
@@ -446,7 +521,7 @@ class Render {
         if (!isset($field['field_name']) && isset($field['name'])) {
             $field['field_name'] = $field['name'];
         }
-        
+
         // Build field name with prefix and index for nested structures
         $field_name = $field['field_name'] ?? '';
         if ($prefix && $index !== null) {
@@ -454,7 +529,7 @@ class Render {
         } elseif ($prefix) {
             $field_name = $prefix . '[' . $field_name . ']';
         }
-        
+
         // Pre-process common variables
         $inputData = [
             'id' => 'field_' . (isset($field['id']) ? xss_clean($field['id']) : uniqid()),
@@ -468,7 +543,7 @@ class Render {
             'autofill'  => isset($field['autofill']) ? xss_clean($field['autofill']) : null,
             'autofill_type' =>  isset($field['autofill_type']) ? xss_clean($field['autofill_type']) : 'match',
             'required' => isset($field['required']) && $field['required'],
-            'visibility' => isset($field['visibility']) && !$field['visibility'] ? false:true,
+            'visibility' => isset($field['visibility']) && !$field['visibility'] ? false : true,
             'css_class' => isset($field['css_class']) ? xss_clean($field['css_class']) : '',
             'placeholder' => isset($field['placeholder']) ? xss_clean($field['placeholder']) : '',
             'order' => isset($field['order']) ? (int) $field['order'] : 0,
@@ -491,18 +566,18 @@ class Render {
             'prefix' => $prefix,
             'index' => $index,
         ];
-        if (isset($field['step']) && $field['step'] > 0){
+        if (isset($field['step']) && $field['step'] > 0) {
             $inputData['step'] = $field['step'];
         }
-        if (isset($field['layouts']) && count($field['layouts']) > 0){
+        if (isset($field['layouts']) && count($field['layouts']) > 0) {
             $inputData['layouts'] = $field['layouts'];
-            if (isset($field['button_label'])){
+            if (isset($field['button_label'])) {
                 $inputData['button_label'] = $field['button_label'];
             }
-            if (isset($field['min_layouts'])){
+            if (isset($field['min_layouts'])) {
                 $inputData['min_layouts'] = $field['min_layouts'];
             }
-            if (isset($field['max_layouts'])){
+            if (isset($field['max_layouts'])) {
                 $inputData['max_layouts'] = $field['max_layouts'];
             }
         }
@@ -511,12 +586,12 @@ class Render {
         $uploadMaxFilesize = _bytes(ini_get('upload_max_filesize'));
         $postMaxSize = _bytes(ini_get('post_max_size'));
         $maxUploadSize = min($uploadMaxFilesize, $postMaxSize);
-        if ($inputData['max_file_size'] === null || $inputData['max_file_size']*1024*1024 > $maxUploadSize) {
+        if ($inputData['max_file_size'] === null || $inputData['max_file_size'] * 1024 * 1024 > $maxUploadSize) {
             $inputData['max_file_size'] = $maxUploadSize;
             $inputData['max_file_size'] = ceil($inputData['max_file_size'] / (1024 * 1024));
         }
-        
-        if(strtolower($field['type']) == 'image'){
+
+        if (strtolower($field['type']) == 'image') {
             $inputData['autocrop'] = $field['autocrop'] ?? 0;
             $inputData['watermark'] = $field['watermark'] ?? 0;
             $inputData['watermark_img'] = $field['watermark_img'] ?? '';
@@ -528,7 +603,7 @@ class Render {
             $inputData['fields'] = $field['fields'] ?? [];
             $inputData['level'] = empty($field['level']) ? 1 : $field['level'];
         }
-        
+
         // Handle flexible fields
         if ($field_type == 'flexible') {
             $inputData['layouts'] = $field['layouts'] ?? [];
@@ -536,9 +611,9 @@ class Render {
             $inputData['min_layouts'] = $field['min_layouts'] ?? null;
             $inputData['max_layouts'] = $field['max_layouts'] ?? null;
         }
-        
+
         $inputData['is_repeater'] = $field['is_repeater'] ?? false;
-        
+
         // Start buffer to store output
         ob_start();
         extract($inputData);
@@ -546,5 +621,4 @@ class Render {
         $html .= ob_get_clean();
         return $html;
     }
-
 }

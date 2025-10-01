@@ -13,6 +13,7 @@ class AppException extends Exception {
     protected $statusCode;
 
     public function __construct($message, $code = 0, $previous = null, $statusCode = 500) {
+        _cors();
         $this->statusCode = $statusCode;
         parent::__construct($message, $code, $previous);
     }

@@ -22,18 +22,6 @@ class HeadBlock extends BaseBlock
                 'viewport' => 'width=device-width, initial-scale=1'
             ]
         ]);
-
-        // Render::asset('js', 'js/tailwindcss.js', ['area' => 'backend', 'location' => 'header']);
-        // $jsInline = <<<'JSINLINE'
-        // setTimeout(() => {
-        //   const l = document.createElement("link");l.rel = "stylesheet";
-        //   l.href = "/themes/cmsfullform/Backend/assets/css/new_style.css";document.head.appendChild(l);
-        // }, 5);
-        // JSINLINE;
-        // Render::inline('js', $jsInline, ['area' => 'backend', 'location' => 'header']);
-        // Render::asset('css', 'css/simplebar.min.css', ['area' => 'backend', 'location' => 'head']);
-        // //Render::asset('css', 'css/new_style.css', ['area' => 'backend', 'location' => 'head']);
-        // Render::asset('css', 'css/font-inter.css', ['area' => 'backend', 'location' => 'head']);
     }
 
     public function handleData()

@@ -20,7 +20,5 @@ class PostsEditEvent {
      */
     public function handle()
     {
-        //print_r($this->data);   
-        //die;
     }
 }

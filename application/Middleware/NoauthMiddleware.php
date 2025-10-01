@@ -13,8 +13,13 @@ class NoauthMiddleware {
     public function handle($request, $next) {
         // Assume using session to check if user is logged in
         if (\System\Libraries\Session::has('user_id')) {
-            // If already logged in, redirect to admin page
-            redirect(base_url('admin/users/index/'));
+            //Echo Json Noauth Required if XHR request
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                echo json_encode(['success' => false, 'message' => 'No Login Required', 'errors' => ['auth_middleware'=>['No Login Required']]]);
+                exit();
+            }
+            // If already logged in, redirect to profile page
+            redirect(auth_url('profile'));
         }
         // Call next middleware
         return $next($request);

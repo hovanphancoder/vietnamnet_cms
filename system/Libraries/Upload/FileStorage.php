@@ -42,25 +42,32 @@ class FileStorage
      * @param string $base Base file name (without extension)
      * @param string $ext File extension (e.g. 'jpg', 'png', 'pdf')
      * @param bool $useCache Whether to use cache for performance (default: true)
+     * @param bool $overwrite Whether to allow overwriting existing files (default: false)
      * 
      * @return string Unique file name with extension
      */
-    public static function getUniqueName($dir, $base, $ext, $useCache = true)
+    public static function getUniqueName($dir, $base, $ext, $useCache = true, $overwrite = false)
     {
-        $cacheKey = $dir . '/' . $base;
+        $cacheKey = $dir . '/' . $base . '_' . ($overwrite ? 'overwrite' : 'unique');
 
         if ($useCache && isset(self::$uniqueNameCache[$cacheKey])) {
             return self::$uniqueNameCache[$cacheKey];
         }
 
-        $candidate = $base;
-        $i = 1;
+        if ($overwrite) {
+            // For overwrite mode, return the exact name without checking for conflicts
+            $uniqueName = $base . '.' . $ext;
+        } else {
+            // Original behavior: generate unique name
+            $candidate = $base;
+            $i = 1;
 
-        while (file_exists($dir . DIRECTORY_SEPARATOR . $candidate . '.' . $ext)) {
-            $candidate = $base . '_' . $i++;
+            while (file_exists($dir . DIRECTORY_SEPARATOR . $candidate . '.' . $ext)) {
+                $candidate = $base . '_' . $i++;
+            }
+
+            $uniqueName = $candidate . '.' . $ext;
         }
-
-        $uniqueName = $candidate . '.' . $ext;
 
         if ($useCache) {
             self::$uniqueNameCache[$cacheKey] = $uniqueName;
@@ -98,9 +105,9 @@ class FileStorage
     /**
      * Delete a file and all its variants (resize, webp, ...).
      * 
-     * Deletes the specified file and all its associated variants.
-     * If an array is provided, all variants will be deleted.
-     * If a string is provided, only the specified file will be deleted.
+     * For file info arrays from DB: Deletes the entire parent folder containing the file.
+     * This is optimized for image files stored in dedicated folders named after the file.
+     * For single file paths: Deletes only the specified file.
      * Performs security validation before deletion.
      *
      * @param string|array $path File path (relative/absolute) or file info array from DB
@@ -115,31 +122,27 @@ class FileStorage
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         if (is_array($path)) {
-            // File info array from DB - delete all variants
-            $variants = VariantManager::getAllVariants($path);
-            $errors = [];
-            $deletedCount = 0;
+            // File info array from DB - delete entire folder containing the file
+            $filePath = $path['path'];
 
-            foreach ($variants as $variantPath) {
-                $result = self::deleteFile($variantPath);
-                if (!$result['success']) {
-                    $errors[] = $result['error'];
-                } else {
-                    $deletedCount++;
-                }
+            // Simply get parent folder by removing filename from path
+            $parentFolder = dirname($filePath);
+
+            // Resolve absolute path for the parent folder
+            $absoluteParentFolder = self::_resolveAbsolutePath($parentFolder);
+
+            // Delete entire folder recursively
+            if (is_dir($absoluteParentFolder)) {
+                return self::deleteFolderRecursive($absoluteParentFolder);
+            } else {
+                return [
+                    'success' => false,
+                    'error' => 'Parent folder does not exist: ' . $absoluteParentFolder,
+                    'data' => null
+                ];
             }
-
-            return [
-                'success' => empty($errors),
-                'error' => empty($errors) ? null : implode('; ', $errors),
-                'data' => [
-                    'deleted_count' => $deletedCount,
-                    'total_variants' => count($variants),
-                    'errors' => $errors
-                ]
-            ];
         } else {
             // Single file path
             // Resolve absolute path
@@ -204,7 +207,7 @@ class FileStorage
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         // First, try to delete the file itself
         $fileResult = self::deleteFile($filePath);
 
@@ -256,7 +259,7 @@ class FileStorage
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         if (!self::_canDeleteDirectory($dir)) {
             return [
                 'success' => false,
@@ -375,8 +378,8 @@ class FileStorage
 
         // If path is relative, make it absolute
         if (!Files::isAbsolutePath($filePath)) {
-            $baseUpload = config('files')['path'] ?? 'writeable/uploads';
-            $filePath = rtrim(PATH_ROOT, '/\\') . DIRECTORY_SEPARATOR . trim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($filePath, '/\\');
+            $baseUpload = PATH_WRITE . 'uploads';
+            $filePath = rtrim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($filePath, '/\\');
         }
 
         // Resolve real path to prevent symlink attacks
@@ -387,12 +390,12 @@ class FileStorage
 
         // Check if path is within allowed directories using realpath
         $allowedDirs = [
-            PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable' . DIRECTORY_SEPARATOR . 'uploads',
+            PATH_WRITE . 'uploads',
             PATH_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads',
         ];
 
         // Also check for subdirectories of uploads
-        $uploadsDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable' . DIRECTORY_SEPARATOR . 'uploads';
+        $uploadsDir = PATH_WRITE . 'uploads';
         $publicUploadsDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads';
 
         $fileDir = dirname($realFilePath);
@@ -464,8 +467,8 @@ class FileStorage
 
         // If path is relative, make it absolute
         if (!Files::isAbsolutePath($dirPath)) {
-            $baseUpload = config('files')['path'] ?? 'writeable/uploads';
-            $dirPath = rtrim(PATH_ROOT, '/\\') . DIRECTORY_SEPARATOR . trim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($dirPath, '/\\');
+            $baseUpload = PATH_WRITE . 'uploads';
+            $dirPath = rtrim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($dirPath, '/\\');
         }
 
         // Resolve real path to prevent symlink attacks
@@ -477,18 +480,27 @@ class FileStorage
 
         // Check if path is within allowed directories using realpath
         $allowedDirs = [
-            PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable' . DIRECTORY_SEPARATOR . 'uploads',
+            PATH_WRITE . 'uploads',
             PATH_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads',
+            PATH_ROOT . DIRECTORY_SEPARATOR . 'plugins',
+            PATH_ROOT . DIRECTORY_SEPARATOR . 'themes',
         ];
 
-        // Also check for subdirectories of uploads
-        $uploadsDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable' . DIRECTORY_SEPARATOR . 'uploads';
+        // Also check for subdirectories of allowed directories
+        $uploadsDir = PATH_WRITE . 'uploads';
         $publicUploadsDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads';
+        $pluginsDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'plugins';
+        $themesDir = PATH_ROOT . DIRECTORY_SEPARATOR . 'themes';
 
         $isAllowed = false;
 
-        // Check if directory is within uploads directory
-        if (strpos($realDirPath, $uploadsDir) === 0 || strpos($realDirPath, $publicUploadsDir) === 0) {
+        // Check if directory is within allowed directories
+        if (
+            strpos($realDirPath, $uploadsDir) === 0 ||
+            strpos($realDirPath, $publicUploadsDir) === 0 ||
+            strpos($realDirPath, $pluginsDir) === 0 ||
+            strpos($realDirPath, $themesDir) === 0
+        ) {
             $isAllowed = true;
         }
 
@@ -539,35 +551,10 @@ class FileStorage
             return realpath($cleanPath) ?: $cleanPath;
         }
 
-        $baseUpload = config('files')['path'] ?? 'writeable/uploads';
-        $absolutePath = rtrim(PATH_ROOT, '/\\') . DIRECTORY_SEPARATOR . trim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($cleanPath, '/\\');
+        // Fix: Use PATH_WRITE directly instead of PATH_ROOT + PATH_WRITE
+        $baseUpload = PATH_WRITE . 'uploads';
+        $absolutePath = rtrim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($cleanPath, '/\\');
 
         return realpath($absolutePath) ?: $absolutePath;
-    }
-
-    /**
-     * Debug method to test path validation.
-     * 
-     * @param string $path Path to test
-     * @return array Debug information
-     */
-    public static function debugPathValidation($path)
-    {
-        $absolutePath = self::_resolveAbsolutePath($path);
-        $fileExists = file_exists($absolutePath);
-        $canDelete = self::_canDeleteFile($path);
-
-        return [
-            'input_path' => $path,
-            'absolute_path' => $absolutePath,
-            'file_exists' => $fileExists,
-            'can_delete' => $canDelete,
-            'file_info' => $fileExists ? [
-                'size' => filesize($absolutePath),
-                'permissions' => substr(sprintf('%o', fileperms($absolutePath)), -4),
-                'writable' => is_writable($absolutePath),
-                'parent_writable' => is_writable(dirname($absolutePath))
-            ] : null
-        ];
     }
 }

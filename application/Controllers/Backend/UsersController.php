@@ -222,8 +222,8 @@ class UsersController extends BackendController {
                     }
                     //xu ly them 1 so field social
                     
-                    $input['created_at'] = DateTime();
-                    $input['updated_at'] = DateTime();
+                    $input['created_at'] = _DateTime();
+                    $input['updated_at'] = _DateTime();
                     return $this->_add($input);
                 } else {
                     $this->data('errors', $errors);
@@ -457,7 +457,7 @@ class UsersController extends BackendController {
                     }
                     if (empty($errors)) {
                         // Update user data
-                        $input['updated_at'] = DateTime();
+                        $input['updated_at'] = _DateTime();
                         $this->_edit($user_id, $input);
         
                         // Set success message and retrieve updated user data
@@ -597,31 +597,4 @@ class UsersController extends BackendController {
         }
         return false;
     }
-
-    // protected function _authentication() {
-    //     $access_token = Fasttoken::getToken();
-    //     if(Session::has('user_id')) {
-    //         $user_id = clean_input(Session::get('user_id'));
-            
-    //     } elseif (!empty($access_token)) {
-    //         $config_security = config('security');
-    //         $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-    //         if (!isset($me_data['success'])) {
-    //             return $this->error(Flang::_e('auth_token_invalid'), [$me_data['message']], 401);
-    //         }
-    //         $user_id = $me_data['data']['user_id'] ?? null;
-    //         if (empty($user_id)) {
-    //             return $this->error(Flang::_e('token_invalid'), [], 401);
-    //         }
-    //     } else {
-    //         $this->error(Flang::_e('user_not_found'), [], 403);
-    //     }
-
-    //     $user = $this->usersModel->getUserById($user_id);
-    //     if (empty($user)) {
-    //         return $this->error(Flang::_e('user_not_found'), [], 404);
-    //     } else {
-    //         return $user;
-    //     }
-    // }
 }

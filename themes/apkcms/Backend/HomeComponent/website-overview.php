@@ -21,7 +21,7 @@ $postMaxSize = ini_get('post_max_size');
 
 // Get statistics
 $usersModel = new \App\Models\UsersModel();
-$totalUsers = $usersModel->count('fast_users');
+$totalUsers = $usersModel->count(APP_PREFIX.'users');
 
 // Helper function để format URL
 function formatUrl($url) {
@@ -59,7 +59,7 @@ function formatMemory($bytes) {
 <div class="bg-card text-card-foreground rounded-xl">
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-            <div class="bg-primary/10 p-3 rounded-full">
+            <div class="p-3 rounded-full">
                 <i data-lucide="monitor" class="w-6 h-6 text-primary"></i>
             </div>
             <div>
@@ -75,8 +75,9 @@ function formatMemory($bytes) {
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Brand Information -->
         <div class="space-y-4">
+            
             <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
                     <?php if ($logo && is_array($logo)): ?>
                         <img src="<?= getLogoUrl($logo) ?>" alt="<?= htmlspecialchars($brandName) ?>" class="w-full h-full object-cover">
                     <?php else: ?>
@@ -86,6 +87,18 @@ function formatMemory($bytes) {
                 <div class="flex-1">
                     <h4 class="font-semibold text-foreground"><?= htmlspecialchars($brandName) ?></h4>
                     <p class="text-sm text-muted-foreground"><?= htmlspecialchars($slogan) ?></p>
+                </div>
+            </div>
+
+
+            <!-- Application Version -->
+            <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <i data-lucide="tag" class="w-4 h-4 text-accent-foreground"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-foreground"><?= __('Application Version') ?></p>
+                    <p class="text-sm text-muted-foreground"><?= htmlspecialchars($appVersion) ?></p>
                 </div>
             </div>
 
@@ -128,20 +141,10 @@ function formatMemory($bytes) {
                 </a>
             </div>
 
-            <!-- Application Version -->
-            <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                    <i data-lucide="tag" class="w-4 h-4 text-accent-foreground"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-foreground"><?= __('Application Version') ?></p>
-                    <p class="text-sm text-muted-foreground"><?= htmlspecialchars($appVersion) ?></p>
-                </div>
-            </div>
 
             <!-- Total Users -->
             <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-accent/20  flex items-center justify-center">
                     <i data-lucide="users" class="w-4 h-4 text-primary"></i>
                 </div>
                 <div class="flex-1">
@@ -157,7 +160,7 @@ function formatMemory($bytes) {
         <div class="space-y-4">
             <!-- PHP Version -->
             <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
                     <i data-lucide="code" class="w-4 h-4 text-primary"></i>
                 </div>
                 <div class="flex-1">
@@ -179,7 +182,7 @@ function formatMemory($bytes) {
 
             <!-- Database Status -->
             <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
                     <i data-lucide="database" class="w-4 h-4 text-primary"></i>
                 </div>
                 <div class="flex-1">
@@ -191,7 +194,7 @@ function formatMemory($bytes) {
 
             <!-- Memory Usage -->
             <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
                     <i data-lucide="cpu" class="w-4 h-4 text-primary"></i>
                 </div>
                 <div class="flex-1">

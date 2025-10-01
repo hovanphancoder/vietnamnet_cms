@@ -22,7 +22,7 @@ if (!function_exists('get_term')) {
     function get_term($slug, $posttype, $type = 'category', $lang = APP_LANG)
     {
         try {
-            $term = (new FastModel('fast_terms'))
+            $term = (new FastModel(APP_PREFIX.'terms'))
                 ->where('slug', $slug)
                 ->where('posttype', $posttype)
                 ->where('type', $type)
@@ -38,13 +38,13 @@ if (!function_exists('get_term')) {
 
 function get_terms($posttype, $type = 'categories', $lang = APP_LANG)
 {
-    $terms = (new FastModel('fast_terms'))->where('posttype', $posttype)->where('type', $type)->where('lang', $lang)->get();
+    $terms = (new FastModel(APP_PREFIX.'terms'))->where('posttype', $posttype)->where('type', $type)->where('lang', $lang)->get();
     return $terms;
 }
 
 if (!function_exists('get_posts')) {
     /**
-     * Lấy bài viết từ bảng fast_posts_stories
+     * Lấy bài viết từ bảng APP_PREFIX.posts_stories
      * 
      * @param array $args Mảng các tham số
      * @return array Mảng các bài viết (array) ['posttype' => 'stories', 'filters' => [], 'cat' => null, 'cat__in' => [], 'cat__not_in' => [], 'sort' => ['created_at', 'DESC'], 'perPage' => null, 'withCategories' => false, 'columns' => ['*'], 'paged' => 1]
@@ -76,18 +76,12 @@ if (!function_exists('get_posts')) {
 
         /* ---------- 1. Tên bảng ---------- */
         if (empty($lang)) {
-            $table       = posttype_name($args['posttype'], APP_LANG);              // fast_posts_stories
+            $table       = posttype_name($args['posttype'], APP_LANG);              // APP_PREFIX.posts_stories
         } else {
-            $table       = posttype_name($args['posttype'], $lang);              // fast_posts_stories
+            $table       = posttype_name($args['posttype'], $lang);              // APP_PREFIX.posts_stories
         }
-        
-        // Kiểm tra nếu table không tồn tại
-        if (empty($table)) {
-            return [];
-        }
-        
-        $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
-        $termTable   = 'fast_terms';
+        $pivotTable  = table_posttype_relationship($args['posttype']); // APP_PREFIX.posts_stories_rel
+        $termTable   = APP_PREFIX.'terms';
 
         /* ---------- 2. Builder gốc ---------- */
         $qb = (new FastModel($table))
@@ -177,7 +171,7 @@ if (!function_exists('get_posts')) {
     }
 }
 /**
- * Lấy bài viết từ bảng fast_posts_stories
+ * Lấy bài viết từ bảng APP_PREFIX.posts_stories
  * 
  * @param array $args Mảng các tham số
  * @return array Mảng các bài viết (array) ['posttype' => 'stories', 'filters' => [], 'cat' => null, 'cat__in' => [], 'cat__not_in' => [], 'sort' => ['created_at', 'DESC'], 'perPage' => null, 'withCategories' => false, 'columns' => ['*'], 'paged' => 1]
@@ -205,15 +199,9 @@ if (!function_exists('get_post')) {
         }
 
         /* ---------- 1. Tên bảng ---------- */
-        $table       = posttype_name($args['posttype'], APP_LANG);              // fast_posts_stories
-        
-        // Kiểm tra nếu table không tồn tại
-        if (empty($table)) {
-            return null;
-        }
-        
-        $pivotTable  = table_posttype_relationship($args['posttype']); // fast_posts_stories_rel
-        $termTable   = 'fast_terms';
+        $table       = posttype_name($args['posttype'], APP_LANG);              // APP_PREFIX.posts_stories
+        $pivotTable  = table_posttype_relationship($args['posttype']); // APP_PREFIX.posts_stories_rel
+        $termTable   = APP_PREFIX.'terms';
 
         /* ---------- 2. Builder ---------- */
         $qb = (new FastModel($table))
@@ -254,8 +242,8 @@ if (!function_exists('getRelated')) {
     function getRelated($post, $postId, $limit = 4)
     {
         // Lấy tên bảng đúng với ngôn ngữ
-        $tableName = posttype_name($post, APP_LANG); // fast_posts_themes_en
-        $relTableName = table_posttype_relationship($post); // fast_posts_themes_rel
+        $tableName = posttype_name($post, APP_LANG); // APP_PREFIX.posts_themes_en
+        $relTableName = table_posttype_relationship($post); // APP_PREFIX.posts_themes_rel
         $relIds = (new FastModel($relTableName))->where('post_id', $postId)->pluck('rel_id');
         $postIds = (new FastModel($relTableName))->whereIn('rel_id', $relIds)->pluck('post_id');
         // Sử dụng FastModel trực tiếp để lấy themes liên quan
@@ -269,49 +257,6 @@ if (!function_exists('getRelated')) {
             ->get();
 
         return $related;
-    }
-}
-
-
-if (!function_exists('getAuthorNames')) {
-    function getAuthorNames($authorIds)
-    {
-        if (empty($authorIds)) {
-            return [];
-        }
-
-        try {
-            $usersModel = new UsersModel();
-            $authors = $usersModel->whereIn('id', $authorIds)->get();
-
-            $authorNames = [];
-            foreach ($authors as $author) {
-                $authorNames[$author['id']] = $author['fullname'] ?? $author['username'] ?? 'Theme Team';
-            }
-
-            return $authorNames;
-        } catch (AppException $e) {
-            return [];
-        }
-    }
-}
-
-if (!function_exists('getAuthorName')) {
-    function getAuthorName($authorId)
-    {
-        // You can implement this to get author name from users table
-        // For now, return a default name
-        return 'Admin'; // or get from database: SELECT name FROM users WHERE id = $authorId
-    }
-}
-
-if (!function_exists('calculateReadTime')) {
-    function calculateReadTime($content)
-    {
-        $wordCount = str_word_count(strip_tags($content));
-        $readingSpeed = 200; // Average words per minute
-        $minutes = ceil($wordCount / $readingSpeed);
-        return max(1, $minutes); // At least 1 minute
     }
 }
 
@@ -365,7 +310,7 @@ if (!function_exists('updateViews')) {
 if (!function_exists('getAuthor')) {
     function getAuthor($authorId)
     {
-        $author = new FastModel('fast_users');
+        $author = new FastModel(APP_PREFIX.'users');
         $author = $author->where('id', $authorId)->first();
         return $author;
     }

@@ -29,6 +29,19 @@ return [
                 'copy',
                 'import',
             ],
+            'Backend\\Posttype' => [
+                'index',
+                'add',
+                'edit',
+                'delete',
+                'changestatus'
+            ],
+            'Backend\\Terms' => [
+                'index',
+                'add',
+                'edit',
+                'delete',
+            ],
             'Backend\\Users' => [
                 'index',
                 'edit',
@@ -51,17 +64,20 @@ return [
                 'changestatus',
                 'delete',
             ],
-            'Backend\\Plugins' => [
-                'index',
+            'Backend\\Libraries' => [
+                'themes',
+                'plugins',
                 'action',
                 'upload',
                 'uploadWithOverwrite',
             ],
-            'Backend\\Themes' => [
+            'Backend\\Backups' => [
                 'index',
-                'action',
-                'upload',
-                'uploadWithOverwrite',
+                'settings',
+                'create',
+                'delete',
+                'download',
+                'restore',
             ],
         ],
         'is_active' => true,

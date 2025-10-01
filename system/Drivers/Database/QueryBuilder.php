@@ -1264,8 +1264,8 @@ class QueryBuilder
     /**
      * Defines a many-to-many relationship.
      *
-     * @param string $relatedTable The name of the target table (e.g. 'fast_terms')
-     * @param string $pivotTable The name of the pivot table (e.g. 'fast_posts_movie_rel')
+     * @param string $relatedTable The name of the target table (e.g. 'APP_PREFIX.terms')
+     * @param string $pivotTable The name of the pivot table (e.g. 'APP_PREFIX.posts_movie_rel')
      * @param string $pivotForeignKey The name of the FK column on the pivot that points to the parent table (e.g. 'post_id')
      * @param string $pivotRelatedKey The name of the FK column on the pivot that points to the target table (e.g. 'term_id')
      * @param string $parentKey The name of the parent table's primary key (default 'id')

@@ -1,536 +1,437 @@
 <?php
 namespace App\Controllers\Api\V2;
-    
-
-use App\Controllers\ApiController;
-use App\Models\UsersModel;
-use System\Core\AppException;
-use App\Libraries\Fastmail;
-use App\Libraries\Fastlang as Flang;
-use System\Libraries\Validate;
-use System\Libraries\Security;
+use App\Controllers\BaseAuthController;
 use System\Libraries\Session;
-use App\Libraries\Fasttoken;
+use System\Libraries\Security;
+use System\Libraries\Validate;
+use System\Libraries\Events;
 
-class AuthController extends ApiController
+/**
+ * API v2 Authentication Controller
+ * 
+ * This controller handles authentication for the API v2 interface.
+ * It extends BaseAuthController to inherit common authentication logic
+ * and implements API-specific JSON response handling.
+ * 
+ * @package App\Controllers\Api\V2
+ * @author Your Name
+ * @version 1.0.0
+ */
+class AuthController extends BaseAuthController
 {
-    protected $usersModel;
-
+    /**
+     * Constructor - Initialize API-specific components
+     */
     public function __construct()
     {
+        _cors();
         parent::__construct();
-        // Flang::load('auth', LANG);
-        Flang::load('auth', APP_LANG);
-        $this->usersModel = new UsersModel();
+        // API-specific initialization
+        header('Content-Type: application/json');
     }
 
-    public function login()
+    // login() is inherited from BaseAuthController
+
+    // register() is inherited from BaseAuthController
+
+    // forgot() is inherited from BaseAuthController
+
+    // logout() is inherited from BaseAuthController
+
+    // profile() is inherited from BaseAuthController
+
+    // Abstract method implementations for API
+    protected function handleInactiveAccount($user)
     {
-        try {
-            // Kiểm tra nếu có yêu cầu POST với dữ liệu 'username' và 'password'
-            if (HAS_POST('username') && HAS_POST('password')) {
-                $input = [
-                    'username' => S_POST('username'),
-                    'password' => S_POST('password')
-                ];
-                // check csrf token
-                $csrf_token = S_POST('csrf_token') ?? '';
-                if (!Session::csrf_verify($csrf_token)) {
-                    // return $this->error(Flang::_e('csrf_failed'), [], 400);
-                }
-
-                $rules = [
-                    'username' => [
-                        'rules' => [Validate::alnum("@._"), Validate::length(6, 150)],
-                        'messages' => [Flang::_e('loginname_invalid'), Flang::_e('username_length', 6, 150)]
-                    ],
-                    'password' => [
-                        'rules' => [Validate::length(6, null)],
-                        'messages' => [Flang::_e('password_length', 6)]
-                    ]
-                ];
-
-                $validator = new Validate();
-                if (!$validator->check($input, $rules)) {
-                    // Trả về lỗi nếu validate thất bại
-                    $errors = $validator->getErrors();
-                    return $this->error(Flang::_e('login_failed', $input['username']), $errors, 400);
-                }
-
-                // Kiểm tra thông tin đăng nhập
-                if (!filter_var($input['username'], FILTER_VALIDATE_EMAIL)) {
-                    $me = $this->usersModel->getUserByUsername($input['username']);
-                } else {
-                    $me = $this->usersModel->getUserByEmail($input['username']);
-                }
-
-                if ($me && Security::verifyPassword($input['password'], $me['password'])) {
-                    if ($me['status'] !== 'active') {
-                        return $this->error(Flang::_e('users_noactive', $input['username']), [], 403);
-                    }
-                    
-                    // Set thông tin đăng nhập vào session
-                    Session::set('user_id', $me['id']);
-                    Session::set('role', $me['role']);
-                    Session::set('permissions', json_decode($me['permissions'], true));
-                    // Tái tạo session ID để tránh session fixation
-                    Session::regenerate();
-
-                    // Tạo JWT token
-                    $config_security = config('security');
-                    $me_data = [
-                        'id' => $me['id'],
-                        'role' => $me['role'],
-                        'username' => $me['username'],
-                        'email' => $me['email']
-                    ];
-                    $access_token = Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
-                    return $this->success([
-                        'me' => [
-                            'id' => $me['id'],
-                            'username' => $me['username'],
-                            'email' => $me['email'],
-                            'fullname' => $me['fullname'],
-                            'avatar' => $me['avatar'],
-                            'role' => $me['role'],
-                            'status' => $me['status'],
-                            'created_at' => $me['created_at'],
-                            'updated_at' => $me['updated_at'],
-                            'phone' => $me['phone'],
-                            'birthday' => $me['birthday'],
-                            'gender' => $me['gender'],
-                            'about_me' => $me['about_me'],
-                            'coin' => $me['coin']
-                        ],
-                        'access_token' => $access_token
-                    ], Flang::_e('login_success'));
-                } else {
-                    return $this->error(Flang::_e('login_failed', $input['username']), [], 401);
-                }
-            }
-
-            return $this->error(Flang::_e('username_invalid'), [], 400);
-        } catch (AppException $e) {
-            return $this->error(    $e->getMessage(), [], 500);
-        }
+        return $this->error(__('Account not active'), [
+            'user_id' => $user['id'],
+            'status' => $user['status']
+        ], 403);
     }
 
-    public function logout()
+    protected function handleSuccessfulLogin($user)
     {
-        $user = $this->_authentication();
-        if(empty($user)) {
-            return $this->error(Flang::_e('logout_failed'), [], 400);
-        }
-        try {
-            // Xóa session nếu tồn tại
-            if (Session::has('user_id')) {
-                Session::del('user_id');
-                Session::del('role');
-                Session::del('permissions');
-            }
-
-            return $this->success([], Flang::_e('logout_success'));
-        } catch (AppException $e) {
-            return $this->error($e->getMessage(), [], 500);
-        }
+        $me_info = $this->_prepareProfileData($user);
+        return $this->success([
+            'user' => $me_info,
+            'message' => __('Login successful')
+        ], __('Login successful'));
     }
 
-    public function csrf_create(){
-        return $this->success(['csrf_token' => Session::csrf_token(600)], 'CSRF Token Created');
-    }
-
-    public function register()
+    protected function handleSuccessfulRegistration($user_id, $userData)
     {
-        try {
-            // Kiểm tra nếu có yêu cầu POST với các trường cần thiết
-            if (HAS_POST('username')) {
-                $csrf_token = S_POST('csrf_token') ?? '';
-                if (!Session::csrf_verify($csrf_token)) {
-                    // return $this->error(Flang::_e('csrf_failed'), [], 400);
-                }   
-
-                $input = [
-                    'username' => S_POST('username'),
-                    'fullname' => S_POST('fullname'),
-                    'email' => S_POST('email'),
-                    'password' => S_POST('password'),
-                    'password_repeat' => S_POST('password_repeat'),
-                    // 'phone' => S_POST('phone'),
-                ];
-        
-                // Quy tắc kiểm tra
-                $rules = [
-                    'username' => [
-                        'rules' => [Validate::alnum("@._"), Validate::length(6, 30)],
-                        'messages' => [Flang::_e('username_invalid'), Flang::_e('username_length', 6, 30)]
-                    ],
-                    'fullname' => [
-                        'rules' => [ Validate::regex('/^[\p{L}\p{M}\s]+$/u') , Validate::length(6, 60)],
-                        'messages' => [Flang::_e('fullname_invalid'), Flang::_e('fullname_length', 6, 60)]
-                    ],
-                    'email' => [
-                        'rules' => [Validate::email(), Validate::length(6, 150)],
-                        'messages' => [Flang::_e('email_invalid'), Flang::_e('email_length', 6, 150)]
-                    ],
-                    // 'phone' => [
-                    //     'rules' => [Validate::phone(), Validate::length(6, 30)],
-                    //     'messages' => [Flang::_e('phone_invalid'), Flang::_e('phone_length', 6, 30)]
-                    // ],
-                    'password' => [
-                        'rules' => [Validate::length(6, 60)],
-                        'messages' => [Flang::_e('password_length', 6, 60)]
-                    ],
-                    'password_repeat' => [
-                        'rules' => [
-                            Validate::equals($input['password'])
-                        ],
-                        'messages' => [
-                            Flang::_e('password_repeat_invalid')
-                        ]
-                    ],
-                ];
-
-                $validator = new Validate();
-                if (!$validator->check($input, $rules)) {
-                    $errors = $validator->getErrors();
-                    return $this->error(Flang::_e('register_failed'), $errors, 400);
-                }
-
-                // Kiểm tra xem username hoặc email đã tồn tại hay chưa
-                if ($this->usersModel->getUserByUsername($input['username'])) {
-                    $errors = [
-                        'username' => 'The username address is already registered in the system.'
-                    ];
-                    return $this->error(Flang::_e('Username_already_exists'), $errors, 400);
-                }
-                if ($this->usersModel->getUserByEmail($input['email'])) {
-                    $errors = [
-                        'email' => 'The email address is already registered in the system.'
-                    ];
-                    return $this->error(Flang::_e('Email_already_exists'), $errors, 400);
-                }
-
-                // Hash mật khẩu và thêm dữ liệu người dùng
-                $input['password'] = Security::hashPassword($input['password']);
-                $input['avatar'] = '';
-                $input['role'] = 'member';
-                $input['permissions'] = json_encode(config('member', 'Roles'));
-                $input['status'] = 'active';
-                $input['created_at'] = date('Y-m-d H:i:s');
-                $input['updated_at'] = date('Y-m-d H:i:s');
-                unset($input['password_repeat']);
-                // Tạo mã kích hoạt
-                $activationNo = strtoupper(random_string(6));
-                $activationCode = strtolower(random_string(20));
-                $optionalData = [
-                    'activation_no' => $activationNo,
-                    'activation_code' => $activationCode,
-                    'activation_expires' => time() + 86400,
-                ];
-                $input['optional'] = json_encode($optionalData);
-
-                $user_id = $this->usersModel->addUser($input);
-                
-                if ($user_id) {
-                    // Gửi email kích hoạt
-                    $activationLink = auth_url('activation/' . $user_id . '/' . $activationCode . '/');
-                    $mailer = new Fastmail();
-                    $mailer->send($input['email'], Flang::_e('active_account'), 'activation', [
-                        'username' => $input['username'],
-                        'activation_link' => $activationLink,
-                        'activation_no' => $activationNo,
-                        'smtpDebug' => 2
-                    ]);
-
-                    $input['id'] = $user_id;
-
-                    $config_security = config('security');
-                    $me_data = [
-                        'id' => $input['id'],
-                        'role' => $input['role'],
-                        'username' => $input['username'],
-                        'email' => $input['email']
-                    ];
-                    $access_token = Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
-                    $input['personal'] = $input['personal'] ?? [];
-                    $data = [
-                        'me' => [
-                            'id' => $input['id'],
-                            'username' => $input['username'] ?? '',
-                            'email' => $input['email'] ?? '',
-                            'fullname' => $input['fullname']?? '',
-                            'avatar' => $input['avatar'] ?? '',
-                            'role' => $input['role'] ?? '',
-                            'status' => $input['status'] ?? 'inactive',
-                            'created_at' => $input['created_at'] ?? '',
-                            'updated_at' => $input['updated_at'] ?? '',
-                            'phone' => $input['phone'] ?? '',
-                            'birthday' => $input['birthday'] ?? '',
-                            'gender' => $input['gender'] ?? '',
-                            'about_me' => $input['about_me'] ?? '',
-                            'coin' => $input['coin'] ?? 0
-                        ],
-                        'access_token'=> $access_token
-                    ];
-                    return $this->success($data, Flang::_e('register_success'));
-                } else {
-                    return $this->error(Flang::_e('register_error'), [], 500);
-                }
-            }  else {
-                $csrf_token = Session::csrf_token(600);
-                return $this->success(['csrf_token' => $csrf_token], Flang::_e('register_success'));
-            }
-
-            
-        } catch (AppException $e) {
-            return $this->error($e->getMessage(), [], 500);
-        }
+        return $this->success([
+            'user_id' => $user_id,
+            'message' => __('Registration successful')
+        ], __('Registration successful'));
     }
 
-
-    public function google() {
-        $this->success([], Flang::_e('coming_soon'));
-        $data = [
-            'idToken' => S_POST('idToken') ?? '',
-            'user' => $_POST['user'] ?? ''
-        ];
-        if(empty($data['idToken']) || empty($data['user'])) {
-            return $this->error(Flang::_e('google_login_failed'), [], 400);
-        }
-        $config_security = config('security');
-        
-        $data['user'] = json_decode($data['user'], true);
-        // check email exist
-        $me = $this->usersModel->getUserByEmail($data['user']['email']);
-        if($me) {
-            // check google token
-            $optional = json_decode($me['optional'], true);
-            $google_token = $optional['id_google'] ?? '';
-            if($google_token != $data['user']['id']) {
-                $this->error(Flang::_e('google_login_failed'), [], 400);
-            } else {
-                $me_data = [
-                    'id' => $me['id'],
-                    'role' => $me['role'],
-                    'username' => $me['username'],
-                    'email' => $me['email']
-                ];
-
-                $access_token = Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
-
-                return $this->success([
-                    'me' => [
-                        'id' => $me['id'],
-                        'username' => $me['username'],
-                        'email' => $me['email'],
-                        'fullname' => $me['fullname'],
-                        'avatar' => $me['avatar'],
-                        'role' => $me['role'],
-                        'status' => $me['status'],
-                        'created_at' => $me['created_at'],
-                        'updated_at' => $me['updated_at'],
-                        'phone' => $me['phone'],
-                        'birthday' => $me['birthday'],
-                        'gender' => $me['gender'],
-                        'about_me' => $me['about_me'],
-                        'coin' => $me['coin']
-                    ],
-                    'access_token' => $access_token
-                ], Flang::_e('login_success'));
-
-            }
-        } else {
-            $input['fullname'] = $data['user']['name'];
-            $input['username'] = $data['user']['email'];
-            $input['email'] = $data['user']['email'];
-            $input['password'] = 'null';
-            $input['avatar'] = $data['user']['photo'];
-            $input['role'] = 'member';
-            $input['permissions'] = json_encode(config('member', 'Roles'));
-            $input['status'] = 'active';
-            $input['coin'] = 0;
-            $input['created_at'] = date('Y-m-d H:i:s');
-            $input['updated_at'] = date('Y-m-d H:i:s');
-            $optionNal = [
-                'google_token' => $data['idToken'],
-                'id_google' => $data['user']['id']
-            ]; 
-            $input['optional'] = json_encode($optionNal);
-            $user_id = $this->usersModel->addUser($input);
+    protected function handleForgotPasswordSent($user)
+    {
+        return $this->success([
+            'email' => $user['email'],
+            'message' => __('Password reset code sent successfully')
+        ], __('Password reset code sent successfully'));
+    }
     
-            if ($user_id) {
-                $me_data = [
-                    'id' => $user_id,
-                    'role' => $input['role'],
-                    'username' => $input['username'],
-                    'email' => $input['email']
-                ];
-                $access_token = Fasttoken::createToken($me_data, $config_security['app_secret'], $config_security['app_id']);
-                return $this->success([
-                    'me' => [
-                        'id' => $user_id,
-                        'username' => $input['username'],
-                        'email' => $input['email'],
-                        'fullname' => $input['fullname'],
-                        'avatar' => $input['avatar'],
-                        'role' => $input['role'],
-                        'status' => $input['status'],
-                        'created_at' => $input['created_at'],
-                        'updated_at' => $input['updated_at']
-                    ],
-                    'access_token' => $access_token
-                ], Flang::_e('login_success'));
-            } else {
-                return $this->error(Flang::_e('register_error'), [], 500);
-            }
+    // Additional abstract method implementations
+    protected function handleAlreadyLoggedIn()
+    {
+        $user = $this->usersModel->getUserById(Session::get('user_id'));
+        $user['access_token'] = isset($_COOKIE['cmsff_token']) ? $_COOKIE['cmsff_token'] : '';
+        return $this->success(
+            [
+                'user' => $this->_prepareProfileData($user),
+                'message' => __('Already logged in')
+            ], __('Already logged in'));
         }
-        exit;        
+
+    protected function handleSessionExpired()
+    {
+        return $this->error(__('Session expired'), [], 401);
+    }
+
+    protected function handleAccountNotFound()
+    {
+        return $this->error(__('Account not found'), [], 404);
+    }
+
+    protected function handleAccountAlreadyActive()
+    {
+        return $this->success([], __('Account is already active'));
+    }
+
+    protected function handleAccountDisabled()
+    {
+        return $this->error(__('Account is disabled'), [], 403);
+    }
+
+    protected function handleInvalidAccountStatus()
+    {
+        return $this->error(__('Invalid account status'), [], 400);
+    }
+
+    protected function handleActivationExpired($activationType, $userOptional)
+    {
+        return $this->error(__('Activation code has expired'), [], 400);
+    }
+
+    protected function handleCsrfFailed()
+    {
+        return $this->error(__('CSRF verification failed'), [], 400);
+    }
+
+    protected function handleMaxAttemptsReached($activationType, $userOptional)
+    {
+        return $this->error(__('Too many failed attempts. Please wait 30 minutes before trying again.'), [], 429);
+    }
+
+    protected function handleCodeVerified($user_id, $activationString)
+    {
+        return $this->success([
+            'user_id' => $user_id,
+            'activation_string' => $activationString,
+            'message' => __('Code verified successfully')
+        ], __('Code verified successfully'));
+    }
+
+    protected function handleInvalidCode($remainingAttempts)
+    {
+        return $this->error(__('Invalid code. %1% attempts remaining.', $remainingAttempts), [], 400);
+    }
+
+    protected function displayConfirmForm($activationType, $userOptional, $user)
+    {
+        $time = 600;
+        $confirmData = [
+            'csrf_token' => Session::csrf_token($time),
+            'expires_in' => $time,
+            'expires_at' => time() + $time,
+
+            'activation_type' => $activationType,
+            'user' => ['id' => $user['id'],'email' => $user['email'],'username' => $user['username']],
+            'message' => __('Confirmation form displayed')
+        ];
+        return $this->success($confirmData, __('Confirmation form displayed'));
+    }
+
+    protected function handleInvalidActivationLink()
+    {
+        return $this->error(__('Invalid activation link'), [], 400);
+    }
+
+    protected function handleActivationLinkExpired()
+    {
+        return $this->error(__('Activation link has expired'), [], 400);
+    }
+
+    protected function handleForgotPasswordConfirmation($user_id)
+    {
+        return $this->success([
+            'user_id' => $user_id,
+            'message' => __('Password reset confirmation required')
+        ], __('Password reset confirmation required'));
+    }
+
+    protected function handleSuccessfulActivation($user)
+    {
+        $me_info = $this->_prepareProfileData($user);
+        $me_info['access_token'] = isset($_COOKIE['cmsff_token']) ? $_COOKIE['cmsff_token'] : '';
+            return $this->success([
+            'user' => $me_info,
+            'message' => __('Account activated successfully')
+        ], __('Account activated successfully'));
+    }
+
+    protected function handleCooldownPeriod($remainingMinutes)
+    {
+        return $this->error(__('Please wait %1% minutes before requesting a new code.', $remainingMinutes), [], 429);
+    }
+
+    protected function handleCodeResent()
+    {
+        return $this->success([], __('New code sent successfully'));
+    }
+
+    protected function handleInvalidResetRequest()
+    {
+        return $this->error(__('Invalid reset request'), [], 400);
+    }
+
+    protected function handlePasswordResetValidationErrors($errors)
+    {
+        return $this->error(__('Password reset validation failed'), $errors, 400);
+    }
+
+    protected function handlePasswordResetSuccess()
+    {
+        return $this->success([], __('Password reset successfully'));
+    }
+
+    protected function displayPasswordResetForm()
+    {
+        return $this->csrf_token();
+        //return $this->success([], __('Password reset form displayed'));
+    }
+
+    protected function handleUserNotFound()
+    {
+        return $this->error(__('User not found'), [], 404);
+    }
+
+    protected function handlePasswordChangeSuccess()
+    {
+        return $this->success([], __('Password changed successfully'));
+    }
+
+    protected function handlePasswordChangeErrors($errors, $user)
+    {
+        return $this->error(__('Password change failed'), $errors, 400);
+    }
+
+    protected function displayPasswordChangeForm($user)
+    {
+        $user = $this->_prepareProfileData($user);
+        $user['access_token'] = isset($_COOKIE['cmsff_token']) ? $_COOKIE['cmsff_token'] : '';
+
+        $time = 600;
+        return $this->success([
+            'user' => $user,
+
+            'csrf_token' => Session::csrf_token($time),
+            'expires_in' => $time,
+            'expires_at' => time() + $time,
+
+            'message' => __('Password change form displayed')
+        ], __('Password change form displayed'));
+    }
+
+    protected function displayProfilePage($me_info)
+    {
+        $time = 600;
+        return $this->success([
+            'user' => $me_info,
+
+            'csrf_token' => Session::csrf_token($time),
+            'expires_in' => $time,
+            'expires_at' => time() + $time,
+            
+            'message' => __('Profile page displayed')
+        ], __('Profile page displayed'));
+    }
+
+    protected function handleProfileUpdateSuccess($page_type)
+    {
+        $messages = [
+            'personal_info' => __('Personal information updated successfully'),
+            'social_media' => __('Social media updated successfully'),
+            'detailed_info' => __('Detailed information updated successfully')
+        ];
+        
+        return $this->success([
+            'page_type' => $page_type,
+            'message' => $messages[$page_type] ?? __('Profile updated successfully')
+        ], $messages[$page_type] ?? __('Profile updated successfully'));
+    }
+
+    protected function handleProfileUpdateErrors($errors, $user_id, $page_type)
+    {
+        return $this->error(__('Profile update failed'), $errors, 400);
+    }
+
+    protected function handleGoogleAuthRedirect($auth_url)
+    {
+        return $this->success([
+            'auth_url' => $auth_url,
+            'message' => __('Google authentication URL generated')
+        ], __('Google authentication URL generated'));
+    }
+
+    protected function handleGoogleLoginSuccess($user)
+    {
+        $me_info = $this->_prepareProfileData($user);
+        $me_info['access_token'] = isset($_COOKIE['cmsff_token']) ? $_COOKIE['cmsff_token'] : '';
+        return $this->success([
+            'user' => $me_info,
+            'message' => __('Login with Google successful')
+        ], __('Login with Google successful'));
+    }
+
+    protected function handleGoogleUserNotFound($fullname, $email_user)
+    {
+        return $this->success([
+            'fullname' => $fullname,
+            'email' => $email_user,
+            'message' => __('Please complete your registration')
+        ], __('Please complete your registration'));
+    }
+
+    protected function handleGoogleAuthError()
+    {
+        return $this->error([
+            'message' => __('Google authentication failed. Please try again.')
+        ], __('Google authentication failed. Please try again.'), 400);
+    }
+
+    // Called by BaseAuthController::logout()
+    protected function handleLogoutSuccess()
+    {
+        return $this->success([], __('Logout successful'));
+    }
+
+    // Hooks for shared login()
+    protected function displayLoginForm()
+    {
+        return $this->csrf_token();
+        //return $this->error(__('Missing required fields'), [], 400);
+    }
+
+    protected function handleLoginErrors($errors)
+    {
+        return $this->error(__('Login failed'), $errors, 401);
+    }
+
+    // Abstract method implementations for register
+    protected function handleRegistrationErrors($errors)
+    {
+        return $this->error(__('Registration failed'), $errors, 400);
+    }
+
+    protected function handleMissingRegistrationFields()
+    {
+        return $this->error(__('Missing required fields'), [], 400);
+    }
+
+    protected function displayRegistrationForm()
+    {
+        return $this->csrf_token();
+        //return $this->error(__('Missing required fields'), [], 400);
+    }
+
+    // Abstract method implementations for forgot password
+    protected function handleForgotPasswordErrors($errors)
+    {
+        return $this->error(__('Forgot password failed'), $errors, 400);
+    }
+
+    protected function handleMissingEmailField()
+    {
+        return $this->error(__('Missing email field'), [], 400);
+    }
+
+    protected function displayForgotPasswordForm()
+    {
+        return $this->csrf_token();
+        //return $this->error(__('Missing email field'), [], 400);
     }
 
     /**
-     * Forgot Password - Step 1: Send reset email
+     * Send success response
+     * 
+     * @param array $data
+     * @param string $message
+     * @param int $code
+     * @return void
      */
-    public function forgot_password()
+    protected function success($data = [], $message = 'Success', $code = 200)
     {
-        try {
-            if (HAS_POST('email')) {
-                $input = [
-                    'email' => S_POST('email')
-                ];
-                
-                $rules = [
-                    'email' => [
-                        'rules' => [Validate::email(), Validate::length(5, 150)],
-                        'messages' => [Flang::_e('email_invalid'), Flang::_e('email_length', 5, 150)]
-                    ]
-                ];
-
-                $validator = new Validate();
-                if (!$validator->check($input, $rules)) {
-                    $errors = $validator->getErrors();
-                    return $this->error(Flang::_e('forgot_password_failed'), $errors, 400);
-                }
-
-                $user = $this->usersModel->getUserByEmail($input['email']);
-                if (!$user) {
-                    return $this->error(Flang::_e('email_not_found', $input['email']), [], 404);
-                }
-
-                // Send reset email
-                $this->_forgot_send($user);
-                
-                return $this->success([
-                    'message' => Flang::_e('reset_password_email_sent'),
-                    'email' => $input['email']
-                ], Flang::_e('forgot_password_success'));
-            }
-
-            return $this->error(Flang::_e('email_required'), [], 400);
-        } catch (AppException $e) {
-            return $this->error($e->getMessage(), [], 500);
-        }
-    }
-
-    /**
-     * Reset Password - Step 2: Reset password with token
-     */
-    public function reset_password()
-    {
-        try {
-            if (HAS_POST('user_id') && HAS_POST('token') && HAS_POST('password')) {
-                $user_id = S_POST('user_id');
-                $token = S_POST('token');
-                $password = S_POST('password');
-
-                $user = $this->usersModel->getUserById($user_id);
-                if (!$user) {
-                    return $this->error(Flang::_e('user_not_found'), [], 404);
-                }
-
-                $user_optional = json_decode($user['optional'], true);
-                $token_db = $user_optional['token_reset_password'] ?? '';
-                $token_expires = $user_optional['token_reset_password_expires'] ?? 0;
-
-                if ($token !== $token_db) {
-                    return $this->error(Flang::_e('token_invalid'), [], 400);
-                }
-
-                if ($token_expires <= time()) {
-                    return $this->error(Flang::_e('token_expired'), [], 400);
-                }
-
-                // Validate password
-                $rules = [
-                    'password' => [
-                        'rules' => [Validate::length(6, 60)],
-                        'messages' => [Flang::_e('password_length', 6, 60)]
-                    ]
-                ];
-
-                $validator = new Validate();
-                if (!$validator->check(['password' => $password], $rules)) {
-                    $errors = $validator->getErrors();
-                    return $this->error(Flang::_e('password_invalid'), $errors, 400);
-                }
-
-                // Update password and remove token
-                $update_data = [
-                    'password' => Security::hashPassword($password),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ];
-
-                // Remove reset token from optional
-                if (isset($user_optional['token_reset_password'])) {
-                    unset($user_optional['token_reset_password']);
-                }
-                if (isset($user_optional['token_reset_password_expires'])) {
-                    unset($user_optional['token_reset_password_expires']);
-                }
-                $update_data['optional'] = json_encode($user_optional);
-
-                $result = $this->usersModel->updateUser($user_id, $update_data);
-                if ($result) {
-                    return $this->success([
-                        'message' => Flang::_e('password_reset_success')
-                    ], Flang::_e('reset_password_success'));
-                } else {
-                    return $this->error(Flang::_e('password_reset_failed'), [], 500);
-                }
-            }
-
-            return $this->error(Flang::_e('missing_required_fields'), [], 400);
-        } catch (AppException $e) {
-            return $this->error($e->getMessage(), [], 500);
-        }
-    }
-
-    /**
-     * Send forgot password email
-     */
-    private function _forgot_send($user)
-    {
-        $user_id = $user['id'];
-        // Tạo token forgot password
-        $token = strtolower(random_string(32));
-        
-        $user_optional = json_decode($user['optional'], true);
-        if (empty($user_optional)) {
-            $user_optional = [];
-        }
-        
-        $user_optional['token_reset_password'] = $token;
-        $user_optional['token_reset_password_expires'] = time() + 86400;
-        
-        $this->usersModel->updateUser($user_id, ['optional' => json_encode($user_optional)]);
-
-        // Construct reset link 
-        $reset_link = auth_url('forgot_password/' . $user_id . '/' . $token . '/');
-        
-        // Gửi email link reset password
-        $mailer = new Fastmail();
-        $mailer->send($user['email'], Flang::_e('title_email_link_reset'), 'reset_password', [
-            'username' => $user['username'], 
-            'reset_link' => $reset_link
+        http_response_code($code);
+        echo json_encode([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+            'timestamp' => time()
         ]);
+        exit;
+    }
+
+    /**
+     * Send error response
+     * 
+     * @param string $message
+     * @param array $errors
+     * @param int $code
+     * @return void
+     */
+    protected function error($message = 'Error', $errors = [], $code = 400)
+    {
+        http_response_code($code);
+        echo json_encode([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors,
+            'timestamp' => time()
+        ]);
+        exit;
+    }
+
+    /**
+     * Get CSRF token for API requests
+     * 
+     * This endpoint provides a CSRF token that can be used for subsequent API requests.
+     * The token is valid for 1 hour (3600 seconds) by default.
+     * 
+     * @return void
+     */
+    public function csrf_token($time = 600)
+    {
+        if (!is_numeric($time)) {
+            $time = 600;
+        }
+        try {
+            // Generate CSRF token with 1 hour expiry
+            $csrf_token = Session::csrf_token($time);
+            
+            return $this->success([
+                'csrf_token' => $csrf_token,
+                'expires_in' => $time,
+                'expires_at' => time() + $time
+            ], __('CSRF token generated successfully'));
+            
+        } catch (\Exception $e) {
+            return $this->error([
+                'message' => __('Failed to generate CSRF token')
+            ], __('Failed to generate CSRF token'), 500);
+        }
     }
 }

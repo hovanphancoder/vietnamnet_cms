@@ -28,7 +28,7 @@ define('APP_LANGUAGES', array (
   ),
   'id' => 
   array (
-    'name' => 'Indonesia',
+    'name' => 'Indonesian',
     'flag' => 'id',
   ),
 ));

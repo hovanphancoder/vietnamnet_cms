@@ -4,18 +4,23 @@ use App\Libraries\Fastlang;
 
 echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastlang::_e('Profile Settings')]);
 ?>
+
+<!-- Flatpickr CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-6">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-900 mb-4"><?php __e('Profile Settings') ?></h1>
-            </div>
-            <div class="flex items-center justify-between">
                 <a href="<?php echo base_url(); ?>" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                     <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
-                    <span class="hidden md:block"><?php __e('Back to Dashboard') ?></span>
+                    <span class="hidden md:block"><?php __e('Back to Home') ?></span>
                 </a>
+                <div class="flex items-center justify-between">
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-900 mb-4"><?php __e('Profile Settings') ?></h1>
+                </div>
                 <div>
                     <!-- Language Switcher -->
                     <div class="">
@@ -90,28 +95,28 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                 <nav class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                     <ul class="space-y-2">
                         <li>
-                            <a href="#personal-info" 
-                               @click.prevent="switchTab('personal-info')"
+                            <a href="#personal_info" 
+                               @click.prevent="switchTab('personal_info')"
                                class="profile-nav-item flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                               data-tab="personal-info">
+                               data-tab="personal_info">
                                 <i data-lucide="user" class="w-4 h-4 mr-3"></i>
                                 <?php __e('Personal Information') ?>
                             </a>
                         </li>
                         <li>
-                            <a href="#detailed-info" 
-                               @click.prevent="switchTab('detailed-info')"
+                            <a href="#detailed_info" 
+                               @click.prevent="switchTab('detailed_info')"
                                class="profile-nav-item flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                               data-tab="detailed-info">
+                               data-tab="detailed_info">
                                 <i data-lucide="briefcase" class="w-4 h-4 mr-3"></i>
                                 <?php __e('Detailed Information') ?>
                             </a>
                         </li>
                         <li>
-                            <a href="#social-media" 
-                               @click.prevent="switchTab('social-media')"
+                            <a href="#social_media" 
+                               @click.prevent="switchTab('social_media')"
                                class="profile-nav-item flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                               data-tab="social-media">
+                               data-tab="social_media">
                                 <i data-lucide="share-2" class="w-4 h-4 mr-3"></i>
                                 <?php __e('Social Media') ?>
                             </a>
@@ -135,7 +140,7 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
             <!-- Main Content Area -->
             <div class="flex-1">
                 <!-- Personal Information Section -->
-                <div id="personal-info" class="profile-section">
+                <div id="personal_info" class="profile-section">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                         <div class="px-6 py-4 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -146,8 +151,8 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                         </div>
                         <div class="p-6">
                             <!-- Profile Form -->
-                            <form class="space-y-4" action="<?php echo auth_url('profile'); ?>" method="post" id="profileForm">
-                                <input type="hidden" name="page" value="personal_info">
+                            <form class="space-y-4" action="<?php echo auth_url('set-profile'); ?>" method="post" id="profileForm">
+                                <input type="hidden" name="page_type" value="personal_info">
                                 <input type="hidden" name="csrf_token" value="<?php echo Session::csrf_token(600); ?>">
                                 
                                 <!-- Profile Visibility Section -->
@@ -553,7 +558,7 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
 
 
                 <!-- Detailed Information Section -->
-                <div id="detailed-info" x-data="detailedInfo()" class="profile-section hidden">
+                <div id="detailed_info" x-data="detailedInfo()" class="profile-section hidden">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                         <div class="px-6 py-4 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -563,8 +568,8 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                             <p class="mt-1 text-sm text-gray-600"><?php __e('Manage your professional and personal details') ?></p>
                         </div>
                         <div class="p-6">
-                            <form class="space-y-6" action="<?php echo auth_url('profile'); ?>" method="post" id="detailedInfoForm">
-                                <input type="hidden" name="page" value="detailed_info">
+                            <form class="space-y-6" action="<?php echo auth_url('set-profile'); ?>" method="post" id="detailedInfoForm">
+                                <input type="hidden" name="page_type" value="detailed_info">
                                 <input type="hidden" name="csrf_token" value="<?php echo Session::csrf_token(600); ?>">
                                 
                                 <!-- Work Experience -->
@@ -830,7 +835,7 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                 </div>
 
                 <!-- Social Media Section -->
-                <div id="social-media" x-data="socialMedia()" class="profile-section hidden">
+                <div id="social_media" x-data="socialMedia()" class="profile-section hidden">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
                         <div class="px-6 py-4 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -840,8 +845,8 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                             <p class="mt-1 text-sm text-gray-600"><?php __e('Connect your social media accounts') ?></p>
                         </div>
                         <div class="p-6">
-                            <form class="space-y-4" action="<?php echo auth_url('profile'); ?>" method="post" id="socialForm">
-                                <input type="hidden" name="page" value="social_media">
+                            <form class="space-y-4" action="<?php echo auth_url('set-profile'); ?>" method="post" id="socialForm">
+                                <input type="hidden" name="page_type" value="social_media">
                                 <input type="hidden" name="csrf_token" value="<?php echo Session::csrf_token(600); ?>">
                                 
                                 <?php 
@@ -1044,6 +1049,7 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                         <div class="p-6">
                             <form class="space-y-4" action="<?php echo auth_url('change-password'); ?>" method="post" id="changePasswordForm">
                                 <input type="hidden" name="csrf_token" value="<?php echo Session::csrf_token(600); ?>">
+                                <input type="hidden" name="page_type" value="security">
                                 
                                 <!-- Current Password -->
                                 <div class="space-y-1">
@@ -1109,6 +1115,13 @@ echo Render::html('Common/Auth/header', ['layout' => 'default', 'title' => Fastl
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Logout Button -->
+        <div class="mt-6">
+            <a href="<?php echo auth_url('logout'); ?>" class="w-[160px] mx-auto flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <?php __e('Logout') ?>
+            </a>
         </div>
     </div>
 </div>
@@ -1262,7 +1275,7 @@ function detailedInfo() {
 // Tab Navigation
 function profileTabs() {
     return {
-        activeTab: 'personal-info',
+        activeTab: 'personal_info',
         switchTab(tab) {
             // Hide all tabs first
             const allTabs = document.querySelectorAll('.profile-section');
@@ -1400,13 +1413,84 @@ document.addEventListener('alpine:init', () => {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+    initFlatpickrPickers();
 });
+
+// Flatpickr initialization for date, datetime, and time inputs
+function initFlatpickrPickers(root = document) {
+    if (typeof flatpickr === 'undefined') return;
+
+    // Date: Y-m-d with contextual min/max limits
+    const dateInputs = root.querySelectorAll('input[type="date"], input[data-picker="date"]');
+    dateInputs.forEach(el => {
+        if (!el._flatpickr) {
+            const now = new Date();
+            const year = now.getFullYear();
+
+            const opts = {
+                dateFormat: 'Y-m-d',
+                allowInput: true
+            };
+
+            const name = (el.getAttribute('name') || '').toLowerCase();
+            const id = (el.getAttribute('id') || '').toLowerCase();
+
+            // Birthday: between 130 years ago and 12 years ago
+            if (id === 'birthday' || name === 'birthday') {
+                opts.minDate = new Date(year - 130, now.getMonth(), now.getDate());
+                opts.maxDate = new Date(year - 12, now.getMonth(), now.getDate());
+            }
+
+            // Work/Education Start/End Dates: last 100 years up to today
+            else if (name.includes('[start_date]') || name.includes('[end_date]')) {
+                opts.minDate = new Date(year - 100, now.getMonth(), now.getDate());
+                opts.maxDate = now;
+            }
+
+            // Certifications Issue Date: last 100 years up to today
+            else if (name.includes('[issue_date]')) {
+                opts.minDate = new Date(year - 100, now.getMonth(), now.getDate());
+                opts.maxDate = now;
+            }
+
+            flatpickr(el, opts);
+        }
+    });
+
+    // DateTime: Y-m-d H:i:s
+    const dateTimeInputs = root.querySelectorAll('input[data-picker="datetime"]');
+    dateTimeInputs.forEach(el => {
+        if (!el._flatpickr) {
+            flatpickr(el, {
+                enableTime: true,
+                enableSeconds: true,
+                time_24hr: true,
+                dateFormat: 'Y-m-d H:i:s',
+                allowInput: true
+            });
+        }
+    });
+
+    // Time: H:i:s
+    const timeInputs = root.querySelectorAll('input[type="time"], input[data-picker="time"]');
+    timeInputs.forEach(el => {
+        if (!el._flatpickr) {
+            flatpickr(el, {
+                enableTime: true,
+                noCalendar: true,
+                enableSeconds: true,
+                time_24hr: true,
+                dateFormat: 'H:i:s',
+                allowInput: true
+            });
+        }
+    });
+}
 
 // Date input compatibility check and fallback
 function checkDateInputSupport() {
     const dateInput = document.createElement('input');
     dateInput.type = 'date';
-    
     // Check if browser supports date input
     if (dateInput.type !== 'date') {
         // Browser doesn't support date input
@@ -1464,6 +1548,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Enhance date inputs
     enhanceDateInputs();
+
+    // Initialize Flatpickr for existing inputs
+    if (typeof initFlatpickrPickers === 'function') {
+        initFlatpickrPickers(document);
+    }
+
+    // Observe dynamic DOM updates to initialize Flatpickr on new inputs
+    const container = document.querySelector('[x-ref="profileContainer"]') || document.body;
+    if (window.MutationObserver && container && typeof initFlatpickrPickers === 'function') {
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(m => {
+                if (m.addedNodes && m.addedNodes.length) {
+                    m.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            initFlatpickrPickers(node);
+                        }
+                    });
+                }
+            });
+        });
+        observer.observe(container, { childList: true, subtree: true });
+    }
     
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {

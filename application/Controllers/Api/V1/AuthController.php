@@ -29,46 +29,6 @@ class AuthController extends ApiController
         $this->usersModel = new UsersModel();
     }
 
-    // Lấy danh sách tất cả người dùng
-    // public function me()
-    // {
-    //     try {
-    //         if (Session::has('user_id')) {
-    //             $user_id = clean_input(Session::get('user_id'));
-    //             $me = $this->usersModel->getUserById($user_id);
-    //             if (empty($me)) {
-    //                 return $this->error(Flang::_e('user_notfound'), [], 404);
-    //             }
-    //             unset($me['password']);
-    //             unset($me['location']);
-    //             return $this->success(['me'=>$me], Flang::_e('login_success'));
-    //         }else{
-    //             $access_token = Fasttoken::getToken();
-    //             if ($access_token) {
-    //                 $config_security = config('security');
-    //                 //$config_secret = !empty($config_secret) && !empty($config_secret['app_secret']) ? $config_secret['app_secret'] : null;
-    //                 $me_data = Fasttoken::decodeToken($access_token, $config_security['app_secret']);
-    //                 if (!$me_data['success']) {
-    //                     return $this->error(Flang::_e('auth_token_invalid'), [$me_data['message']], 401);
-    //                 }
-    //                 $user_id = $me_data['data']['user_id'] ?? null;
-    //                 if (empty($user_id)) {
-    //                     return $this->error(Flang::_e('token_invalid'), [], 401);
-    //                 }
-    //                 $me = $this->usersModel->getUserById($user_id);
-    //                 if (empty($me)) {
-    //                     return $this->error(Flang::_e('user_notfound'), [], 404);
-    //                 }
-    //                 unset($me['password']);
-    //                 return $this->success(['me'=>$me], Flang::_e('login_success'));
-    //             }
-    //             $this->error(Flang::_e('auth_token_invalid'), [], 403);
-    //         }
-    //     } catch (AppException $e) {
-    //         $this->error($e->getMessage(), [], 500);
-    //     }
-    // }
-
     public function login()
     {
         try {
@@ -144,9 +104,6 @@ class AuthController extends ApiController
                             'gender' => $me['gender'],
                             'about_me' => $me['about_me'],
                             'display' => $me['display'],
-                            'coin' => $me['coin'],
-                            'package_name' => $me['package_name'],
-                            'package_exp' => $me['package_exp'],
                             'personal' => is_string($me['personal']) ? json_decode($me['personal'], true) : $me['personal'],
                             'online' => $me['online'],
                             'rel_status' => Flang::_e($me['rel_status'] ?? '')
@@ -166,7 +123,7 @@ class AuthController extends ApiController
 
     public function logout()
     {
-        $user = $this->_authentication();
+        $user = $this->_auth();
         try {
             // Xóa session nếu tồn tại
             if (Session::has('user_id')) {
@@ -335,9 +292,6 @@ class AuthController extends ApiController
                             'gender' => $input['gender'] ?? '',
                             'about_me' => $input['about_me'] ?? '',
                             'display' => $input['display'] ?? 0,
-                            'coin' => $input['coin'] ?? 0,
-                            'package_name' => $input['package_name'] ?? 'membership',
-                            'package_exp' => $input['package_exp'] ?? '',
                             'personal' => is_string($input['personal']) ? json_decode($input['personal'], true) : $input['personal'],
                             'online' => $input['online'] ?? 1,
                             'rel_status' => Flang::_e($me['rel_status'] ?? '')
@@ -350,7 +304,7 @@ class AuthController extends ApiController
                 }
             }  else {
                 $csrf_token = Session::csrf_token(600);
-                return $this->success(['csrf_token' => $csrf_token], Flang::_e('register_success'));
+                return $this->success(['csrf_token' => $csrf_token], Flang::_e('missing_username'));
             }
 
             
@@ -432,9 +386,6 @@ class AuthController extends ApiController
                         'gender' => $me['gender'],
                         'about_me' => $me['about_me'],
                         'display' => $me['display'],
-                        'coin' => $me['coin'],
-                        'package_name' => $me['package_name'],
-                        'package_exp' => $me['package_exp'],
                         'personal' => is_string($me['personal']) ? json_decode($me['personal'], true) : $me['personal'],
                         'online' => $me['online'],
                         'rel_status' => Flang::_e($me['rel_status'] ?? '')
@@ -452,8 +403,6 @@ class AuthController extends ApiController
             $input['role'] = 'member';
             $input['permissions'] = json_encode(config('member', 'Roles')['permissions'] ?? []);
             $input['status'] = 'active';
-            $input['coin'] =   0;
-            $input['package_name'] = 'membership';
             $input['created_at'] = date('Y-m-d H:i:s');
             $input['updated_at'] = date('Y-m-d H:i:s');
             $optionNal = [
@@ -640,7 +589,7 @@ class AuthController extends ApiController
     //                     ]
     //                 ];
     //             }
-    //             $input['updated_at'] = DateTime();
+    //             $input['updated_at'] = _DateTime();
     //             $input['avatar'] = $avatarPath;
     //             $input['display'] = S_POST('display') ?? 1;
 

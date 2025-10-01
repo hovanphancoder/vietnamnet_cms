@@ -49,8 +49,6 @@ class OptionsController extends BackendController
         $this->data('post_lang', $this->post_lang);
         $this->data('title', __('Website Settings'));
         $this->data('csrf_token', Session::csrf_token(600));
-        // Render::asset('css', 'css/forms.css', ['area' => 'backend', 'location' => 'footer']);
-        // Render::asset('js', 'js/forms.js', ['area' => 'backend', 'location' => 'footer']);
         echo Render::html('Backend/options_index', $this->data);
     }
 
@@ -62,6 +60,7 @@ class OptionsController extends BackendController
         $sql_valuelang = [];
         $file_value = [];
         $file_valuelang = [];
+        
         if (!empty($data)) {
             foreach ($data as $key => $value) {
                 $option = $this->optionsModel->getByName($key);
@@ -70,10 +69,10 @@ class OptionsController extends BackendController
                     unset($data[$key]);
                     continue;
                 }
-
+                
                 switch ($option['type']){
                     case 'Boolean':
-                      if ($value == 'false' || $value == 'False'){
+                      if ($value == 'false' || $value == 'False' || $value == 0 || $value == '0'){
                         $value = 0;
                       }else{
                         $value = 1;
@@ -88,7 +87,6 @@ class OptionsController extends BackendController
                       }
                     break;
                   }
-
                 $optional = $option['optional'];
                 $optional = is_string($optional) ? json_decode($optional, true) : $optional;
                 $rules[$key] = $this->_rules_validate($optional);
@@ -154,15 +152,14 @@ class OptionsController extends BackendController
         }
         if (!empty($file_value)) {
             foreach ($file_value as $key => $item_data) {
-                option_set($key, $item_data);
+                option_setcache($key, $item_data);
             }
         }
         if (!empty($file_valuelang)) {
             foreach ($file_valuelang as $key => $item_data) {
-                option_set($key, $item_data, $this->post_lang);
+                option_setcache($key, $item_data, $this->post_lang);
             }
         }
-
         if (!empty($sql_value)) {
             try{
                 $this->optionsModel->setValuebyName($sql_value);
@@ -263,7 +260,7 @@ class OptionsController extends BackendController
                 'messages' => [__('field_type_invalid')]
             ],
             'label' => [
-                'rules' => [Validate::length(3, 100)],
+                'rules' => [Validate::length(1, 100)],
                 'messages' => [__('field_label_length')]
             ],
             'description' => [
@@ -405,8 +402,8 @@ class OptionsController extends BackendController
                                 'value' => $option['default_value'],
                                 'valuelang' => '',
                                 'optional' => json_encode($option),
-                                'created_at' => DateTime(),
-                                'updated_at' => DateTime()
+                                'created_at' => _DateTime(),
+                                'updated_at' => _DateTime()
                             );
                             if ($this->optionsModel->addOptions($addItem)) {
                                 $addItems[] = $addItem;
@@ -424,7 +421,7 @@ class OptionsController extends BackendController
                 }
                 $_POST['list_options'] = json_encode($options);
                 $this->data('errors', $errors);
-                Session::flash('error', __('Please fix the errors below'));
+                Session::flash('error', __('Please fix the errors below').':'.json_encode($errors));
             }
         }
 
@@ -485,8 +482,8 @@ class OptionsController extends BackendController
                             'description' => $option['description'],
                             'status' => $option['status'],
                             'optional' => json_encode($optionalData),
-                            'created_at' => DateTime(),
-                            'updated_at' => DateTime()
+                            'created_at' => _DateTime(),
+                            'updated_at' => _DateTime()
                         );
                         if ($this->optionsModel->setOptions($id, $newdata)) {
                             \System\Libraries\Events::run('Backend\\OptionEditEvent', $newdata);
@@ -496,7 +493,7 @@ class OptionsController extends BackendController
                             Session::flash('error', __('Failed to update option'));
                         }
                     } else {
-                        Session::flash('error', __('Please fix the errors below'));
+                        Session::flash('error', __('Please fix the errors below').':'.json_encode($errors));
                     }
                 }
             } else {
@@ -513,7 +510,7 @@ class OptionsController extends BackendController
         $this->data('allowed_types', $this->allowed_types);
         $this->data('options', [$editOption]);
         $this->data('isEditing', true);
-        $this->data('title', __('option_edit_title') . ' ' . $editOption['name']);
+        $this->data('title', __('option_edit_title') . ' ' . (isset($editOption['name']) ? $editOption['name'] : ''));
         $this->data('csrf_token', Session::csrf_token(600)); // Create new token for first load
         echo Render::html('Backend/options_add', $this->data);
     }

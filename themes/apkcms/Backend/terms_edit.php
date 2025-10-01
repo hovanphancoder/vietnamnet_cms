@@ -4,12 +4,27 @@ use System\Libraries\Session;
 use App\Libraries\Fastlang as Flang;
 use System\Libraries\Render;
 
-if (Session::has_flash('success')) {
-    $success = Session::flash('success');
-}
-Render::block('Backend\Header', ['layout' => 'default', 'title' => $title ?? 'Terms']);
-?>
-<?php
+// Load language files
+Flang::load('Terms', APP_LANG);
+
+$breadcrumbs = array(
+  [
+      'name' => __('Dashboard'),
+      'url' => admin_url('home')
+  ],
+  [
+      'name' => __('Terms'),
+      'url' => admin_url('terms')
+  ],
+  [
+      'name' => __('Edit Term'),
+      'url' => admin_url('terms/edit'),
+      'active' => true
+  ]
+);
+
+Render::block('Backend\Header', ['layout' => 'default', 'title' => $title ?? 'Edit Term', 'breadcrumb' => $breadcrumbs]);
+
 function buildOptions($tree, $level = 0, $current_id = null, $parent = null)
 {
     $output = '';
@@ -35,6 +50,7 @@ function buildOptions($tree, $level = 0, $current_id = null, $parent = null)
 
     return $output;
 }
+
 // allTerm to options for languages tức là chuyển thành option select cho từng ngôn ngữ
 $termsLanguages = [];
 foreach ($allTerm as $term) {
@@ -44,148 +60,263 @@ foreach ($allTerm as $term) {
     }
     $termsLanguages[$term['lang']][] = $term;
 }
+
+// Get posttype data for language switching (passed from controller)
+$posttypeData['languages'] = is_string($posttypeData['languages']) ? json_decode($posttypeData['languages'], true) : $posttypeData['languages'];
 ?>
-<!-- [ Main Content ] start -->
-<div class="pc-container">
-    <div class="pc-content">
-        <div class="card bg-card text-card-foreground border card-content rounded-lg shadow-md transition-shadow">
-            <!-- Card Header: Page Title & Breadcrumb -->
-            <div class="card-header">
-                <h1 class="card-title text-2xl font-bold mb-4"><?= $title ?? Flang::_e('terms') ?></h1>
-            </div>
-            <!-- End Card Header -->
-            <!-- Card Body: Content -->
-            <div class="card-body">
-                <!-- Notification Success -->
-                <?php if (!empty($success)): ?>
-                    <div class="bg-green-100 text-green-800 p-4 mb-4 rounded">
-                        <?= htmlspecialchars($success); ?>
-                    </div>
-                <?php endif; ?>
-                <!-- Notification Error -->
-                <?php if (!empty($error)): ?>
-                    <div class="bg-red-200 text-red-800 p-4 mb-4 rounded">
-                        <?= htmlspecialchars($error); ?>
-                    </div>
-                <?php endif; ?>
-                <div class="page-main flex flex-wrap py-5 px-4 md:px-8">
-                    <div class="flex flex-wrap flex-col w-full">
-                        <div class="w-full">
-                            <form action="" method="POST">
-                                <input type="hidden" name="csrf_token" value="<?= $csrf_token; ?>">
-                                <input type="hidden" name="type" value="<?= $data['type'] ?>">
-                                <input type="hidden" name="posttype" value="<?= $data['posttype'] ?>">
-                                <!-- Form Fields Container -->
-                                <div class="flex flex-wrap -mx-2">
-                                    <!-- name -->
-                                    <div class="w-full md:w-1/2 px-2 mb-4 ">
-                                        <label for="name" class="block font-bold mb-2"><?= Flang::_e('lable_name') ?><span class="text-red-500">*</span></label>
-                                        <input type="text" value="<?= $data['name']; ?>" id="name" name="name" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground" required>
-                                        <?php if (!empty($errors['name'])): ?>
-                                            <div class="text-red-800 mt-2 text-sm">
-                                                <?php foreach ($errors['name'] as $error): ?>
-                                                    <p><?= $error; ?></p>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <!-- slug -->
-                                    <div class="w-full md:w-1/2 px-2 mb-4">
-                                        <label for="slug" class="block font-bold mb-2"><?= Flang::_e('lable_slug') ?></label>
-                                        <input type="text" value="<?= $data['slug']; ?>" id="slug" name="slug" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground" required>
-                                        <?php if (!empty($errors['slug'])): ?>
-                                            <div class="text-red-800 mt-2 text-sm">
-                                                <?php foreach ($errors['slug'] as $error): ?>
-                                                    <p><?= $error; ?></p>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <!-- lang -->
-                                    <div class="w-full md:w-1/2 px-2 mb-4">
-                                        <label for="lang" class="block font-bold mb-2"><?= Flang::_e('lable_lang') ?></label>
-                                        <select id="lang" name="lang" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground" required>
-                                            <?php foreach ($langActive as $item) { ?>
-                                                <option value="<?= $item['code'] ?>" <?= $data['lang'] == $item['code'] ? 'selected' : '' ?>><?= $item['name'] ?></option>
-                                            <?php } ?>
-                                        </select>
-                                        <?php if (!empty($errors['lang'])): ?>
-                                            <div class="text-red-800 mt-2 text-sm">
-                                                <?php foreach ($errors['lang'] as $error): ?>
-                                                    <p><?= $error; ?></p>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <!-- parent -->
-                                    <?php if (isset($currentTermInfo['hierarchical']) && $currentTermInfo['hierarchical']) { ?>
-                                        <div class="w-full md:w-1/2 px-2 mb-4" id="parent-container">
-                                            <label for="parent" class="block font-bold mb-2"><?= Flang::_e('lable_parent') ?></label>
-                                            <select id="parent" name="parent" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground">
-                                                <?= buildOptions($tree, 0, $data['id'], $data['parent']) ?>
-                                            </select>
-                                        </div>
-                                    <?php } ?>
-                                    <!-- description -->
-                                    <div class="w-full px-2 mb-4">
-                                        <label for="description" class="block font-bold mb-2"><?= Flang::_e('lable_description') ?></label>
-                                        <textarea id="description" name="description" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground"><?= $data['description'] ?></textarea>
-                                    </div>
-                                </div>
-                                <!-- SEO Title -->
-                                <div class="w-full px-2 mb-4">
-                                    <label for="seo_title" class="block font-bold mb-2"><?= Flang::_e('lable_seo_title') ?></label>
-                                    <input type="text" id="seo_title" name="seo_title" value="<?= $data['seo_title'] ?>" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground">
-                                </div>
-                                <!-- SEO Description -->
-                                <div class="w-full px-2 mb-4">
-                                    <label for="seo_desc" class="block font-bold mb-2"><?= Flang::_e('lable_seo_desc') ?></label>
-                                    <textarea id="seo_desc" name="seo_desc" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground"><?= $data['seo_desc'] ?></textarea>
-                                </div>
-                                <!-- ID Main (chỉ hiển thị khi ngôn ngữ khác ngôn ngữ mặc định) -->
-                                <?php if ($data['lang'] !== $default_lang): ?>
-                                    <div class="w-full px-2 mb-4" id="id-main-container">
-                                        <label for="id_main" class="block font-bold mb-2"><?= Flang::_e('lable_id_main') ?></label>
-                                        <select id="id_main" name="id_main" class="appearance-none border border-input rounded w-full form-control leading-tight focus:outline-none px-3 py-2 bg-background text-foreground">
-                                            <option value="0"><?= Flang::_e('select_main_term') ?></option>
-                                            <?php if (isset($mainterms)) {
-                                                echo buildOptions($mainterms, 0, $data['id'], $data['id_main']);
-                                            } ?>
-                                        </select>
-                                    </div>
-                                <?php endif; ?>
-                                <!-- Submit Button -->
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <button type="submit" class="custom-btn inline-flex items-center justify-center whitespace-nowrap font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded px-4 py-2 w-full md:w-fit flex gap-2 justify-center items-center [&>svg]:mb-0">
-                                        <i data-lucide="upload-cloud" class="w-4 h-4"></i> <?= Flang::_e('btn_update') ?>
-                                    </button>
-                                    <a href="<?= admin_url('terms/delete/' . $data['id'] . '?posttype=' . $data['posttype'] . '&type=' . $data['type']); ?>" class="custom-btn inline-flex items-center justify-center whitespace-nowrap font-medium bg-danger text-danger-foreground hover:bg-danger/90 rounded px-4 py-2 w-full md:w-fit flex gap-2 justify-center items-center [&>svg]:mb-0" onclick="return confirm('<?= Flang::_e('confirm_delete') ?>')">
-                                        <i data-lucide="trash" class="w-4 h-4"></i> <?= Flang::_e('btn_del') ?>
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div><!-- end card-body -->
-        </div><!-- end card -->
-    </div><!-- end pc-content -->
-</div><!-- end pc-container -->
-<style>
-    .table td,
-    .table th {
-        padding: 1rem !important;
-    }
-</style>
-<?php
-Render::block('Backend\Footer', ['layout' => 'default']);
-?>
-<script>
-    var admin_url = '<?= admin_url('terms'); ?>';
-    var defaultLang = '<?php if (isset($default_lang)) {
-                            echo $default_lang;
-                        }; ?>';
+<div class="" x-data="{ 
+  generateSlug() {
+    const nameInput = document.getElementById('name');
+    const slugInput = document.getElementById('slug');
     
+    if (nameInput && slugInput) {
+      const name = nameInput.value;
+      if (name) {
+        // Check if url_slug function is available
+        if (typeof url_slug === 'function') {
+          slugInput.value = url_slug(name, {
+            delimiter: '-',
+            lowercase: true,
+            limit: 50
+          });
+        } else {
+          // Fallback: simple slug generation
+          slugInput.value = name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim('-')
+            .substring(0, 50);
+        }
+      }
+    }
+  }
+}">
+
+  <!-- Header -->
+  <div class="flex flex-col gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-foreground"><?= __('Edit Term') ?></h1>
+      <p class="text-muted-foreground"><?= __('Edit term information and settings') ?></p>
+    </div>
+    
+    <!-- Language Switch -->
+    <div class="flex items-center gap-2 mb-2">
+      <?php 
+      // Tạo array để check term đã tồn tại chưa
+      $existingTerms = [];
+      foreach($allTerm as $term) {
+        if($term['id_main'] == $data['id_main']) {
+          $existingTerms[$term['lang']] = $term;
+        }
+      }
+      ?>
+      <?php foreach($posttypeData['languages'] as $langcode): ?>
+        <?php if($langcode !== $data['lang']): ?>
+          <?php if(isset($existingTerms[$langcode])): ?>
+            <!-- Đã có term cho ngôn ngữ này - Edit -->
+            <?php $langUrlAction = admin_url('terms/edit/' . $existingTerms[$langcode]['id']) . '?posttype=' . $data['posttype'] . '&type=' . $data['type']; ?>
+            <a href="<?= $langUrlAction; ?>" class="inline-flex items-center px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+              <span class="text-sm font-medium uppercase"><?= $langcode ?></span>
+              <span class="ml-2">
+                <i data-lucide="edit" class="h-4 w-4"></i>
+              </span>
+            </a>
+          <?php else: ?>
+            <!-- Chưa có term cho ngôn ngữ này - Add -->
+            <?php $langUrlAction = admin_url('terms/add') . '?posttype=' . $data['posttype'] . '&type=' . $data['type'] . '&post_lang=' . $langcode . '&mainterm=' . $data['id_main']; ?>
+            <a href="<?= $langUrlAction; ?>" class="inline-flex items-center px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+              <span class="text-sm font-medium uppercase"><?= $langcode ?></span>
+              <span class="ml-2">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+              </span>
+            </a>
+          <?php endif; ?>
+        <?php else: ?>
+          <!-- Ngôn ngữ hiện tại -->
+          <div class="inline-flex items-center px-3 py-2 rounded-md bg-primary text-primary-foreground shadow-sm">
+            <span class="text-sm font-medium uppercase"><?= $langcode ?></span>
+            <span class="ml-2">
+              <i data-lucide="check-circle" class="h-4 w-4"></i>
+            </span>
+          </div>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    </div>
+    
+    <!-- Thông báo -->
+    <?php if (Session::has_flash('success')): ?>
+      <?php Render::block('Backend\Notification', ['layout' => 'default', 'type' => 'success', 'message' => Session::flash('success')]) ?>
+    <?php endif; ?>
+    <?php if (Session::has_flash('error')): ?>
+      <?php Render::block('Backend\Notification', ['layout' => 'default', 'type' => 'error', 'message' => Session::flash('error')]) ?>
+    <?php endif; ?>
+    <?php if (!empty($errors)):
+      foreach($errors as $key => $error):
+        // nối chuỗi key và các lỗi bên trong key: lỗi 1, lỗi 2
+        $mess = $key . ': ' . implode(', ', $error);
+        Render::block('Backend\Notification', ['layout' => 'default', 'type' => 'error', 'message' => $mess]);
+      endforeach;
+    endif;
+      ?>
+
+
+
+  </div>
+
+  <!-- Form Container -->
+  <div class="bg-card rounded-xl mb-4 p-6 border">
+    <form action="<?= admin_url('terms/edit/' . $data['id']) ?>" method="POST" id="editTermForm">
+      <input type="hidden" name="csrf_token" value="<?= $csrf_token; ?>">
+      <input type="hidden" name="type" value="<?= $data['type'] ?>">
+      <input type="hidden" name="posttype" value="<?= $data['posttype'] ?>">
+      <input type="hidden" name="lang" value="<?= $data['lang'] ?>">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_name') ?><span class="text-red-500">*</span></label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            value="<?= $data['name'] ?>"
+            @input="generateSlug()" 
+            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+            required
+            placeholder="<?= __('Enter term name') ?>"
+          >
+          <?php if (!empty($errors['name'])): ?>
+            <div class="text-red-600 mt-1 text-sm">
+              <?php foreach ($errors['name'] as $error): ?>
+                <p><?= $error; ?></p>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+        
+        <!-- Slug -->
+        <div>
+          <label for="slug" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_slug') ?><span class="text-red-500">*</span></label>
+          <input 
+            type="text" 
+            id="slug" 
+            name="slug" 
+            value="<?= $data['slug'] ?>"
+            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+            required
+            placeholder="<?= __('Enter term slug') ?>"
+          >
+          <?php if (!empty($errors['slug'])): ?>
+            <div class="text-red-600 mt-1 text-sm">
+              <?php foreach ($errors['slug'] as $error): ?>
+                <p><?= $error; ?></p>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+        
+        <!-- Status -->
+        <div>
+          <label for="status" class="block text-sm font-medium mb-2"><?= __('Status') ?></label>
+          <select 
+            id="status" 
+            name="status" 
+            class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <option value="active" <?= ($data['status'] ?? 'active') === 'active' ? 'selected' : '' ?>><?= __('Active') ?></option>
+            <option value="inactive" <?= ($data['status'] ?? 'active') === 'inactive' ? 'selected' : '' ?>><?= __('Inactive') ?></option>
+          </select>
+        </div>
+        
+        <!-- Parent -->
+        <?php if (isset($currentTermInfo['hierarchical']) && $currentTermInfo['hierarchical']): ?>
+          <div id="parent-container">
+            <label for="parent" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_parent') ?></label>
+            <select 
+              id="parent" 
+              name="parent" 
+              class="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <option value=""><?= Flang::_e('select_parent') ?></option>
+              <?= buildOptions($tree, 0, $data['id'], $data['parent']) ?>
+            </select>
+          </div>
+        <?php endif; ?>
+      </div>
+      
+      <!-- Description -->
+      <div class="mb-4">
+        <label for="description" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_description') ?></label>
+        <textarea 
+          id="description" 
+          name="description" 
+          rows="3" 
+          class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="<?= __('Enter term description') ?>"
+        ><?= $data['description'] ?></textarea>
+      </div>
+      
+      <!-- SEO Fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label for="seo_title" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_seo_title') ?></label>
+          <input 
+            type="text" 
+            id="seo_title" 
+            name="seo_title" 
+            value="<?= $data['seo_title'] ?>"
+            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="<?= __('Enter SEO title') ?>"
+          >
+        </div>
+        
+        <div>
+          <label for="seo_desc" class="block text-sm font-medium mb-2"><?= Flang::_e('lable_seo_desc') ?></label>
+          <textarea 
+            id="seo_desc" 
+            name="seo_desc" 
+            rows="2" 
+            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="<?= __('Enter SEO description') ?>"
+          ><?= $data['seo_desc'] ?></textarea>
+        </div>
+      </div>
+      
+      <!-- ID Main (hidden field - không cho sửa) -->
+      <input type="hidden" name="id_main" value="<?= $data['id_main'] ?>">
+      
+      <!-- Submit Buttons -->
+      <div class="flex justify-end gap-2">
+        <a 
+          href="<?= admin_url('terms/?posttype=' . $data['posttype'] . '&type=' . $data['type'] . '&post_lang=' . $data['lang']) ?>" 
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+        >
+          <i data-lucide="arrow-left" class="h-4 w-4 mr-2"></i>
+          <?= __('Cancel') ?>
+        </a>
+        <a 
+          href="<?= admin_url('terms/delete/' . $data['id'] . '?posttype=' . $data['posttype'] . '&type=' . $data['type']); ?>" 
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-red-600 hover:text-white h-10 px-4 py-2"
+          onclick="return confirm('<?= Flang::_e('confirm_delete') ?>')"
+        >
+          <i data-lucide="trash2" class="h-4 w-4 mr-2"></i>
+          <?= __('Delete') ?>
+        </a>
+        <button 
+          type="submit" 
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+        >
+          <i data-lucide="save" class="h-4 w-4 mr-2"></i>
+          <?= Flang::_e('Update') ?>
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
+<script>
     const dataTermsLanguages = <?= json_encode($termsLanguages) ?>;
     
     // Hàm cập nhật parent options
@@ -214,6 +345,11 @@ Render::block('Backend\Footer', ['layout' => 'default']);
         if (langSelect) {
             updateParentOptions(langSelect.value);
         }
+        
+        // Test url_slug function availability
+        if (!(typeof url_slug === 'function')) {
+            console.warn('url_slug function is not available');
+        }
     });
     
     // Cập nhật parent options khi lang thay đổi
@@ -221,3 +357,5 @@ Render::block('Backend\Footer', ['layout' => 'default']);
         updateParentOptions(this.value);
     });
 </script>
+
+<?php Render::block('Backend\Footer', ['layout' => 'default']); ?>

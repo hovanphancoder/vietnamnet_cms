@@ -125,7 +125,7 @@ if(!function_exists('posttype_add')) {
     }
 }
 
-// trans table name posttype $tableName = 'fast_posts_'.$data['slug'].'_'.$lang;
+// trans table name posttype $tableName = APP_PREFIX.'posts_'.$data['slug'].'_'.$lang;
 if(!function_exists('posttype_name')) {
     /**
      * Get table name for posttype based on slug and language
@@ -144,10 +144,10 @@ if(!function_exists('posttype_name')) {
         }
         // If first language is 'all' - table name is just slug
         if (empty($posttype['languages']) || $posttype['languages'][0] === 'all') {
-            return 'fast_posts_' . $slug;
+            return APP_PREFIX.'posts_' . $slug;
         }
         // If not 'all', table name includes language suffix
-        return 'fast_posts_' . $slug . '_' . $lang;
+        return APP_PREFIX.'posts_' . $slug . '_' . $lang;
     }
 }
 
@@ -179,14 +179,14 @@ if(!function_exists('posttype_exists')) {
     }
 }
 
-// trans table name posttype $tableName = 'fast_posts_'.$data['slug'].'_'.$lang;
+// trans table name posttype $tableName = APP_PREFIX.'posts_'.$data['slug'].'_'.$lang;
 if(!function_exists('table_posttype')) {
     function table_posttype($slug, $lang = '') {
         $slug = _sqlname($slug);
         if(empty($lang) || $lang === 'all') {
-            $tableName = 'fast_posts_'.$slug;
+            $tableName = APP_PREFIX.'posts_'.$slug;
         } else {
-            $tableName = 'fast_posts_'.$slug.'_'.$lang;
+            $tableName = APP_PREFIX.'posts_'.$slug.'_'.$lang;
         }
         return  $tableName;
     }
@@ -195,7 +195,7 @@ if(!function_exists('table_posttype')) {
 if(!function_exists('table_posttype_relationship')) {
     function table_posttype_relationship($slug) {
         $slug = _sqlname($slug);
-        $tableName = 'fast_posts_'.$slug.'_rel';
+        $tableName = APP_PREFIX.'posts_'.$slug.'_rel';
         return  $tableName;
     }
 }
@@ -215,8 +215,8 @@ if(!function_exists('table_posts_rel')) {
     }
 }
 
-function DateTime() {
-    return date('Y-m-d H:i:s');
+function _DateTime($time = '') {
+    return (new \DateTime($time))->format('Y-m-d H:i:s');
 }
 
 /**
@@ -308,7 +308,7 @@ function posttype($key, $lang = APP_LANG) {
 }
 
 
-function option($key, $lang = APP_LANG) {
+function option($key, $lang = APP_LANG, $get_cache = true) {
     static $global_options;
     if (!isset($global_options) || !is_array($global_options)) {
         $global_options = require PATH_APP . 'Config/Options.php';
@@ -316,7 +316,7 @@ function option($key, $lang = APP_LANG) {
             $global_options = [];
         }
     }
-    if (isset($global_options[$key]) && is_array($global_options[$key])){ // Return value from Application Memory
+    if ($get_cache && isset($global_options[$key]) && is_array($global_options[$key])){ // Return value from Application Memory
         if ($lang != APP_LANG_DF && isset($global_options[$key]['valuelang']) && !empty($global_options[$key]['valuelang']) ){
             if (!is_array($global_options[$key]['valuelang'])){   
                 $global_options[$key]['valuelang'] = json_decode($global_options[$key]['valuelang'], true) ?? [];
@@ -353,8 +353,8 @@ function option($key, $lang = APP_LANG) {
 }
 
 
-if (!function_exists('option_set')) {
-    function option_set($key, $value, $lang = '') {
+if (!function_exists('option_setcache')) {
+    function option_setcache($key, $value, $lang = '') {
         static $global_options;
         if (!isset($global_options) || !is_array($global_options)) {
             $global_options = require PATH_APP . 'Config/Options.php';
@@ -412,6 +412,69 @@ if (!function_exists('option_set')) {
         } else {
             return $global_options[$key]['value'];
         }
+    }
+}
+
+/**
+ * option_set function
+ * Set option value to cache or database
+ * 
+ * @param string $key Option name
+ * @param mixed $value Option value
+ * @param string $lang Language code
+ */
+if(!function_exists('option_set')) {
+    function option_set($key, $value, $lang = '') {
+        static $optionsModel;
+        if (empty($optionsModel)){
+            $optionsModel = new \App\Models\OptionsModel();
+        }
+        option_setcache($key, $value, $lang);
+        if (is_array($value)){
+            $value = json_encode($value);
+        }
+        if (!$optionsModel->getByName($key)){
+            // Create new Option at Database
+            $optional = [
+                "type" => "Textarea",
+                "label" => $key,
+                "field_name" => $key,
+                "description" => $key,
+                "required" => false,
+                "unique" => false,
+                "indexdb" => false,
+                "visibility" => false,
+                "css_class" => "",
+                "placeholder" => "",
+                "default_value" => "",
+                "order" => 2,
+                "collapsed" => false,
+                "width_value" => 100,
+                "width_unit" => "%",
+                "position" => "left",
+                "option_group" => "system",
+                "status" => true,
+                "save_file" => false,
+                "synchronous" => true,
+                "min" => null,
+                "max" => null,
+                "rows" => null
+            ];
+            $addItem = array(
+                'label' => $key,
+                'type' => 'Textarea',
+                'name' => $key,
+                'description' => $key,
+                'status' => 'active',
+                'value' => $value,
+                'valuelang' => '',
+                'optional' => json_encode($optional),
+                'created_at' => _DateTime(),
+                'updated_at' => _DateTime()
+            );
+            $optionsModel->addOptions($addItem);
+        }
+        return $optionsModel->setValuebyName([$key => $value]);
     }
 }
 
@@ -508,7 +571,7 @@ function _bytes($size) {
 if (!function_exists('clear_cache')) {
     function clear_cache($url = '') {
         try {
-            $cache_path = PATH_ROOT . '/writeable/cache/';
+            $cache_path = PATH_WRITE . 'cache/';
 
             if (empty($url)) {
                 // Delete all subdirectories in cache/
@@ -529,7 +592,7 @@ if (!function_exists('clear_cache')) {
             $path = isset($parts[1]) ? '/' . $parts[1] : '';
 
             // Cache directory path
-            $dirPath = rtrim(PATH_ROOT . '/writeable/cache/' . $host . $path, '/');
+            $dirPath = rtrim(PATH_WRITE . 'cache/' . $host . $path, '/');
             $file1 = $dirPath . '/index-https.html';
             $file2 = $dirPath . '/index-https.html_gzip';
 
@@ -740,8 +803,6 @@ if(!function_exists('dump')) {
     }
 }
 
-
-
 if (!function_exists('_json_decode')) {
     /**
      * Safely decode JSON data
@@ -755,5 +816,15 @@ if (!function_exists('_json_decode')) {
         }
         $decoded = json_decode((string)$data, true);
         return is_array($decoded) ? $decoded : $default;
+    }
+}
+
+function _cors(){
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Authorization,Accept,Content-Type,Origin,User-Agent,Referer,DNT,Cache-Control,X-Mx-ReqToken,Keep-Alive,X-Requested-With,X-CSRF-Token');
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
     }
 }

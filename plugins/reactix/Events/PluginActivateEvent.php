@@ -1,9 +1,6 @@
 <?php
 
 namespace Plugins\Reactix\Events;
-
-use App\Models\PosttypeModel;
-
 class PluginActivateEvent
 {
     protected $payload;

@@ -177,7 +177,7 @@ return [
                     'type' => 'flat_rate',
                     'description' => 'Shipping by Province is a method of shipping that calculates rates based on the province of the sender and recipient.',
                     'enabled' => true,
-                    'countries' => ['VN'],
+                    'countries' => ['VN',
                     'province' => [
                         'hanoi' => 10,
                         'hochiminh' => 20,

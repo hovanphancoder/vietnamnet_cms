@@ -5,7 +5,7 @@ use System\Libraries\Logger;
 
 class OptionsModel extends BaseModel {
 
-    protected $table = 'fast_options';
+    protected $table = APP_PREFIX.'options';
 
     // Columns that are fillable (can be added or modified)
     protected $fillable = ['label', 'type', 'name', 'description', 'status', 'value', 'valuelang', 'optional'];

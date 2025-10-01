@@ -16,6 +16,10 @@ class RolesMiddleware {
         // Get permissions from session
         if (!\System\Libraries\Session::has('user_id')) {
             // If not logged in, redirect to login page
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                echo json_encode(['success' => false, 'message' => 'Login Required', 'errors' => ['roles_middleware'=>['Login Required']]]);
+                exit();
+            }
             redirect(base_url('account/login'));
         }
         $user_id = \System\Libraries\Session::get('user_id');
@@ -27,6 +31,10 @@ class RolesMiddleware {
                 // Allow to continue if has permission
                 return $next($request);
             }
+        }
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            echo json_encode(['success' => false, 'message' => 'You not have permission access this page!', 'errors' => ['roles_middleware'=>['You not have permission access this page!']]]);
+            exit();
         }
         // If no permission, show error message
         throw new \System\Core\AppException('You not have permission access this page!<span style="display:none">'.$controller.'->'.$action.'()</span>', 403, null, 403);

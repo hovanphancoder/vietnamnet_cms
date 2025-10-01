@@ -41,20 +41,20 @@ class VariantManager
             $filename = basename($path);
             $baseName = pathinfo($filename, PATHINFO_FILENAME);
             $extension = pathinfo($filename, PATHINFO_EXTENSION);
-            
+
             $variants = [];
-            
+
             // Check if original file exists
             if (file_exists($path)) {
                 $variants[] = $path;
             }
-            
+
             // Check if WebP version of original exists
             $webpPath = $path . '.webp';
             if (file_exists($webpPath)) {
                 $variants[] = $webpPath;
             }
-            
+
             // Scan directory for all variants with the same base name
             if (is_dir($dir)) {
                 $files = scandir($dir);
@@ -62,50 +62,64 @@ class VariantManager
                     if ($file === '.' || $file === '..') {
                         continue;
                     }
-                    
+
                     $filePath = $dir . '/' . $file;
-                    
+
                     // Check if this is a variant of our base file
-                    // Pattern: baseName_size.extension or baseName_size.extension.webp
-                    if (preg_match('/^' . preg_quote($baseName, '/') . '_(\d+x\d+)\.' . preg_quote($extension, '/') . '(\.webp)?$/', $file)) {
+                    // Pattern: baseName_anything.extension or baseName_anything.extension.webp
+                    if (preg_match('/^' . preg_quote($baseName, '/') . '_.*\.' . preg_quote($extension, '/') . '(\.webp)?$/', $file)) {
                         $variants[] = $filePath;
                     }
                 }
             }
-            
+
             return $variants;
         } else {
             // File info array from database
             if (!is_array($fileInfo) || !isset($fileInfo['path'])) {
                 return [];
             }
-            
+
             $path = $fileInfo['path'];
             $type = $fileInfo['type'] ?? 'jpg';
-            $resize = $fileInfo['resize'] ?? '';
-            
+
+            // Use the same logic as string path to scan folder for actual variants
+            $dir = dirname($path);
+            $filename = basename($path);
+            $baseName = pathinfo($filename, PATHINFO_FILENAME);
+            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
             $variants = [];
-            
-            // Add original file
-            $variants[] = $path;
-            
-            // Add WebP version of original
-            $variants[] = $path . '.webp';
-            
-            // Add resize variants if any
-            if (!empty($resize)) {
-                $resizes = explode(';', $resize);
-                $basePath = self::removeExtension($path);
-                
-                foreach ($resizes as $size) {
-                    $resizePath = $basePath . '_' . $size . '.' . $type;
-                    $variants[] = $resizePath;
-                    
-                    // Add WebP version of resize
-                    $variants[] = $resizePath . '.webp';
+
+            // Check if original file exists
+            if (file_exists($path)) {
+                $variants[] = $path;
+            }
+
+            // Check if WebP version of original exists
+            $webpPath = $path . '.webp';
+            if (file_exists($webpPath)) {
+                $variants[] = $webpPath;
+            }
+
+            // Scan directory for all variants with the same base name
+            if (is_dir($dir)) {
+                $files = scandir($dir);
+                foreach ($files as $file) {
+                    if ($file === '.' || $file === '..') {
+                        continue;
+                    }
+
+                    $filePath = $dir . '/' . $file;
+
+                    // Check if this is a variant of our base file
+                    // Pattern: baseName_anything.extension or baseName_anything.extension.webp
+                    if (preg_match('/^' . preg_quote($baseName, '/') . '_.*\.' . preg_quote($extension, '/') . '(\.webp)?$/', $file)) {
+                        $variants[] = $filePath;
+                    }
                 }
             }
-            
+
             return $variants;
         }
     }
@@ -116,10 +130,11 @@ class VariantManager
      * @param string $filePath File path
      * @return string Path without extension
      */
-    private static function removeExtension($filePath) {
+    private static function removeExtension($filePath)
+    {
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
         if ($ext !== '') {
-            return substr($filePath, 0, -(strlen($ext) + 1));
+            return substr($filePath, 0, - (strlen($ext) + 1));
         }
         return $filePath;
     }

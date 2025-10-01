@@ -204,36 +204,16 @@ class SidebarBlock extends BaseBlock
                 [
                     "id" => "plugins",
                     "label" => Flang::_e("plugins"),
-                    "href" => admin_url('plugins'),
+                    "href" => admin_url('libraries/plugins'),
                     "icon" => 'puzzle',
                     "children" => []
                 ],
                 [
                     "id" => "themes",
                     "label" => Flang::_e("themes"),
-                    "href" => admin_url('themes'),
+                    "href" => admin_url('libraries/themes'),
                     "icon" => 'monitor',
                     "children" => []
-                ],
-                [
-                    "id" => "settings",
-                    "label" => Flang::_e("site settings"),
-                    "href" => "#",
-                    "icon" => 'settings',
-                    "children" => [
-                        [
-                            "id" => "list-settings",
-                            "label" => Flang::_e("site settings"),
-                            "href" => admin_url('options/index'),
-                            "icon" => 'settings'
-                        ],
-                        [
-                            "id" => "add-setting",
-                            "label" => Flang::_e("add option"),
-                            "href" => admin_url('options/add'),
-                            "icon" => 'plus'
-                        ]
-                    ]
                 ],
                 [
                     "id" => "languages",
@@ -254,52 +234,74 @@ class SidebarBlock extends BaseBlock
                             "icon" => 'plus'
                         ]
                     ]
+                ],
+                [
+                    "id" => "settings",
+                    "label" => Flang::_e("site settings"),
+                    "href" => "#",
+                    "icon" => 'settings',
+                    "children" => [
+                        [
+                            "id" => "list-settings",
+                            "label" => Flang::_e("site settings"),
+                            "href" => admin_url('options/index'),
+                            "icon" => 'settings'
+                        ],
+                        [
+                            "id" => "add-setting",
+                            "label" => Flang::_e("add option"),
+                            "href" => admin_url('options/add'),
+                            "icon" => 'plus'
+                        ]
+                    ]
                 ]
+                
             ]
         ];
 
         // Development Group - Lấy menu từ plugins active
-		$childs_development = [
-			[
-				"id" => "database",
+        $childs_development = [];
+        if (config('backups')) {
+            $childs_development[] = [
+				"id" => "backups",
 				"label" => Flang::_e("backup & restore"),
-				"href" => admin_url('database/index'),
+				"href" => admin_url('backups/index'),
 				"icon" => 'database',
 				"children" => [
 					[
-						"id" => "database-settings",
+						"id" => "backups-settings",
 						"label" => Flang::_e("setting backup"),
-						"href" => admin_url('database/settings'),
+						"href" => admin_url('backups/settings'),
 						"icon" => 'settings'
 					],
 					[
-						"id" => "database-index",
+						"id" => "backups-index",
 						"label" => Flang::_e("list backups"),
-						"href" => admin_url('database/index'),
+						"href" => admin_url('backups/index'),
 						"icon" => 'database'
 					]
 				]
-			],
-			[
-				"id" => "restful",
-				"label" => Flang::_e("api restful"),
-				"href" => admin_url('restful/index'),
-				"icon" => 'code',
-				"children" => [
-					[
-						"id" => "cms-documentation",
-						"label" => Flang::_e("documentation"),
-						"href" => 'https://docs.cmsfullform.com',
-						"icon" => 'file-text'
-					],
-					[
-						"id" => "restful-index",
-						"label" => Flang::_e("API Keys"),
-						"href" => admin_url('restful/index'),
-						"icon" => 'key'
-					]
-				]
-			]	
+            ];
+        }
+		$childs_development[] = [
+            "id" => "restful",
+            "label" => Flang::_e("api restful"),
+            "href" => admin_url('restful/index'),
+            "icon" => 'code',
+            "children" => [
+                [
+                    "id" => "cms-documentation",
+                    "label" => Flang::_e("documentation"),
+                    "href" => 'https://docs.cmsfullform.com',
+                    "icon" => 'file-text'
+                ],
+                [
+                    "id" => "restful-index",
+                    "label" => Flang::_e("API Keys"),
+                    "href" => admin_url('restful/index'),
+                    "icon" => 'key'
+                ]
+            ]
 		];
 		$childs_development = array_merge($childs_development, $this->loadPluginMenus() );
         $developmentGroup = [

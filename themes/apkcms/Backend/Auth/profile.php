@@ -8,8 +8,6 @@ if (Session::has_flash('success')){
 if (Session::has_flash('error')){
     $error = Session::flash('error');
 }
-
-// print_r($me);
 ?>
 
 <div class="page-wrapper">

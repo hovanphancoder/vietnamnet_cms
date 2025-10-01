@@ -184,25 +184,27 @@ class Bootstrap {
             \System\Libraries\Monitor::mark('Application_Controller');
         }
         $middleware->handle($route, function () use ($route) {
-        // Get controller and method information from matched route
+            // Get controller and method information from matched route
             $controllerClass = $route['controller'];
             $action = str_replace('-', '_', $route['action']);
             $params = $route['params'];
             define('APP_ROUTE', $route);
             
-            // Check if controller exists
-            if (!class_exists($controllerClass)) {
-                throw new AppException("Controller {$controllerClass} not found.", 404, null, 404);
+            try{
+                // Check if controller exists
+                if (!class_exists($controllerClass)) {
+                    throw new AppException("Controller {$controllerClass} not found.", 404, null, 404);
+                }
+                // Initialize controller object
+                $controller = new $controllerClass();
+                // Check if action exists
+                if (!method_exists($controller, $action)) {
+                    throw new AppException("Action {$action} not found in {$controllerClass} Controller.", 404, null, 404);
+                }
+                call_user_func_array([$controller, $action], $params);
+            }catch(\Exception $e){
+                throw new AppException($e->getMessage(), 500, null, 500);
             }
-            // Initialize controller object
-            $controller = new $controllerClass();
-            // Check if action exists
-            if (!method_exists($controller, $action)) {
-                throw new AppException("Action {$action} not found in {$controllerClass} Controller.", 404, null, 404);
-            }
-
-            // Call controller and action with parameters
-            call_user_func_array([$controller, $action], $params);
         });
         if (APP_DEBUGBAR){
             \System\Libraries\Monitor::stop('Application_Controller');

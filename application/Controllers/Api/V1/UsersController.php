@@ -20,7 +20,7 @@ class UsersController extends ApiController {
      // Get user details
     public function info(){
         // get header all data 
-        $user = $this->_authentication();
+        $user = $this->_auth();
         unset($user['password']);
         unset($user['location']);
         unset($user['permissions']);
@@ -56,7 +56,7 @@ class UsersController extends ApiController {
                 $personal['galleries'] = [];
             } else {
                 foreach ($personal['galleries'] as $photoUrl) {
-                    $filePath = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/' . $photoUrl;
+                    $filePath = PATH_WRITE. $photoUrl;
                     if (file_exists($filePath)) {
                         if (!unlink($filePath)) {
                             $this->error('Không thể xóa hình ảnh cũ: ' . $photoUrl, [], 500);
@@ -81,7 +81,7 @@ class UsersController extends ApiController {
                         
                         if (in_array($fileExtension, $allowedfileExtensions)) {
                             $newFileName = pathinfo($fileName, PATHINFO_FILENAME) . '_' . time() . '_' . uniqid() . '.webp';
-                            $base_dir = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/uploads/users/';
+                            $base_dir = PATH_WRITE . 'uploads/users/';
                             
                             if ($base_dir === false) {
                                 $this->error('Đường dẫn thư mục tải lên không hợp lệ.', [], 500);
@@ -142,13 +142,13 @@ class UsersController extends ApiController {
                     }
                 }
             }
-            $input['updated_at'] = DateTime();
+            $input['updated_at'] = _DateTime();
             $input['online'] = 1;
             $input['personal'] = json_encode($personal, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
             $result = $this->usersModel->updateUser($me['id'], $input);
             if ($result) {
-                $user = $this->_authentication();
+                $user = $this->_auth();
                 unset($user['password']);
                 unset($user['location']);
                 unset($user['permissions']);
@@ -244,7 +244,7 @@ class UsersController extends ApiController {
                 $allowedfileExtensions = ['jpg', 'jpeg', 'png', 'gif'];
                 if (in_array($fileExtension, $allowedfileExtensions)) {
                     $newFileName = pathinfo('avatar', PATHINFO_FILENAME) . '.webp';
-                    $base_dir = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/uploads/users/';
+                    $base_dir = PATH_WRITE. 'uploads/users/';
                     if ($base_dir === false) {
                         $this->error(Flang::_e('Invalid_upload_folder_path'), [], 500);
                         exit;
@@ -300,7 +300,7 @@ class UsersController extends ApiController {
                 $avatarPath = $me['avatar'];
             } else {
                 if(!empty($me['avatar'])) {
-                    $filePath = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/' . $me['avatar'];
+                    $filePath = PATH_WRITE . $me['avatar'];
                     if (file_exists($filePath)) {
                         if (!unlink($filePath)) {
                             $this->error('Không thể xóa hình ảnh cũ: ' . $me['avatar'], [], 500);
@@ -318,7 +318,7 @@ class UsersController extends ApiController {
                 $personal['galleries'] = [];
             } else {
                 foreach ($personal['galleries'] as $photoUrl) {
-                    $filePath = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/' . $photoUrl;
+                    $filePath = PATH_WRITE . $photoUrl;
                     if(in_array($filePath , $input['galleries'])) {
                         continue;
                     }
@@ -345,7 +345,7 @@ class UsersController extends ApiController {
                         
                         if (in_array($fileExtension, $allowedfileExtensions)) {
                             $newFileName = pathinfo($fileName, PATHINFO_FILENAME) . '_' . time() . '_' . uniqid() . '.webp';
-                            $base_dir = PATH_ROOT . DIRECTORY_SEPARATOR . 'writeable/uploads/users/';
+                            $base_dir = PATH_WRITE . 'uploads/users/';
                             
                             if ($base_dir === false) {
                                 $this->error('Đường dẫn thư mục tải lên không hợp lệ.', [], 500);
@@ -456,7 +456,7 @@ class UsersController extends ApiController {
             $input['online'] = 1;
             
             $input['personal'] = json_encode($personal, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            $input['updated_at'] = DateTime();
+            $input['updated_at'] = _DateTime();
                 
             $validator = new Validate();
             if (!$validator->check($input, $rules)) {
@@ -486,7 +486,7 @@ class UsersController extends ApiController {
                 if (empty($errors)) {
                     $result = $this->usersModel->updateUser($me['id'], $input);
                     if ($result) {
-                        $user = $this->_authentication();
+                        $user = $this->_auth();
                         unset($user['password']);
                         unset($user['location']);
                         unset($user['permissions']);
@@ -524,7 +524,7 @@ class UsersController extends ApiController {
 
     public function location() {
         try {
-            $user = $this->_authentication();
+            $user = $this->_auth();
             if (HAS_POST('location')) {
                 $location = S_POST('location') ?? '';
                 $parts = explode('__', $location);
@@ -544,7 +544,7 @@ class UsersController extends ApiController {
                         'params' => []
                     ]
                 ];
-                $data['updated_at'] = DateTime();
+                $data['updated_at'] = _DateTime();
                 $data['online'] = 1;
                 $updatedUser = $this->usersModel->updateUser($user['id'], $data);
                 return $this->success(['message' => 'Location updated successfully', 'updatedUser' => $updatedUser]);
@@ -555,7 +555,7 @@ class UsersController extends ApiController {
     }
 
     public function favorites() {
-        $user = $this->_authentication();
+        $user = $this->_auth();
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->_favorites_post($user);
         } else {
@@ -579,10 +579,10 @@ class UsersController extends ApiController {
                     $input = [
                         'personal' => json_encode($personal)
                     ];
-                    $input['updated_at'] = DateTime();
+                    $input['updated_at'] = _DateTime();
                     $result = $this->usersModel->updateUser($me['id'], $input);
                     if ($result) {
-                        $user = $this->_authentication();
+                        $user = $this->_auth();
                             unset($user['password']);
                             unset($user['location']);
                             unset($user['permissions']);
@@ -783,7 +783,7 @@ class UsersController extends ApiController {
 
     // token device
     public function fcmtoken() {
-        $user = $this->_authentication();
+        $user = $this->_auth();
         if(HAS_POST('fcm_token') && HAS_POST('device_id')) {
             $fcm_token = S_POST('fcm_token') ?? '';
             $device_id = S_POST('device_id') ?? '';
@@ -796,7 +796,7 @@ class UsersController extends ApiController {
             $input = [
                 'optional' => json_encode($optionals)
             ];
-            $input['updated_at'] = DateTime();
+            $input['updated_at'] = _DateTime();
             $result = $this->usersModel->updateUser($user['id'], $input);
             if(!$result) {
                 echo $this->error(Flang::_e('User_updated_error'), [], 404);
@@ -807,7 +807,7 @@ class UsersController extends ApiController {
                 
             ];
             $result = $this->get_success($data, Flang::_e('update_fcm_token_success'));
-            print_r(json_encode($result));
+           echo json_encode($result);
         } else {
             echo  $this->error(Flang::_e('Method_not_allowed'), [], 405);
         }

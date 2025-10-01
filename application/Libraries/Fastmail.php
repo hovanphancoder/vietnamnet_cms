@@ -4,6 +4,7 @@ namespace App\Libraries;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use System\Libraries\Render;
 
 class Fastmail
 {
@@ -15,7 +16,7 @@ class Fastmail
     {
         // Get email config from config file if no custom config provided
         $option_email = option('email');
-        $option_email = is_array($option_email) ? $option_email : json_decode($option_email, true) ?? [];
+        $option_email = _json_decode($option_email);
         $option_email = array_column($option_email, 'email_value', 'email_key');
         $this->config = !empty($config) ? $config : $option_email;
         $this->theme = config('theme'); // Get current theme from config
@@ -49,77 +50,50 @@ class Fastmail
     }
 
     /**
-     * Send email with content
+     * Send email using HTML template from views
      *
      * @param string $to Recipient email address
      * @param string $subject Email subject
-     * @param string $content Email content (HTML or plain text)
-     * @param array $options Additional options
-     * 
-     * Options array can contain:
-     * - 'cc' => array() - CC recipients
-     * - 'bcc' => array() - BCC recipients  
-     * - 'attachments' => array() - File paths to attach
-     * - 'isHtml' => bool - Whether content is HTML (default: true)
-     * - 'smtpDebug' => int - SMTP debug level (0-4, default: 0)
-     * 
-     * Example usage:
-     * $mail->send('user@example.com', 'Test Subject', '<h1>Hello World</h1>', [
-     *     'cc' => ['cc@example.com'],
-     *     'bcc' => ['bcc@example.com'],
-     *     'attachments' => ['/path/to/file.pdf'],
-     *     'isHtml' => true,
-     *     'smtpDebug' => 0
-     * ]);
-     * 
+     * @param string $template Template file name (without .php extension)
+     * @param array $data Data array passed to template
+     * @param array $options Additional options (cc, bcc, attachments, isHtml)
      * @return bool Returns true if sent successfully, false if failed
      */
-    public function send($to, $subject, $content, $options = [])
+    public function send($to, $subject, $template, $data = [], $options = [])
     {
         try {
-            // Set default options for common configurations
-            $defaultOptions = [
-                'isHtml' => true,
-                'smtpDebug' => 0,
-                'cc' => [],
-                'bcc' => [],
-                'attachments' => []
-            ];
-            
-            // Merge user options with defaults
-            $options = array_merge($defaultOptions, $options);
-            
             $this->mailer->clearAllRecipients(); // Clear all recipients before adding new
             $this->mailer->addAddress($to);
 
             // Add CC if exists
-            if (!empty($options['cc']) && is_array($options['cc'])) {
+            if (isset($options['cc']) && is_array($options['cc'])) {
                 foreach ($options['cc'] as $cc) {
                     $this->mailer->addCC($cc);
                 }
             }
 
             // Add BCC if exists
-            if (!empty($options['bcc']) && is_array($options['bcc'])) {
+            if (isset($options['bcc']) && is_array($options['bcc'])) {
                 foreach ($options['bcc'] as $bcc) {
                     $this->mailer->addBCC($bcc);
                 }
             }
 
             // Add attachments if exists
-            if (!empty($options['attachments']) && is_array($options['attachments'])) {
+            if (isset($options['attachments']) && is_array($options['attachments'])) {
                 foreach ($options['attachments'] as $file) {
                     $this->mailer->addAttachment($file);
                 }
             }
 
-            // Set SMTP debug level
-            $this->mailer->SMTPDebug = $options['smtpDebug'];
+            // Get HTML content from template
+            $body = $this->render($template, $data);
 
             // Set subject and content
-            $this->mailer->isHTML($options['isHtml']);
+            $this->mailer->isHTML($options['isHtml'] ?? true);
             $this->mailer->Subject = $subject;
-            $this->mailer->Body = $content;
+            $this->mailer->Body = $body;
+            $this->mailer->SMTPDebug = 0; // Tắt debug để không hiển thị lỗi SMTP
             // Send email
             return $this->mailer->send();
         } catch (Exception $e) {
@@ -129,4 +103,16 @@ class Fastmail
         }
     }
 
+    /**
+     * Render HTML template for email
+     *
+     * @param string $template Template file name (without .php extension)
+     * @param array $data Data array passed to template
+     * @return string Rendered HTML content
+     */
+    protected function render($template, $data = [])
+    {
+        // Use Render to get content from template
+        return Render::component('Common/Email/'.$template, $data);
+    }
 }

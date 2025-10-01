@@ -8,6 +8,7 @@ use System\Drivers\Image\ImageManager;
 use System\Libraries\Logger;
 use System\Libraries\Upload\SecurityManager;
 use System\Libraries\Upload\ChunkManager;
+use System\Libraries\Upload\VariantManager;
 
 /**
  * UploadManager - Handle file uploads with validation, security, and chunk support
@@ -25,11 +26,14 @@ use System\Libraries\Upload\ChunkManager;
 class UploadManager
 {
     /**
-     * Upload a file or multiple files, create a subfolder for each file, and optionally save to DB.
+     * Upload a file or multiple files, create a subfolder for each image, and optionally save to DB.
      * 
      * Supports single file or multiple files upload from $_FILES array.
-     * Automatically creates subfolder for each file to avoid conflicts.
+     * For images: automatically creates subfolder with sanitized filename (without extension) to contain the image and its variants.
+     * For non-images: uploads directly to the specified folder without subfolder.
      * Applies security measures (SVG sanitization, EXIF stripping).
+     * Uses unique naming to prevent file overwrites when uploading duplicate filenames.
+     * When overwrite=true: deletes existing files and replaces with new ones using timestamp-based naming to avoid cache issues.
      * 
      * @param array $fileArr File array from $_FILES or single file array
      *                        Structure: ['name' => string, 'type' => string, 'tmp_name' => string, 
@@ -39,13 +43,14 @@ class UploadManager
      *                        - 'resizes' => array: Image resize options
      *                        - 'watermark' => array: Watermark options
      *                        - 'webp' => bool: Convert to WebP
+     *                        - 'overwrite' => bool: Overwrite existing files with timestamp naming (default: false)
      * @param bool $save_db Whether to save file info to DB (default: true)
      * 
      * @return array Response array with structure:
      *               - success: bool - Upload success status
      *               - error: string|null - Error message if any
      *               - data: array|array[] - File info array or array of file info arrays
-     *                 Structure: ['name' => string, 'path' => string, 'size' => int, 
+     *                 Structure: ['name' => string, 'path' => string, 'finalPath' => string, 'size' => int, 
      *                            'type' => string, 'folder' => string, 'base' => string,
      *                            'resize' => string, 'db' => array|null]
      * 
@@ -55,7 +60,7 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         try {
             // Handle multiple files
             if (self::isMultiple($fileArr)) {
@@ -150,7 +155,7 @@ class UploadManager
      *               - success: bool - Upload success status
      *               - error: string|null - Error message if any
      *               - data: array|null - File info if successful
-     *                 Structure: ['name' => string, 'path' => string, 'size' => int, 
+     *                 Structure: ['name' => string, 'path' => string, 'finalPath' => string, 'size' => int, 
      *                            'type' => string, 'folder' => string, 'base' => string,
      *                            'resize' => string, 'db' => array|null]
      */
@@ -175,9 +180,6 @@ class UploadManager
         }
 
         // Step 4: Build result array
-        $config = config('files') ?? [];
-        $allowed_types = $config['allowed_types'] ?? ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
         $result = [
             'name'     => $moveResult['data']['finalName'],
             'finalPath' => $moveResult['data']['finalPath'], // Keep original path for optimization
@@ -247,9 +249,12 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $config = config('files') ?? [];
         $allowed_types = $config['allowed_types'] ?? ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if (!empty($options['allowed_types'])) {
+            $allowed_types = array_merge($allowed_types, $options['allowed_types']);
+        }
         $allowed_mimes = $config['allowed_mimes'] ?? [
             'jpg' => 'image/jpeg',
             'jpeg' => 'image/jpeg',
@@ -258,9 +263,13 @@ class UploadManager
             'webp' => 'image/webp',
             'svg' => 'image/svg+xml',
         ];
-
+        if (!empty($options['allowed_mimes'])) {
+            $allowed_mimes = array_merge($allowed_mimes, $options['allowed_mimes']);
+        }
         $max_file_size = ($options['is_upload_chunk'] ?? false) ? ($config['max_size_upload_chunks'] ?? 1 * 1024 * 1024 * 1024) : ($config['max_file_size'] ?? 10 * 1024 * 1024);
-
+        if (!empty($options['max_file_size'])) {
+            $max_file_size = $options['max_file_size'];
+        }
         $error = $fileArr['error'] ?? UPLOAD_ERR_NO_FILE;
         $size = $fileArr['size'] ?? 0;
         $tmp = $fileArr['tmp_name'] ?? '';
@@ -378,7 +387,8 @@ class UploadManager
      * Create upload directory structure
      * 
      * Creates the target directory structure for file upload.
-     * Generates unique subfolder names to avoid conflicts.
+     * For images: creates subfolder with filename (without extension) to contain the image and its variants.
+     * For non-images: uploads directly to the specified folder without subfolder.
      * 
      * @param array $fileArr File array with name for directory creation
      *                        Structure: ['name' => string, ...]
@@ -395,6 +405,7 @@ class UploadManager
     {
         $name = $fileArr['name'] ?? '';
         $folder = $options['folder'] ?? '';
+        $overwrite = $options['overwrite'] ?? false;
 
         // Sanitize folder path
         $folder = Files::sanitizeFolderPath($folder);
@@ -404,19 +415,62 @@ class UploadManager
         $safeBase = substr(Files::sanitizeFileName($rawName), 0, 32);
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION) ?: 'jpg');
 
-        // Build paths - upload directly to folder without subfolder
-        $baseUpload = config('files')['path'] ?? 'writeable/uploads';
-        $baseFolderPath = PATH_ROOT . '/' . trim($baseUpload, '/\\') . '/' . ltrim($folder, '/\\');
-        $targetFolder = $baseFolderPath;
-        $dbFolder = $folder;
+        // Check if file is an image
+        $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true);
+
+        // Build paths
+        $baseUpload = PATH_WRITE . 'uploads';
+
+        // Check if baseUpload is already absolute path
+        if (Files::isAbsolutePath($baseUpload)) {
+            $baseFolderPath = $baseUpload . '/' . ltrim($folder, '/\\');
+        } else {
+            $baseFolderPath = PATH_ROOT . '/' . trim($baseUpload, '/\\') . '/' . ltrim($folder, '/\\');
+        }
+
+        // For images: create subfolder with filename (without extension)
+        if ($isImage) {
+            $filenameWithoutExt = pathinfo($name, PATHINFO_FILENAME);
+            $safeFilename = Files::sanitizeFileName($filenameWithoutExt);
+
+            if ($overwrite) {
+                // For overwrite mode: use exact folder name, don't generate unique
+                $targetFolder = $baseFolderPath . '/' . $safeFilename;
+                $dbFolder = $folder . '/' . $safeFilename;
+
+                // Delete existing folder and all its contents if it exists
+                if (is_dir($targetFolder)) {
+                    self::_deleteExistingFolder($targetFolder);
+                }
+            } else {
+                // Check if folder already exists and generate unique folder name if needed
+                $candidateFolder = $baseFolderPath . '/' . $safeFilename;
+                $i = 1;
+                while (is_dir($candidateFolder)) {
+                    $candidateFolder = $baseFolderPath . '/' . $safeFilename . '_' . $i++;
+                }
+
+                $targetFolder = $candidateFolder;
+                $dbFolder = $folder . '/' . basename($candidateFolder);
+            }
+        } else {
+            // For non-images: upload directly to folder without subfolder
+            $targetFolder = $baseFolderPath;
+            $dbFolder = $folder;
+
+            if ($overwrite) {
+                // For overwrite mode: delete existing files with same base name
+                self::_deleteExistingFilesByBaseName($targetFolder, $safeBase, $ext);
+            }
+        }
 
         // Create directory
         if (!is_dir($targetFolder) && !mkdir($targetFolder, 0777, true)) {
-                            return [
-                    'success' => false,
-                    'error' => Fastlang::_e('cannot create upload folder', $targetFolder),
-                    'data' => null
-                ];
+            return [
+                'success' => false,
+                'error' => Fastlang::_e('cannot create upload folder', $targetFolder),
+                'data' => null
+            ];
         }
 
         return [
@@ -425,7 +479,8 @@ class UploadManager
             'data' => [
                 'targetFolder' => $targetFolder,
                 'dbFolder' => $dbFolder,
-                'safeBase' => $safeBase
+                'safeBase' => $safeBase,
+                'overwrite' => $overwrite
             ]
         ];
     }
@@ -440,7 +495,7 @@ class UploadManager
      * @param array $fileArr File array with tmp_name and name
      *                        Structure: ['tmp_name' => string, 'name' => string, ...]
      * @param array $dirInfo Directory information from _createUploadDirectory
-     *                        Structure: ['targetFolder' => string, 'dbFolder' => string, 'safeBase' => string]
+     *                        Structure: ['targetFolder' => string, 'dbFolder' => string, 'safeBase' => string, 'overwrite' => bool]
      * 
      * @return array File move result with structure:
      *               - success: bool - File move success status
@@ -452,6 +507,7 @@ class UploadManager
     {
         $tmp = $fileArr['tmp_name'] ?? '';
         $name = $fileArr['name'] ?? '';
+        $overwrite = $dirInfo['overwrite'] ?? false;
 
         // Get extension from original filename
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -459,10 +515,22 @@ class UploadManager
         $safeBase = $dirInfo['safeBase'];
         $targetFolder = $dirInfo['targetFolder'];
 
-        // Use original name if available, otherwise use safeBase
+        // Use sanitized name for consistency with folder naming
         $originalName = pathinfo($name, PATHINFO_FILENAME);
-        $finalName = $originalName . '.' . $ext;
-        $finalPath = $targetFolder . '/' . $finalName;
+        $sanitizedName = Files::sanitizeFileName($originalName);
+
+        if ($overwrite) {
+            // For overwrite mode: add timestamp to filename to avoid cache issues
+            $timestamp = time();
+            $finalName = $sanitizedName . '-' . $timestamp . '.' . $ext;
+            $finalPath = $targetFolder . '/' . $finalName;
+            // Delete existing files with same base name (without timestamp)
+            self::_deleteExistingFilesByBaseName($targetFolder, $sanitizedName, $ext);
+        } else {
+            // Generate unique filename to avoid conflicts
+            $finalName = FileStorage::getUniqueName($targetFolder, $sanitizedName, $ext);
+            $finalPath = $targetFolder . '/' . $finalName;
+        }
 
         // Check if it's a real uploaded file or a regular file (for chunk uploads)
         $isUploadedFile = is_uploaded_file($tmp);
@@ -574,7 +642,7 @@ class UploadManager
      *               - success: bool - Assembly success status
      *               - error: string|null - Error message if any
      *               - data: array|null - File info if successful
-     *                 Structure: ['name' => string, 'path' => string, 'size' => int, 
+     *                 Structure: ['name' => string, 'path' => string, 'finalPath' => string, 'size' => int, 
      *                            'type' => string, 'folder' => string, 'base' => string,
      *                            'resize' => string, 'db' => array|null]
      */
@@ -582,7 +650,7 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $assembledFile = $tempDir . '/assembled_' . $filename;
 
         $handle = fopen($assembledFile, 'wb');
@@ -666,6 +734,118 @@ class UploadManager
     }
 
     /**
+     * Delete existing folder and all its contents for overwrite mode.
+     * 
+     * Recursively deletes a folder and all its contents when overwrite is enabled.
+     * Used to clean up existing files before replacing with new ones.
+     * 
+     * @param string $folderPath Path to the folder to delete
+     * @return bool True if deletion was successful, false otherwise
+     */
+    private static function _deleteExistingFolder($folderPath)
+    {
+        if (!is_dir($folderPath)) {
+            return true;
+        }
+
+        try {
+            $files = array_diff(scandir($folderPath), ['.', '..']);
+            foreach ($files as $file) {
+                $filePath = $folderPath . DIRECTORY_SEPARATOR . $file;
+                if (is_dir($filePath)) {
+                    self::_deleteExistingFolder($filePath);
+                } else {
+                    unlink($filePath);
+                }
+            }
+            return rmdir($folderPath);
+        } catch (\Exception $e) {
+            Logger::error('Failed to delete existing folder: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete existing file and all its variants for overwrite mode.
+     * 
+     * Deletes a file and all its associated variants (resizes, WebP, etc.)
+     * when overwrite is enabled.
+     * 
+     * @param string $filePath Path to the file to delete
+     * @return bool True if deletion was successful, false otherwise
+     */
+    private static function _deleteExistingFile($filePath)
+    {
+        if (!file_exists($filePath)) {
+            return true;
+        }
+
+        try {
+            // Get file info for variant deletion
+            $fileInfo = [
+                'path' => $filePath,
+                'type' => strtolower(pathinfo($filePath, PATHINFO_EXTENSION)),
+                'name' => basename($filePath)
+            ];
+
+            // Delete all variants first
+            $variants = VariantManager::getAllVariants($fileInfo);
+            foreach ($variants as $variantPath) {
+                if (file_exists($variantPath)) {
+                    unlink($variantPath);
+                }
+            }
+
+            // Delete main file
+            return unlink($filePath);
+        } catch (\Exception $e) {
+            Logger::error('Failed to delete existing file: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete existing files by base name for overwrite mode with timestamp.
+     * 
+     * Deletes all files that match the base name pattern (with or without timestamp)
+     * and all their variants. This ensures clean overwrite when using timestamp naming.
+     * 
+     * @param string $targetFolder Target folder to search in
+     * @param string $baseName Base name without extension
+     * @param string $ext File extension
+     * @return bool True if deletion was successful, false otherwise
+     */
+    private static function _deleteExistingFilesByBaseName($targetFolder, $baseName, $ext)
+    {
+        if (!is_dir($targetFolder)) {
+            return true;
+        }
+
+        try {
+            $files = scandir($targetFolder);
+
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..') {
+                    continue;
+                }
+
+                $filePath = $targetFolder . '/' . $file;
+
+                // Check if file matches base name pattern (with or without timestamp)
+                if (preg_match('/^' . preg_quote($baseName, '/') . '(?:-\d+)?\.' . preg_quote($ext, '/') . '$/', $file)) {
+                    // Delete the file and its variants
+                    self::_deleteExistingFile($filePath);
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Logger::error('Failed to delete existing files by base name: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Upload assembled file without validation (for chunk uploads).
      * 
      * Uploads assembled file from chunks without validation
@@ -684,7 +864,7 @@ class UploadManager
      *               - success: bool - Upload success status
      *               - error: string|null - Error message if any
      *               - data: array|null - File info if successful
-     *                 Structure: ['name' => string, 'path' => string, 'size' => int, 
+     *                 Structure: ['name' => string, 'path' => string, 'finalPath' => string, 'size' => int, 
      *                            'type' => string, 'folder' => string, 'base' => string,
      *                            'resize' => string, 'db' => array|null]
      */
@@ -705,9 +885,6 @@ class UploadManager
         }
 
         // Step 3: Build result array
-        $config = config('files') ?? [];
-        $allowed_types = $config['allowed_types'] ?? ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
         $result = [
             'name'     => $moveResult['data']['finalName'],
             'finalPath' => $moveResult['data']['finalPath'], // Keep original path for optimization
@@ -836,7 +1013,7 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $uploadId = $chunkInfo['uploadId'] ?? '';
         $chunk = $chunkInfo['chunk'] ?? 0;
         $chunks = $chunkInfo['chunks'] ?? 1;
@@ -851,7 +1028,8 @@ class UploadManager
         }
 
         // Create temporary directory for chunks using uploadId
-        $baseTempDir = PATH_ROOT . '/writeable/uploads/temp/chunks/';
+        $baseUpload = PATH_WRITE . 'uploads';
+        $baseTempDir = $baseUpload . '/temp/chunks/';
 
         if (!is_dir($baseTempDir)) {
             if (!mkdir($baseTempDir, 0755, true)) {
@@ -945,8 +1123,8 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
-        $baseTempDir = PATH_ROOT . '/writeable/uploads/temp/chunks/';
+
+        $baseTempDir = PATH_WRITE . 'uploads/temp/chunks/';
         $tempDir = $baseTempDir . $uploadId;
 
         if (!is_dir($tempDir)) {
@@ -1013,7 +1191,7 @@ class UploadManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $allowed_types = $options['allowed_types'] ?? ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $allowed_mimes = $options['allowed_mimes'] ?? [
             'jpg' => 'image/jpeg',
@@ -1033,7 +1211,7 @@ class UploadManager
         $convert_type = $options['type'] ?? null;
         $quality = isset($options['quality']) ? (int)$options['quality'] : 90;
 
-        $baseUpload = config('files')['path'] ?? 'writeable/uploads';
+        $baseUpload = PATH_WRITE . 'uploads';
         $baseFolderPath = PATH_ROOT . '/' . trim($baseUpload, '/\\') . '/' . ltrim($targetFolder, '/\\');
 
         if (!is_dir($baseFolderPath)) {

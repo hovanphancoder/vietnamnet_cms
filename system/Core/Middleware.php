@@ -3,7 +3,7 @@ namespace System\Core;
 
 class Middleware {
 
-    protected $Middleware = [];
+    protected $middleware = [];
     protected $current = 0;
 
     /**
@@ -12,7 +12,7 @@ class Middleware {
      * @param callable|string $middleware Middleware name or callback
      */
     public function add($middleware) {
-        $this->Middleware[] = $middleware;
+        $this->middleware[] = $middleware;
     }
 
     /**
@@ -24,8 +24,8 @@ class Middleware {
      */
     public function handle($request, $next) {
         // If there are still unexecuted middlewares
-        if ($this->current < count($this->Middleware)) {
-            $middleware = $this->Middleware[$this->current];
+        if ($this->current < count($this->middleware)) {
+            $middleware = $this->middleware[$this->current];
             $this->current++;
 
             // If middleware is callback - Execute current middleware

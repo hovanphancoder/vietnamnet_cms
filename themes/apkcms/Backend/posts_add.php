@@ -5,21 +5,23 @@ use System\Libraries\Render;
 use System\Libraries\Session;
 
 global $me_info;
-
 $current_user = $me_info['id'];
 $languages = isset($posttype['languages']) && is_string($posttype['languages']) ? json_decode($posttype['languages'], true) : [];
 $posttype_encode = json_encode($posttype, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 if(!empty($post)) {
     $post_encode = json_encode($post, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 } else {
-  $post_encode = '[]';
+    $post_encode = '[]';
 }
 // Lấy danh sách ngôn ngữ từ config
 $type = S_GET('type') ?? '';
 $isEdit = !empty($post);
-$langHasPost = []; // Có thể lấy từ database nếu cần
 $currentLang = S_GET('post_lang') ?? APP_LANG_DF;
-
+if($isEdit) {
+  $created_at = $post['created_at'];
+} else {
+  $created_at = '';
+}
 // Breadcrumbs
 $breadcrumbs = array(
   [
@@ -140,17 +142,20 @@ Render::block('Backend\Header', ['layout'=>'default', 'title' => $isEdit ? __('E
                 <?php 
                     endif;
                     endforeach; ?>
-            </div>
+            </div> 
 
             <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between p-4 pt-0">
                 <!-- STATUS & TIME SECTION -->
                 <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1 w-full lg:w-auto">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                        <label for="last-updated-input" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Update time') ?>:</label>
-                        <input id="last-updated-input" name="last_updated" type="datetime-local" 
+                        <label for="last-updated-input" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Created at') ?>:</label>
+                        <input id="last-updated-input" name="created_at" type="datetime-local" 
+                               step="1"
                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[180px]" 
-                               value="<?= isset($post['updated_at']) ? date('Y-m-d\TH:i', strtotime($post['updated_at'])) : '' ?>"
+                               value="<?= $created_at ?? '' ?>"
                                />
+                        <!-- lần cuối cập nhật text note nhỏ-->
+                        <p class="text-sm text-muted-foreground whitespace-nowrap"><?= __('Last updated') ?>: <?= $created_at ?? '' ?></p>
                     </div>
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                         <label for="post-status" class="text-sm font-medium text-muted-foreground whitespace-nowrap"><?= __('Post status') ?>:</label>
@@ -291,70 +296,8 @@ Render::block('Backend\Header', ['layout'=>'default', 'title' => $isEdit ? __('E
         // PHP sẽ truyền data vào window object
         window.ACF_DATA = {
         "lang": "<?= $currentLang ?>",
+        "ADMIN_URL": "<?= admin_url() ?>",
         "current_user": <?= $current_user; ?>,
-        "inputConfig": {
-          "border": {
-            "width": 1,
-            "style": "solid",
-            "color": "#e2e8f0",
-            "radius": 6
-          },
-          "background": {
-            "color": "#ffffff",
-            "hover": "#f8fafc",
-            "focus": "#ffffff"
-          },
-          "text": {
-            "color": "#1e293b",
-            "fontSize": 14,
-            "fontWeight": "normal"
-          },
-          "spacing": {
-            "padding": { "x": 12, "y": 8 },
-            "margin": { "x": 0, "y": 2 },
-            "fieldGap": 16
-          },
-          "size": {
-            "height": 38,
-            "minHeight": 38
-          },
-          "wrapper": {
-            "enabled": true,
-            "border": {
-              "width": 1,
-              "style": "solid",
-              "color": "#f1f5f9",
-              "radius": 6
-            },
-            "background": "#ffffff",
-            "padding": { "x": 12, "y": 12 },
-            "margin": { "x": 0, "y": 8 }
-          },
-          "label": {
-            "color": "#374151",
-            "fontSize": 14,
-            "fontWeight": "medium",
-            "marginBottom": 4
-          },
-          "effects": {
-            "transition": "all 0.2s ease",
-            "focusRing": true,
-            "hoverEnabled": true
-          },
-          "outerWrapper": {
-            "enabled": true,
-            "border": {
-              "width": 0,
-              "style": "solid",
-              "color": "transparent",
-              "radius": 8
-            },
-            "background": "#fafafa",
-            "padding": { "x": 0, "y": 0 },
-            "margin": { "x": 0, "y": 0 },
-            "shadow": true
-          }
-        },
         "postType": <?= $posttype_encode; ?>,
         "postEdit": <?= $post_encode; ?>
       };

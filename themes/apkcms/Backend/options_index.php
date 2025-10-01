@@ -153,6 +153,7 @@ Render::block('Backend\Header', ['layout'=>'default', 'title' => __('Website Set
         // PHP sẽ truyền data vào window object
         window.ACF_DATA = {
         "lang": "<?= APP_LANG ?>",
+        "ADMIN_URL": "<?= admin_url() ?>",
         "app_lang": <?= json_encode(array_keys(APP_LANGUAGES)) ?>,
         "post_lang": "<?= $post_lang ?>",
         "page": "options",

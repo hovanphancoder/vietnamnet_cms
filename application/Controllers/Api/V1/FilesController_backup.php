@@ -28,7 +28,7 @@ class FilesController extends ApiController
     {
         parent::__construct();
         // Verify User first.
-        // $this->user = $this->_authentication();
+        // $this->user = $this->_auth();
         $this->filesModel = new FilesModel();
         // set files properties
         $config_files = config('files');
@@ -216,8 +216,8 @@ class FilesController extends ApiController
             'size'       => $size,
             'type'       => $ext,
             'autoclean'  => 0,
-            'created_at' => DateTime(),
-            'updated_at' => DateTime(),
+            'created_at' => _DateTime(),
+            'updated_at' => _DateTime(),
             'resize'     => $resize,
         ];
         $id = $this->filesModel->addFile($addItem);
@@ -403,7 +403,6 @@ class FilesController extends ApiController
     private function _check_permission($method) {
         return true;
         $user = $this->user;
-        //print_r($method);
         $permissions = is_string($user['permissions']) ? json_decode($user['permissions'], true) : $user['permissions'];
         $permissions = $permissions['Api\Files'];
         if(in_array($method, $permissions)) {

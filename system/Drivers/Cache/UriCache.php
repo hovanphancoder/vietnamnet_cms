@@ -19,7 +19,7 @@ class UriCache {
         $this->headerType = $type;
 
         $option_cache = option('cache');
-        $option_cache = _json_decode($option_cache, true);
+        $option_cache = is_array($option_cache) ? $option_cache : json_decode($option_cache, true) ?? [];
         $option_cache = array_column($option_cache, 'cache_value', 'cache_key');
         if (isset($option_cache['cache_params']) && !empty($option_cache['cache_params'])) {
             $option_cache['cache_params'] = explode(',', $option_cache['cache_params']);

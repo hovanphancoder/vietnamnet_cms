@@ -42,7 +42,7 @@ class ChunkManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $uploadId = preg_replace('/[^A-Za-z0-9_-]/', '', $uploadId);
         $tempDir = self::getChunkDirectory($uploadId);
         if (!is_dir($tempDir)) {
@@ -75,7 +75,6 @@ class ChunkManager
 
         // Scan for uploaded chunks
         $chunkFiles = glob($tempDir . '/chunk_*');
-        // Logger::info($tempDir . '/chunk_*');
         // die;
         foreach ($chunkFiles as $chunkFile) {
             if (preg_match('/chunk_(\d+)$/', $chunkFile, $matches)) {
@@ -194,7 +193,7 @@ class ChunkManager
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $tempDir = self::getChunkDirectory($uploadId);
 
         if (!is_dir($tempDir)) {
@@ -545,7 +544,7 @@ class ChunkManager
      */
     private static function getBaseChunkDirectory()
     {
-        $baseDir = PATH_ROOT . '/writeable/uploads/temp/chunks';
+        $baseDir = PATH_WRITE . 'uploads/temp/chunks';
 
         if (!is_dir($baseDir)) {
             mkdir($baseDir, 0777, true);

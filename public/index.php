@@ -12,7 +12,7 @@ if (APP_DEBUGBAR){
 }
 
 // Read public/define.md to get more information about the path
-define('APP_VER', '2.1.0');
+define('APP_VER', '2.1.4');
 // Path to application root directory
 define('PATH_ROOT', realpath(__DIR__ . '/../'));
 define('PATH_APP', realpath(PATH_ROOT . '/application/').'/');
@@ -43,10 +43,11 @@ $themeName = config('theme');
 $themeName = $themeName['theme_name'] ?? 'default';
 define('APP_THEME_NAME', $themeName);
 define('APP_THEME_PATH', realpath(PATH_ROOT . '/themes/')."/$themeName/"); unset($themeName);
-
+$app_db = config('db');
+define('APP_PREFIX', $app_db['db_prefix'] ?? 'fast_');
+unset($app_db);
 // Load init Languages
 require_once PATH_ROOT . '/application/Config/Languages.php';
-
 // Load list Posttype active for languages APP_LANG
 $objectPosttypes = require PATH_ROOT . '/application/Config/Posttype.php';
 $listPosttypes = [];

@@ -4,7 +4,7 @@ use System\Core\BaseModel;
 
 class FilesModel extends BaseModel {
 
-    protected $table = 'fast_files';
+    protected $table = APP_PREFIX.'files';
 
     // Columns that are fillable (can be added or modified)
     protected $fillable = ['name', 'path', 'type', 'size', 'resize' ,  'autoclean', 'user_id' , 'created_at', 'updated_at'];

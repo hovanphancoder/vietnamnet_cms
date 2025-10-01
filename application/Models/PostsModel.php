@@ -7,11 +7,13 @@ use System\Core\BaseModel;
 class PostsModel extends BaseModel
 {
     protected $table;
+    protected $posttype_table;
     public $connected = false;
 
     public function __construct($posttype = '', $lang = null)
     {
         $this->table = posttype_name($posttype, $lang);
+        $this->posttype_table = APP_PREFIX.'posttype';
         if (!empty($this->table)){
             $this->connected = true;
         }
@@ -186,7 +188,7 @@ class PostsModel extends BaseModel
 
     public function getPostIdByTerm($posttype, $term_id = null, $lang = APP_LANG, $limit = 4)
     {
-        $tableRel = "fast_posts_{$posttype}_rel";
+        $tableRel = APP_PREFIX.'posts_' . $posttype . '_rel';
         $termWhere = '';
         if ($term_id !== null) {
             $termWhere = "rel_id = {$term_id} AND";
@@ -200,7 +202,7 @@ class PostsModel extends BaseModel
     public function getPostsByTerm($posttype, $term_id = null, $lang = APP_LANG, $limit = 4)
     {
         $postsTable    = $this->table;
-        $termsRelTable = "fast_posts_{$posttype}_rel";
+        $termsRelTable = APP_PREFIX.'posts_' . $posttype . '_rel';
         $sql = "SELECT p.id, p.title, p.slug, p.feature, p.like_count, p.rating_avg, p.views, p.created_at, p.updated_at
             FROM {$postsTable} p
             INNER JOIN {$termsRelTable} r ON p.id = r.post_id
@@ -245,9 +247,9 @@ class PostsModel extends BaseModel
         // Check and set table name
         if (empty($this->table)) {
             if ($lang == 'all') {
-                $this->table = "fast_posts_{$posttype}";
+                $this->table = APP_PREFIX.'posts_' . $posttype;
             } else {
-                $this->table = "fast_posts_{$posttype}_{$lang}";
+                $this->table = APP_PREFIX.'posts_' . $posttype . '_' . $lang;
             }
         }
 
@@ -255,9 +257,10 @@ class PostsModel extends BaseModel
         $fields = str_replace('*', 'p.*', $fields);
         $fields = str_replace(',', ', p.', $fields);
         // Main query to get data
+        $tableRel = APP_PREFIX.'posts_' . $posttype . '_rel';
         $sql = "SELECT {$fields}
             FROM {$this->table} p
-            INNER JOIN fast_posts_{$posttype}_rel rel ON p.id = rel.post_id
+            INNER JOIN {$tableRel} rel ON p.id = rel.post_id
             WHERE ";
         $conditions = [];
         $queryParams = [];
@@ -311,7 +314,7 @@ class PostsModel extends BaseModel
             return [];
         }
         $term_id = implode(',', array_map('intval', $terms));
-        $tableRel = "fast_posts_{$posttype}_rel";
+        $tableRel = APP_PREFIX.'posts_' . $posttype . '_rel';
         $sql = "SELECT post_id 
             FROM {$tableRel} 
             WHERE rel_id IN ({$term_id}) AND (lang = '{$lang}' OR lang = 'all') 
@@ -332,8 +335,9 @@ class PostsModel extends BaseModel
 
     public function getPostTermsByPostId($posttype, $post_id, $lang = APP_LANG)
     {
-        $table = "fast_posts_{$posttype}_rel";
-        $query = "SELECT * FROM fast_terms WHERE lang =? AND id_main IN (SELECT rel_id FROM {$table} WHERE post_id= ? AND (lang='all' OR lang= ? )) LIMIT 999;";
+        $table = APP_PREFIX."posts_{$posttype}_rel";
+        $termsTable = APP_PREFIX."terms";
+        $query = "SELECT * FROM {$termsTable} WHERE lang =? AND id_main IN (SELECT rel_id FROM {$table} WHERE post_id= ? AND (lang='all' OR lang= ? )) LIMIT 999;";
         $params = [$lang, $post_id, $lang];
         return $this->query($query, $params);
     }
@@ -520,6 +524,65 @@ class PostsModel extends BaseModel
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function getPostTypeBySlug($slug) {
+        try {
+            if (empty($slug) || !is_string($slug)) {
+                return false;
+                throw new \Exception("Invalid slug format");
+            }
+            return $this->row($this->posttype_table, 'slug = ?', [$slug]);
+        } catch (\PDOException $e) {
+            error_log("Database error in getPostTypeBySlug: " . $e->getMessage());
+            return null;
+        } catch (\Exception $e) {
+            error_log("Error in getPostTypeBySlug: " . $e->getMessage());
+            return null;
+        }
+    }
+
+
+        // Get all Post Types
+        public function getAllPostTypes()
+        {
+            try {
+                return $this->list($this->posttype_table);
+            } catch (\PDOException $e) {
+                error_log("Database error in getAllPostTypes: " . $e->getMessage());
+                return [];
+            } catch (\Exception $e) {
+                error_log("Error in getAllPostTypes: " . $e->getMessage());
+                return [];
+            }
+        }
+
+
+    // Update Post Type in posttype table
+    public function updatePostType($id, $data)
+    {
+        try {
+            if (!is_numeric($id)) {
+                return false;
+                throw new \Exception("Invalid ID format");
+            }
+
+            if (empty($data)) {
+                return false;
+                throw new \Exception("Empty data provided");
+            }
+
+            $data = $this->fill($data);
+            return $this->set($this->posttype_table, $data, 'id = ?', [$id]);
+        } catch (\PDOException $e) {
+            error_log("Database error in updatePostType: " . $e->getMessage());
+            return false;
+                throw new \Exception("Failed to update post type");
+        } catch (\Exception $e) {
+            error_log("Error in updatePostType: " . $e->getMessage());
+            return false;
+                throw new \Exception($e->getMessage());
+        }
     }
 
 

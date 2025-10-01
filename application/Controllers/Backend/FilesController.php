@@ -29,6 +29,7 @@ class FilesController extends BackendController {
     }
 
     public function timeline() {
+        define('APP_DEBUGBAR_SKIP', true);
         // try {
         //     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         //     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;

@@ -20,7 +20,7 @@ class LanguagesController extends BackendController {
     public function __construct()
     {
         parent::__construct();
-        load_helpers(['backend', 'language']);
+        load_helpers(['backend', 'languages']);
         Flang::load('Backend/Global');
         Flang::load('Backend/Languages');
         $this->languagesModel = new LanguagesModel();
@@ -106,7 +106,7 @@ class LanguagesController extends BackendController {
             
             $rules = [
                'name' =>  [
-                    'rules' => [Validate::length(3, 80)],
+                    'rules' => [Validate::length(2, 80)],
                     'messages' => [sprintf(__('length_error'), 3, 80)]
                ],
                'code' => [

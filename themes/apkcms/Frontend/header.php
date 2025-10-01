@@ -4,6 +4,7 @@ require_once __DIR__ . '/functions.php';
 
 // Use global categories initialized in functions.php
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
+
 ?>
 <!DOCTYPE html>
 <html lang="<?= lang_code() ?>">

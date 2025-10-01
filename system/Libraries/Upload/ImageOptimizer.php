@@ -15,7 +15,7 @@ use System\Libraries\Files;
  * - Process image optimization for uploaded files
  * - Resize images to multiple dimensions
  * - Add watermarks with positioning and opacity
- * - Convert images to WebP format
+ * - Convert images to WebP format (preserves original extension in filename)
  * - Strip EXIF metadata for security
  * - Support for JPEG, PNG, GIF, WebP formats
  * 
@@ -49,13 +49,19 @@ class ImageOptimizer
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         $config = config('files') ?? [];
         $allowed_types = $config['allowed_types'] ?? ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
         $isImage = in_array($fileInfo['type'], $config['images_types'] ?? $allowed_types, true);
 
-        if (!$isImage || (empty($options['resizes']) && empty($options['watermark']) && empty($options['webp']))) {
+        // Check if webp is enabled (either boolean true or object with config)
+        $webpEnabled = !empty($options['webp']) && (
+            $options['webp'] === true ||
+            (is_array($options['webp']) && !empty($options['webp']))
+        );
+
+        if (!$isImage || (empty($options['resizes']) && empty($options['watermark']) && !$webpEnabled)) {
             return [
                 'success' => true,
                 'error' => null,
@@ -70,9 +76,6 @@ class ImageOptimizer
         $filePath = $fileInfo['finalPath'] ?? $fileInfo['path'] ?? null;
 
         if (empty($filePath)) {
-            Logger::error('ImageOptimizer::processImageOptimization - File path not found: ' . json_encode([
-                'fileInfo' => $fileInfo
-            ]));
             return [
                 'success' => false,
                 'error' => Fastlang::_e('file path not found for optimization'),
@@ -121,7 +124,7 @@ class ImageOptimizer
      * Performs comprehensive image optimization including:
      * - Resize images to specified dimensions
      * - Add watermarks with custom positioning
-     * - Convert images to WebP format
+     * - Convert images to WebP format (preserves original extension in filename) (preserves original extension in filename)
      * - Strip EXIF metadata for security
      * - Handle multiple resize configurations
      * 
@@ -147,7 +150,7 @@ class ImageOptimizer
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         // Validate file path
         if (empty($filePath) || !is_string($filePath)) {
             Logger::error('ImageOptimizer::optimize - Invalid file path: ' . json_encode([
@@ -193,29 +196,17 @@ class ImageOptimizer
             $wm = null;
             if (!empty($options['watermark']['file'])) {
                 $wm = $options['watermark'];
-                
-                Logger::info('ImageOptimizer::optimize - Processing watermark: ' . json_encode([
-                    'watermark_config' => $wm,
-                    'source_file' => $filePath
-                ]));
-                
+
                 // Resolve watermark file path
                 $watermarkPath = $wm['file'];
                 if (!Files::isAbsolutePath($watermarkPath)) {
-                    $baseUpload = config('files')['path'] ?? 'writeable/uploads';
+                    $baseUpload = PATH_WRITE . 'uploads';
                     $watermarkPath = rtrim(PATH_ROOT, '/\\') . DIRECTORY_SEPARATOR . trim($baseUpload, '/\\') . DIRECTORY_SEPARATOR . ltrim($watermarkPath, '/\\');
                 }
-                
-                Logger::info('ImageOptimizer::optimize - Resolved watermark path: ' . json_encode([
-                    'original_path' => $wm['file'],
-                    'resolved_path' => $watermarkPath,
-                    'file_exists' => file_exists($watermarkPath)
-                ]));
-                
                 if (!file_exists($watermarkPath)) {
                     Logger::error('ImageOptimizer::optimize - Watermark file not found: ' . json_encode([
                         'watermarkPath' => $watermarkPath,
-                        'baseUpload' => config('files')['path'] ?? 'writeable/uploads',
+                        'baseUpload' => PATH_WRITE . 'uploads',
                         'rootPath' => PATH_ROOT
                     ]));
                     $watermarkPath = null; // Disable watermark if file not found
@@ -227,13 +218,13 @@ class ImageOptimizer
                     $w     = $config['width']  ?? 0;
                     $h     = $config['height'] ?? 0;
                     $cover = $config['cover']  ?? true;
-                    
+
                     if ($w > 0 && $h > 0) {
                         // Create a fresh image instance from original file to avoid watermark duplication
                         $img2 = ImageManager::load($filePath);
                         try {
                             $img2->resize($w, $h, true, $cover);
-                            
+
                             // Apply watermark to resized image if enabled
                             if ($watermarkPath) {
                                 $img2->addWatermark(
@@ -242,14 +233,7 @@ class ImageOptimizer
                                     $wm['padding']  ?? 10,
                                     $wm['opacity']  ?? 100
                                 );
-                                Logger::info('ImageOptimizer::optimize - Watermark applied to resize: ' . json_encode([
-                                    'size' => "{$w}x{$h}",
-                                    'position' => $wm['position'] ?? 'bottom-right',
-                                    'padding' => $wm['padding'] ?? 10,
-                                    'opacity' => $wm['opacity'] ?? 100
-                                ]));
                             }
-                            
                         } catch (\Exception $e) {
                             Logger::error('ImageOptimizer::optimize - Resize/Watermark failed: ' . json_encode([
                                 'error' => $e->getMessage(),
@@ -261,9 +245,11 @@ class ImageOptimizer
                         }
                         $name = "{$base}_{$w}x{$h}.{$ext}";
                         $path = "$dir/{$name}";
-                        
+
                         try {
-                            $img2->save($path, 90);
+                            // Use quality from config if available
+                            $quality = $options['jpg_quality'] ?? 90;
+                            $img2->save($path, $quality);
                         } catch (\Exception $e) {
                             Logger::error('ImageOptimizer::optimize - Save failed: ' . json_encode([
                                 'error' => $e->getMessage(),
@@ -273,13 +259,21 @@ class ImageOptimizer
                             continue;
                         }
                         $result['resizes'][] = $path;
-                        
+
                         if (!empty($options['webp'])) {
+                            // Handle webp as object with name and quality
+                            $webpConfig = $options['webp'];
+                            $webpQuality = 90; // Default quality
+
+                            if (is_array($webpConfig) && isset($webpConfig['q'])) {
+                                $webpQuality = (int)$webpConfig['q'];
+                            }
+
                             $webp = "$dir/{$base}_{$w}x{$h}.{$ext}.webp";
                             try {
                                 // Create a copy of the resized image for WebP conversion to preserve watermark
                                 $img2Webp = clone $img2;
-                                $img2Webp->convert('webp')->save($webp, 90);
+                                $img2Webp->convert('webp')->save($webp, $webpQuality);
                                 $result['webp'][] = $webp;
                                 $img2Webp->destroy();
                             } catch (\Exception $e) {
@@ -307,19 +301,8 @@ class ImageOptimizer
                         $wm['position'] ?? 'bottom-right',
                         $wm['padding']  ?? 10,
                         $wm['opacity']  ?? 100
-                    );
-                    Logger::info('ImageOptimizer::optimize - Watermark applied to original: ' . json_encode([
-                        'position' => $wm['position'] ?? 'bottom-right',
-                        'padding' => $wm['padding'] ?? 10,
-                        'opacity' => $wm['opacity'] ?? 100
-                    ]));
-                    
-                    // Save the original image with watermark
+                    ); // Save the original image with watermark
                     $img->save($filePath, 90);
-                    Logger::info('ImageOptimizer::optimize - Original image saved with watermark: ' . json_encode([
-                        'path' => $filePath
-                    ]));
-                    
                 } catch (\Exception $e) {
                     Logger::error('ImageOptimizer::optimize - Watermark application to original failed: ' . json_encode([
                         'error' => $e->getMessage(),
@@ -327,13 +310,22 @@ class ImageOptimizer
                     ]));
                 }
             }
-            
+
             if (!empty($options['webp'])) {
+                // Handle webp as object with name and quality
+                $webpConfig = $options['webp'];
+                $webpQuality = 90; // Default quality
+
+                if (is_array($webpConfig) && isset($webpConfig['q'])) {
+                    $webpQuality = (int)$webpConfig['q'];
+                }
+
                 $webpPath = "$filePath.webp";
+
                 try {
                     // Create a fresh image instance from original file for WebP conversion to avoid watermark duplication
                     $imgWebp = ImageManager::load($filePath);
-                    
+
                     // Apply watermark to WebP version if enabled
                     if ($watermarkPath) {
                         $imgWebp->addWatermark(
@@ -342,14 +334,9 @@ class ImageOptimizer
                             $wm['padding']  ?? 10,
                             $wm['opacity']  ?? 100
                         );
-                        Logger::info('ImageOptimizer::optimize - Watermark applied to original WebP: ' . json_encode([
-                            'position' => $wm['position'] ?? 'bottom-right',
-                            'padding' => $wm['padding'] ?? 10,
-                            'opacity' => $wm['opacity'] ?? 100
-                        ]));
                     }
-                    
-                    $imgWebp->convert('webp')->save($webpPath, 90);
+
+                    $imgWebp->convert('webp')->save($webpPath, $webpQuality);
                     $result['webp'][] = $webpPath;
                     $imgWebp->destroy();
                 } catch (\Exception $e) {
@@ -359,9 +346,8 @@ class ImageOptimizer
                     ]));
                 }
             }
-            
+
             $img->destroy();
-            
         } catch (\Exception $e) {
             Logger::error('ImageOptimizer::optimize - Exception during optimization: ' . json_encode([
                 'error' => $e->getMessage()
@@ -453,7 +439,7 @@ class ImageOptimizer
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         // Validate file path
         if (empty($filePath) || !is_string($filePath)) {
             Logger::error('ImageOptimizer::crop - Invalid file path: ' . json_encode([
@@ -506,7 +492,7 @@ class ImageOptimizer
             SecurityManager::stripExifMetadata($filePath);
 
             $img = ImageManager::load($filePath);
-            
+
             // Get original dimensions
             $originalWidth = $img->getWidth();
             $originalHeight = $img->getHeight();
@@ -533,7 +519,7 @@ class ImageOptimizer
 
             // Determine output path
             $outputPath = $options['save_as'] ?? "$dir/{$base}_cropped_{$width}x{$height}.{$ext}";
-            
+
             // Ensure output directory exists
             $outputDir = dirname($outputPath);
             if (!is_dir($outputDir)) {
@@ -543,14 +529,6 @@ class ImageOptimizer
             // Save cropped image
             $img->save($outputPath, $quality);
             $img->destroy();
-
-            Logger::info('ImageOptimizer::crop - Crop successful: ' . json_encode([
-                'input_path' => $filePath,
-                'output_path' => $outputPath,
-                'crop_dimensions' => ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height],
-                'output_dimensions' => ['width' => $width, 'height' => $height]
-            ]));
-
             return [
                 'success' => true,
                 'error' => null,
@@ -560,7 +538,6 @@ class ImageOptimizer
                     'crop_info' => ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height]
                 ]
             ];
-
         } catch (\Exception $e) {
             Logger::error('ImageOptimizer::crop - Exception during crop: ' . json_encode([
                 'error' => $e->getMessage(),
@@ -597,7 +574,7 @@ class ImageOptimizer
     {
         // Load language for static method
         Fastlang::load('files', APP_LANG);
-        
+
         // Validate file path
         if (empty($filePath) || !is_string($filePath)) {
             Logger::error('ImageOptimizer::cropByRatio - Invalid file path: ' . json_encode([
@@ -649,7 +626,7 @@ class ImageOptimizer
             SecurityManager::stripExifMetadata($filePath);
 
             $img = ImageManager::load($filePath);
-            
+
             // Get original dimensions
             $originalWidth = $img->getWidth();
             $originalHeight = $img->getHeight();
@@ -699,7 +676,7 @@ class ImageOptimizer
             // Determine output path
             $ratioStr = "{$ratioWidth}x{$ratioHeight}";
             $outputPath = $options['save_as'] ?? "$dir/{$base}_ratio_{$ratioStr}.{$ext}";
-            
+
             // Ensure output directory exists
             $outputDir = dirname($outputPath);
             if (!is_dir($outputDir)) {
@@ -709,16 +686,6 @@ class ImageOptimizer
             // Save cropped image
             $img->save($outputPath, $quality);
             $img->destroy();
-
-            Logger::info('ImageOptimizer::cropByRatio - Crop by ratio successful: ' . json_encode([
-                'input_path' => $filePath,
-                'output_path' => $outputPath,
-                'ratio' => $ratioStr,
-                'position' => $position,
-                'crop_dimensions' => ['x' => $x, 'y' => $y, 'width' => $cropWidth, 'height' => $cropHeight],
-                'output_dimensions' => ['width' => $cropWidth, 'height' => $cropHeight]
-            ]));
-
             return [
                 'success' => true,
                 'error' => null,
@@ -730,7 +697,6 @@ class ImageOptimizer
                     'crop_info' => ['x' => $x, 'y' => $y, 'width' => $cropWidth, 'height' => $cropHeight]
                 ]
             ];
-
         } catch (\Exception $e) {
             Logger::error('ImageOptimizer::cropByRatio - Exception during crop: ' . json_encode([
                 'error' => $e->getMessage(),

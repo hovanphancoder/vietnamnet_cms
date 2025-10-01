@@ -107,7 +107,7 @@ class UsersController extends BaseController
 
         
         $keyword = $_GET['s'] ?? '';
-        $usersFast = new FastModel('fast_users');
+        $usersFast = new FastModel(APP_PREFIX.'users');
         $users = $usersFast->select(['id', 'fullname', 'email', 'role']);
         if($keyword) {
             $users->where('fullname', 'like', '%'.$keyword.'%');

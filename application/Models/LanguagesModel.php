@@ -5,7 +5,7 @@ use System\Core\BaseModel;
 
 class LanguagesModel extends BaseModel
 {
-    protected $table = 'fast_languages';
+    protected $table = APP_PREFIX.'languages';
 
     // Columns that are allowed to be added or modified
     protected $fillable = [ 'name', 'code', 'flag', 'is_default', 'status'];

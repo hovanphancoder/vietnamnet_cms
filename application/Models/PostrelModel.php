@@ -12,16 +12,16 @@ class PostrelModel extends BaseModel {
         if (empty($post_id) || empty($posttype) || empty($posttype_rel) || empty($lang)) {
             return []; // Return empty array if missing parameters
         }
-        $table = 'fast_posts_' . $posttype_rel . '_' . $lang;
+        $table = APP_PREFIX.'posts_' . $posttype_rel . '_' . $lang;
         if(empty($lang) || $lang === 'all') {
-            $table = 'fast_posts_' . $posttype_rel;
+            $table = APP_PREFIX.'posts_' . $posttype_rel;
         } else {
-            $table = 'fast_posts_' . $posttype_rel . '_' . $lang;
+            $table = APP_PREFIX.'posts_' . $posttype_rel . '_' . $lang;
         }
         
         $tablerel = $save_rel
-            ? 'fast_posts_' . $posttype . '_rel'
-            : 'fast_posts_' . $posttype_rel . '_rel';
+            ? APP_PREFIX.'posts_' . $posttype . '_rel'
+            : APP_PREFIX.'posts_' . $posttype_rel . '_rel';
         $selectby = $save_rel ? 'post_rel_id' : 'post_id';
         $whereby = $save_rel ? 'post_id' : 'post_rel_id';
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $table) || !preg_match('/^[a-zA-Z0-9_-]+$/', $tablerel)) {
@@ -54,13 +54,13 @@ class PostrelModel extends BaseModel {
 
     // Determine table names based on parameters
     if(empty($lang) || $lang === 'all') {
-        $table = 'fast_posts_' . $posttype_rel;
+        $table = APP_PREFIX.'posts_' . $posttype_rel;
     } else {
-        $table = 'fast_posts_' . $posttype_rel . '_' . $lang;
+        $table = APP_PREFIX.'posts_' . $posttype_rel . '_' . $lang;
     }
     $tablerel = $save_rel 
-        ? 'fast_posts_' . $posttype . '_rel' 
-        : 'fast_posts_' . $posttype_rel . '_rel';
+        ? APP_PREFIX.'posts_' . $posttype . '_rel' 
+        : APP_PREFIX.'posts_' . $posttype_rel . '_rel';
     
     // Determine fields to query
     $selectby = $save_rel ? 'post_rel_id' : 'post_id';
@@ -94,8 +94,8 @@ public function getChapter($posttype, $post_id, $index, $lang = APP_LANG)
     }
 
     // Determine relationship table and chapter table names
-    $table_rel  = 'fast_posts_' . $posttype . '_chapter_rel';
-    $table_chap = 'fast_posts_' . $posttype . '_chapter_' . $lang;
+    $table_rel  = APP_PREFIX.'posts_' . $posttype . '_chapter_rel';
+    $table_chap = APP_PREFIX.'posts_' . $posttype . '_chapter_' . $lang;
     // Check table name security (prevent SQL injection)
     if (
         !preg_match('/^[a-zA-Z0-9_-]+$/', $table_rel) ||
@@ -143,8 +143,8 @@ public function getListChapter($posttype, $post_id, $lang = APP_LANG)
     }
 
     // Determine relationship table and chapter table names
-    $table_rel  = 'fast_posts_' . $posttype . '_chapter_rel';
-    $table_chap = 'fast_posts_' . $posttype . '_chapter_' . $lang;
+    $table_rel  = APP_PREFIX.'posts_' . $posttype . '_chapter_rel';
+    $table_chap = APP_PREFIX.'posts_' . $posttype . '_chapter_' . $lang;
     // Check table name security (prevent SQL injection)
     if (
         !preg_match('/^[a-zA-Z0-9_-]+$/', $table_rel) ||
@@ -190,8 +190,8 @@ public function getListChapterPanigation($posttype, $post_id, $lang = APP_LANG, 
     }
 
     // Determine relationship table and chapter table names
-    $table_rel  = 'fast_posts_' . $posttype . '_chapter_rel';
-    $table_chap = 'fast_posts_' . $posttype . '_chapter_' . $lang;
+    $table_rel  = APP_PREFIX.'posts_' . $posttype . '_chapter_rel';
+    $table_chap = APP_PREFIX.'posts_' . $posttype . '_chapter_' . $lang;
     
     // Check table name security (prevent SQL injection)
     if (
@@ -242,14 +242,15 @@ public function getListChapterPanigation($posttype, $post_id, $lang = APP_LANG, 
     }
 }
 
-    // Get fast_term movie id
+    // Get APP_PREFIX.terms movie id
     public function getTagsMovie($post_id)
     {
         // Check required parameters
         if (empty($post_id)) {
             return null; // Return null if missing parameters
         }
-        $query = "SELECT rel_id FROM fast_posts_movie_rel WHERE post_id=? AND lang=? OR lang = 'all'";
+        $table_rel = APP_PREFIX.'posts_movie_rel';
+        $query = "SELECT rel_id FROM {$table_rel} WHERE post_id=? AND lang=? OR lang = 'all'";
         return $this->query($query, [$post_id, APP_LANG]);
     }
 

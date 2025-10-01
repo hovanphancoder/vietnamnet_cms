@@ -120,8 +120,6 @@ class FilesController extends ApiController
             // var_dump($target_dir_full);
             if ($target_dir !== '') {
                 if (!$this->_isFolder($target_dir)) {
-            // print_r($target_dir_full);die;
-
                     return $this->error('Folder not found', [], 404);
                 }
             }

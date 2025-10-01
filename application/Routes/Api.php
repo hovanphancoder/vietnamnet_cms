@@ -16,8 +16,25 @@ if (!empty($plugins)){
 
 include_once PATH_ROOT . '/plugins/reactix/Routes/Api.php';
 
-$this->routes->get('/api/v1/auth/(:any)/', 'Api\V1\AuthController::$1');
-$this->routes->post('/api/v1/auth/(:any)', 'Api\V1\AuthController::$1');
+// authen
+$this->routes->get('api/v2/auth/csrf-token', 'Api\V2\AuthController::csrf_token', [\App\Middleware\CorsMiddleware::class]);
+$this->routes->get('api/v2/auth/logout', 'Api\V2\AuthController::logout', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('api/v2/auth/profile', 'Api\V2\AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->post('api/v2/auth/profile', 'Api\V2\AuthController::profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('api/v2/auth/set-profile', 'Api\V2\AuthController::set_profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->post('api/v2/auth/set-profile', 'Api\V2\AuthController::set_profile', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('api/v2/auth/change-password', 'Api\V2\AuthController::change_password', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->post('api/v2/auth/change-password', 'Api\V2\AuthController::change_password', [\App\Middleware\AuthMiddleware::class]);
+$this->routes->get('api/v2/auth/confirmlink', 'Api\V2\AuthController::confirmlink', []);
+$this->routes->get('api/v2/auth/(:any)/(:any)/(:any)', 'Api\V2\AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('api/v2/auth/(:any)/(:any)/(:any)', 'Api\V2\AuthController::$1:$2:$3', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('api/v2/auth/(:any)/(:any)', 'Api\V2\AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('api/v2/auth/(:any)/(:any)', 'Api\V2\AuthController::$1:$2', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('api/v2/auth/login_google/', 'Api\V2\AuthController::login_google', [\App\Middleware\NoauthMiddleware::class]);
+$this->routes->get('api/v2/auth/login/', 'Api\V2\AuthController::login', []);
+$this->routes->post('api/v2/auth/login/', 'Api\V2\AuthController::login', [\App\Middleware\CorsMiddleware::class]);
+$this->routes->get('api/v2/auth/(:any)/', 'Api\V2\AuthController::$1', [\App\Middleware\CorsMiddleware::class,\App\Middleware\NoauthMiddleware::class]);
+$this->routes->post('api/v2/auth/(:any)', 'Api\V2\AuthController::$1', [\App\Middleware\CorsMiddleware::class,\App\Middleware\NoauthMiddleware::class]);
 
 
 $this->routes->get('/api/v1/posts/(:any)/(:any)/(:any)/(:any)/paged/(:num)/', 'Api\V1\PostsController::$1:$2:$3:$4:$5');

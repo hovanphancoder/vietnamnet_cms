@@ -24,79 +24,16 @@ class FrontendController extends BaseController
         $cache = $this->caching($layout);
         $cachedata = $cache ?  $cache->get() : false;
         if(empty($cachedata)) {
-            //Render::asset('css', 'css/blaze-slider.css', ['area' => 'frontend', 'location' => 'head']);
-            //Render::asset('css', 'css/swiper-bundle.min.css', ['area' => 'frontend', 'location' => 'head']);
-            // Render::asset('css', 'css/main.css', ['area' => 'frontend', 'location' => 'head']);
-            // Render::asset('css', 'css/layout_styles.css', ['area' => 'frontend', 'location' => 'head']);
-            // Render::asset('css', 'css/custom-backgrounds.css', ['area' => 'frontend', 'location' => 'head']);
-    
-            //Render::asset('js', 'js/jfast.1.2.3.js', ['area' => 'frontend', 'location' => 'head']);
+
             Render::asset('js', 'js/lazysizes.min.js', ['area' => 'frontend', 'location' => 'head']);
             Render::asset('js', 'js/main.js', ['area' => 'frontend', 'location' => 'head']);
             Render::asset('js', 'js/blaze-slider.min.js', ['area' => 'frontend', 'location' => 'head']);
-            //Render::asset('js', 'js/feather.min.js', ['area' => 'frontend', 'location' => 'footer']);
 
             Flang::load('CMS', APP_LANG);
             $this->load_theme_functions();
 
-
-            $this->data['params'] = $params;
-
-            // Scan shortcode as before
-            // $shortcodes = glob(PATH_ROOT . '/plugins/*/Shortcode/*.php');
-            // foreach ($shortcodes as $shortcode) {
-            //     $shortcode_name = basename($shortcode, '.php');
-            //     $this->data['shortcode_' . $shortcode_name] = require $shortcode;
-            // }
-            // $shortcodes = glob(APP_THEME_PATH . 'Frontend/shortcodes/*.php');
-            // foreach ($shortcodes as $shortcode) {
-            //     $shortcode_name = basename($shortcode, '.php');
-            //     $this->data['shortcode_' . $shortcode_name] = require $shortcode;
-            // }
-
-            // throw new AppException('Invalid source path - not found 404', 404, null, 500);
-
-            // //print_r($layout);
             
-            // if (!empty($GLOBALS['APP_URI']['split'])){
-            //     $pages_main = $GLOBALS['APP_URI']['split'][0];
-            //     //if (slugValidNotHaveSqlInjection($pages_main)){
-            //         //$layout = 'page';
-            //         //echo 'Goi model check $pages_main co ton tai trong Posttype Pages khong<br />Neu co: $layout = page.php. Sau do check page-$pages_main.php co ton tai khong neu co set lay $layout.';
-            //     //}
-            //     if ($pages_main == 'search'){
-            //         $layout = 'search';
-            //         echo 'set layout la search';die;
-            //     }
-            //     if ($pages_main == 'author'){
-            //         $layout = 'author';
-            //         echo 'set layout la author';die;
-            //     }
-            //     if (in_array($pages_main, APP_POSTTYPES)){
-            //         $layout = 'archive';
-            //         echo 'Neu phan tu dau co trong list APP_POSTTYPES: set $layout = archive.<br />Sau do check neu co ton tai file archive-$posttype thi set lai $layout<br />';
-            //         echo $pages_main;
-
-            //         // /products/ - archive show all san pham va tab list category & terms.
-            //         // /products/slug-ten-san-pham/ - detail show san pham.
-            //         // /products/category/ten-danh-muc/ - archive show all san pham trong danh muc.
-            //         // /products/tag/ten-tag/ - archive show all san pham trong tag.
-            //         // /products/brand/ten-thuong-hieu/ - archive show all san pham trong thuong hieu.
-
-
-            //         $pages_sub = $GLOBALS['APP_URI']['split'][1];
-
-
-            //         die;
-            //     }
-            // }else{
-            //     //code show page 404
-            // }
-            // echo '<br />'.$layout;
-            // echo '<br />';
-            // print_r(APP_POSTTYPES);
-            // die;
-
+            $this->data['params'] = $params;
             $result = Render::html('Frontend/' . $layout, $this->data);
              // cache
              if ($cache) {

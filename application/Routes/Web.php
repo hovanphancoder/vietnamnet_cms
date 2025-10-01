@@ -126,12 +126,6 @@ if (!empty($rewrite)) {
             $middleware = [];
         }
         $callback = str_replace(' ', '', $callback);
-        // echo '<pre>';
-        // print_r($url);
-        // echo "<br>";
-        // print_r($callback);
-        // echo '</pre>';
-        
         $this->routes->get($url, $callback, $middleware);
     }
 }

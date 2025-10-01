@@ -4,10 +4,10 @@ use System\Core\BaseModel;
 
 class TermsModel extends BaseModel {
 
-    protected $table = 'fast_terms';
+    protected $table = APP_PREFIX.'terms';
 
     // Columns that are fillable (can be added or modified)
-    protected $fillable = ['name', 'slug', 'description', 'type', 'posttype', 'parent', 'lang', 'id_main', 'status'];
+    protected $fillable = ['name', 'slug', 'description', 'seo_title', 'seo_desc', 'type', 'posttype', 'parent', 'lang', 'id_main', 'status'];
 
     // Columns that are guarded (cannot be modified)
     protected $guarded = ['id', 'created_at', 'updated_at'];
@@ -241,5 +241,11 @@ class TermsModel extends BaseModel {
     {
         $query = "SELECT name from {$this->table} WHERE id IN (" . implode(',', $ids) . ") AND type =? AND lang=?";
         return $this->query($query, [$type, $lang]);
+    }
+
+    // get all term by id_main
+    public function getTermByIdMain($id_main)
+    {
+        return $this->list($this->table, 'id_main = ?', [$id_main]);
     }
 }

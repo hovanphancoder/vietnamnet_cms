@@ -3,7 +3,6 @@
 namespace App\Controllers\Backend;
 
 use App\Controllers\BackendController;
-use App\Models\PosttypeModel;
 use App\Models\PostsModel;
 use App\Models\TermsModel;
 use App\Models\UsersModel;
@@ -12,7 +11,6 @@ use System\Libraries\Validate;
 use App\Libraries\Fastlang as Flang;
 
 class PostsController extends BackendController {
-   protected $posttypeModel;
    protected $languageModel;
    protected $termsModel;
    protected $usersModel;
@@ -29,7 +27,6 @@ class PostsController extends BackendController {
         $postLang = S_GET('post_lang') ?? 'all';
 
        
-        $this->posttypeModel = new PosttypeModel();
         $this->postsModel = new PostsModel($posttypeSlug, $postLang);
         $this->termsModel = new TermsModel();
         $this->usersModel = new UsersModel();
@@ -57,11 +54,11 @@ class PostsController extends BackendController {
             $limit = 10;
         }
 
-        $postType = $this->posttypeModel->getPostTypeBySlug($postTypeSlug);
+        $postType = $this->postsModel->getPostTypeBySlug($postTypeSlug);
         if(empty($postType)) {
             redirect(admin_url('/'));
         }
-        $allPostType = $this->posttypeModel->getAllPostTypes();
+        $allPostType = $this->postsModel->getAllPostTypes();
        
 
         $posttypeLanguages = json_decode($postType['languages'], true);
@@ -137,7 +134,7 @@ class PostsController extends BackendController {
     public function add() {
         // validate posttype
         $postTypeSlug = S_POST('type') ?? (S_GET('type') ?? '' );
-        $postType = $this->posttypeModel->getPostTypeBySlug($postTypeSlug);
+        $postType = $this->postsModel->getPostTypeBySlug($postTypeSlug);
         if(empty($postType)) {
            redirect(admin_url());
         }
@@ -302,7 +299,7 @@ class PostsController extends BackendController {
             $postType['terms'] = is_array($postType['terms']) ? json_encode($postType['terms']) : $postType['terms'];
             $postType['fields'] = is_array($postType['fields']) ? json_encode($postType['fields']) : $postType['fields'];
             $postType['current_id'] = $data['id'];
-            $this->posttypeModel->updatePostType($postType['id'], $postType);
+            $this->postsModel->updatePostType($postType['id'], $postType);
             \System\Libraries\Events::run('Backend\\PostsAddEvent', $data);
             return true;
         } else {
@@ -313,7 +310,7 @@ class PostsController extends BackendController {
     public function import() {
         // Validate posttype
         $postTypeSlug = S_POST('type') ?? (S_GET('type') ?? 'post');
-        $postType = $this->posttypeModel->getPostTypeBySlug($postTypeSlug);
+        $postType = $this->postsModel->getPostTypeBySlug($postTypeSlug);
         if(empty($postType)) {
             redirect(admin_url('/'));
         }
@@ -472,11 +469,41 @@ class PostsController extends BackendController {
         $rules = $this->convert_rules($postType['fields']);
         $validator = new Validate();
 
+        // Build header index for fast lookup
+        $headers = isset($csvData['headers']) && is_array($csvData['headers']) ? $csvData['headers'] : [];
+        $headerIndex = [];
+        if (!empty($headers)) {
+            foreach($headers as $hIndex => $hName) {
+                $headerIndex[$hName] = $hIndex;
+            }
+        }
+
         foreach($csvData['rows'] as $rowIndex => $row) {
             try {
-                $postDataFields = $row;
+                // Map CSV row -> post data based on columnMapping
+                $postDataFields = [];
+                if (!empty($columnMapping) && is_array($columnMapping)) {
+                    foreach($columnMapping as $fieldName => $csvHeaderName) {
+                        if($csvHeaderName === null || $csvHeaderName === '') continue;
+                        if(isset($headerIndex[$csvHeaderName])) {
+                            $colIdx = $headerIndex[$csvHeaderName];
+                            if(isset($row[$colIdx])) {
+                                $postDataFields[$fieldName] = $row[$colIdx];
+                            }
+                        }
+                    }
+                }
+                // Preserve raw row for debugging
                 $terms_list = [];
                 $postDataFields = $this->normalizeData($postDataFields, $postType['fields']);
+
+                // Default fallbacks for common meta fields if still missing after mapping
+                if (empty($postDataFields['search_string']) && !empty($postDataFields['title'])) {
+                    $postDataFields['search_string'] = keyword_slug($postDataFields['title']);
+                }
+                if (empty($postDataFields['seo_title']) && !empty($postDataFields['title'])) {
+                    $postDataFields['seo_title'] = $postDataFields['title'];
+                }
 
                 // Validate data using existing rules
                 if(!$validator->check($postDataFields, $rules)) {
@@ -623,7 +650,7 @@ class PostsController extends BackendController {
                 redirect(admin_url('/'));
                 return;
             }
-            $postType = $this->posttypeModel->getPostTypeBySlug($postTypeSlug);
+            $postType = $this->postsModel->getPostTypeBySlug($postTypeSlug);
             if(empty($postType)) {
             redirect(admin_url('/'));
                 return;
@@ -972,7 +999,7 @@ class PostsController extends BackendController {
         // delete relations of current language
         // check other posts if not then delete all relationship
             $tableRel = table_posttype_relationship($posttype_slug);
-            $postType = $this->posttypeModel->getPostTypeBySlug($posttype_slug);
+            $postType = $this->postsModel->getPostTypeBySlug($posttype_slug);
             $post_field = is_string($postType['fields']) ? json_decode($postType['fields'], true) : $postType['fields'];
             $languages = json_decode($postType['languages'], true);
             $currentLang = S_GET('post_lang');
@@ -1074,7 +1101,7 @@ class PostsController extends BackendController {
         $oldlang = S_GET('oldpost_lang');
         $languages = explode(',', S_GET('post_lang'));
         $oldPost = $this->postsModel->getPostById(posttype_name($postTypeSlug, $oldlang), $id);
-        $postType = $this->posttypeModel->getPostTypeBySlug($postTypeSlug);
+        $postType = $this->postsModel->getPostTypeBySlug($postTypeSlug);
 
         // check old post exits if no existing language then get language fifferent
         if(!$oldPost) {
@@ -1368,10 +1395,21 @@ class PostsController extends BackendController {
 
             // nếu là số thì là int 
             if($type == 'Number') {
-                // deteach các dấu , . 
-                $data[$name] = str_replace(',', '', $data[$name]);
-                $data[$name] = str_replace('.', '', $data[$name]);
-                $data[$name] = (int)$data[$name];
+                // Nếu không có giá trị, gán mặc định (ưu tiên default_value, nếu không có thì 0)
+                if(!isset($data[$name]) || $data[$name] === '' || $data[$name] === null) {
+                    $data[$name] = ($default !== null && $default !== '') ? (int)$default : 0;
+                } else {
+                    // deteach các dấu , . chỉ khi là string/number
+                    $value = $data[$name];
+                    if(!is_string($value)) {
+                        // Cho phép number/bool -> string
+                        $value = (string)$value;
+                    }
+                    $value = str_replace(',', '', $value);
+                    $value = str_replace('.', '', $value);
+                    // Nếu sau khi làm sạch mà rỗng -> 0
+                    $data[$name] = ($value === '' ? 0 : (int)$value);
+                }
             }
 
             // user cho mặc định hoặc = 1

@@ -27,12 +27,7 @@
                 <div class="space-y-8">
                     <!-- Logo -->
                     <div class="text-center">
-                        <?= _img(
-                            theme_assets('images/logo/logo.png'),
-                            'Logo CMS',
-                            false,
-                            'mx-auto mb-6 h-32 w-32 object-contain drop-shadow-lg'
-                        ) ?>
+                        <img src="<?= theme_assets('images/logo/logo.png') ?>" alt="Logo CMS" class="mx-auto mb-6 h-32 w-32 object-contain drop-shadow-lg">
                     </div>
 
                     <!-- Description -->

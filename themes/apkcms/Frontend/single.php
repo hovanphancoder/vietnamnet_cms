@@ -7,6 +7,8 @@ require_once __DIR__ . '/functions.php';
 
 global $post;
 
+
+
 // lấy danh mục của bài viết
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
 $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
@@ -15,7 +17,7 @@ $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
     ->where('lang', '=', APP_LANG);
 // Thực hiện query và lấy kết quả
 $results = $qb->get();
-var_dump($results);
+// var_dump($results);
 // Lưu các rel_id vào mảng
 $rel_ids = [];
 if (!empty($results) && is_array($results)) {
@@ -25,8 +27,6 @@ if (!empty($results) && is_array($results)) {
         }
     }
 }
-
-
 
 // Lấy social links từ options
 $social_links = [];

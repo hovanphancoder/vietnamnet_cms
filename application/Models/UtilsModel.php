@@ -36,7 +36,7 @@ class UtilsModel extends BaseModel {
 
     public function table($name = ''){
         if (empty($name)) return null;
-        return 'fast_'.$name;
+        return APP_PREFIX.$name;
     }
 
     

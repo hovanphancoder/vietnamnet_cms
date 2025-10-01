@@ -11,10 +11,13 @@ class Session {
      * Initialize session if not already started
      */
     public static function start() {
+        if (self::isCli()) return;
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
+
+    private static function isCli(): bool { return PHP_SAPI === 'cli'; }
 
     /**
      * Set a value in session
@@ -56,7 +59,16 @@ class Session {
     public static function destroy() {
         self::start();
         session_unset();
+        $_SESSION = [];
         session_destroy();
+    }
+
+    /** use session_write_close() for fix LOCK
+     * @return void
+     */
+    public static function write_close() {
+        self::start();
+        session_write_close();
     }
 
     /**
@@ -82,27 +94,23 @@ class Session {
      * @param string $key Flash message name
      * @param mixed $value Flash message value
      */
-    public static function flash($key, $value = '') {
+    public static function flash($key, $value = null) {
         self::start();
-        if (!empty($value)){
+        // Setter: Have 2 parameters
+        if (func_num_args() >= 2){
             $_SESSION['flash'][$key] = ['data'=>$value, 'expires'=>time()+60];
-        }else{
-            if (isset($_SESSION['flash'][$key])) {
-                $value = $_SESSION['flash'][$key];
-                if ($value['expires'] > time()){
-                    unset($_SESSION['flash'][$key]);
-                    if (empty($_SESSION['flash'])){
-                        unset($_SESSION['flash']);
-                    }
-                    return $value['data'];
-                }
-                unset($_SESSION['flash'][$key]);
-                if (empty($_SESSION['flash'])){
-                    unset($_SESSION['flash']);
-                }
-            }
             return null;
         }
+        
+        // Getter: Have 1 parameter
+        if (isset($_SESSION['flash'][$key])) {
+            $item = $_SESSION['flash'][$key];
+            $valid = ($item['expires'] > time());
+            unset($_SESSION['flash'][$key]);
+            if (empty($_SESSION['flash'])) unset($_SESSION['flash']);
+            return $valid ? $item['data'] : null;
+        }
+        return null;
     }
 
     /**
@@ -125,8 +133,10 @@ class Session {
         if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $maxLifetime)) {
             // Destroy session if exceeded allowed time
             self::destroy();
+            return false;
         }
         $_SESSION['last_activity'] = time(); // Update last activity time
+        return true;
     }
 
     /**
@@ -136,21 +146,39 @@ class Session {
     public static function csrf_token($expired = 1800) {
         self::start();
         self::csrf_clean();
-        // Create csrf_id based on current URL
-        $csrfId = md5($_SERVER['REQUEST_URI'] . json_encode($_GET));
-        if (!empty($_SESSION['csrf_tokens'][$csrfId]) && !empty($_SESSION['csrf_tokens'][$csrfId]['token']) && $_SESSION['csrf_tokens'][$csrfId]['expires'] >= time()){
-            $_SESSION['csrf_tokens'][$csrfId]['expires'] = time() + $expired;
-            return $csrfId . '__' . $_SESSION['csrf_tokens'][$csrfId]['token'];
-        }else{
-            $csrfToken = random_string(32); // Generate random token
-            // Save token to session with expiration time (30 minutes default expired)
-            $_SESSION['csrf_tokens'][$csrfId] = [
-                'token' => $csrfToken,
-                'expires' => time() + $expired // 30 minutes default expired
-            ];
+        if (!isset($_SESSION['csrf_tokens']) || !is_array($_SESSION['csrf_tokens'])) {
+            $_SESSION['csrf_tokens'] = [];
         }
-        
-        // Return string `csrf_id::csrf_token`
+        // Create csrf_id based on current URL
+        $uri = trim(APP_URI['uri'], '/');
+        $csrfId = hash('sha256', $uri);
+        $now = time();
+        // Check if csrf_id exists in session and token is not expired
+        if ( !empty($_SESSION['csrf_tokens'][$csrfId]) && !empty($_SESSION['csrf_tokens'][$csrfId]['token']) && 
+            $_SESSION['csrf_tokens'][$csrfId]['expires'] >= $now ) {
+            $_SESSION['csrf_tokens'][$csrfId]['expires'] = $now + $expired;
+            $_SESSION['csrf_tokens'][$csrfId]['created'] = $now;
+            return $csrfId . '__' . $_SESSION['csrf_tokens'][$csrfId]['token'];
+        }
+        // Create new csrf_token
+        $csrfToken = bin2hex(random_bytes(32));
+        $_SESSION['csrf_tokens'][$csrfId] = [
+            'token'   => $csrfToken,
+            'expires' => $now + $expired,
+            'created' => $now
+        ];
+
+        $max = 50;
+        if (count($_SESSION['csrf_tokens']) > $max) {
+            uasort($_SESSION['csrf_tokens'], function($a, $b) {
+                return $a['created'] <=> $b['created']; // oldest first
+            });
+            // Lấy danh sách key dư thừa (older)
+            $excess = array_slice(array_keys($_SESSION['csrf_tokens']), 0, count($_SESSION['csrf_tokens']) - $max);
+            foreach ($excess as $dropKey) {
+                unset($_SESSION['csrf_tokens'][$dropKey]);
+            }
+        }
         return $csrfId . '__' . $csrfToken;
     }
 
@@ -159,15 +187,18 @@ class Session {
      * @param string $token String in format `csrf_id__csrf_token` from form
      * @return bool True if token is valid, False if not
      */
-    public static function csrf_verify($token) {
+    public static function csrf_verify($token = null) {
         self::start();
         self::csrf_clean();
         // Check if token is valid (token must not be empty and must contain '__')
+        if (empty($token) && isset($_SERVER['HTTP_X_CSRF_TOKEN'])){
+            $token = $_SERVER['HTTP_X_CSRF_TOKEN'];
+        }
         if (empty($token) || strpos($token, '__') === false) {
             return false;
         }
         // Extract csrf_id and csrf_token from input string
-        list($csrfId, $csrfToken) = explode('__', $token);
+        list($csrfId, $csrfToken) = explode('__', $token, 2);
 
         // Check if csrf_id exists in session
         if (!isset($_SESSION['csrf_tokens'][$csrfId])) {
@@ -176,7 +207,7 @@ class Session {
         // Get csrf_token information from session
         $storedTokenData = $_SESSION['csrf_tokens'][$csrfId];
         // Check if token matches and not expired
-        if ($storedTokenData['token'] === $csrfToken && $storedTokenData['expires'] >= time()) {
+        if (hash_equals($storedTokenData['token'], $csrfToken) && $storedTokenData['expires'] >= time()) {
             // Delete token after successful verification to prevent reuse
             unset($_SESSION['csrf_tokens'][$csrfId]);
             if (empty($_SESSION['csrf_tokens'])){
