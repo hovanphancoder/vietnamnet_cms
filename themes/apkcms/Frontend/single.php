@@ -6,18 +6,16 @@ App\Libraries\Fastlang::load('Homepage');
 require_once __DIR__ . '/functions.php';
 
 global $post;
+
+// lấy danh mục của bài viết
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
-
-// var_dump($categories_for_menu);
-
 $qb = (new \App\Models\FastModel('fast_posts_posts_rel'))
     ->newQuery()
     ->where('post_id', '=', $post['id'])
     ->where('lang', '=', APP_LANG);
-
 // Thực hiện query và lấy kết quả
 $results = $qb->get();
-
+var_dump($results);
 // Lưu các rel_id vào mảng
 $rel_ids = [];
 if (!empty($results) && is_array($results)) {
@@ -27,6 +25,8 @@ if (!empty($results) && is_array($results)) {
         }
     }
 }
+
+
 
 // Lấy social links từ options
 $social_links = [];
@@ -51,6 +51,8 @@ $locale = APP_LANG.'_'.strtoupper(lang_country(APP_LANG));
 get_template('_metas/meta_single', ['locale' => $locale]);
 
 
+
+
 ?>
         <div class="max-w-7xl mx-auto">
             <!-- Main Content Layout -->
@@ -72,8 +74,6 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 <?php 
                               
                                 // Nếu vẫn không có, thử nhiều function khác nhau
-                           
-                               
                                     // Lấy categories của bài viết hiện tại dựa trên rel_ids
                                     $post_categories = [];
                                     if (!empty($rel_ids) && !empty($categories_for_menu)) {
@@ -261,10 +261,12 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                     'filters' => [
                                         'author' => $post['author'] 
                                     ],
-                                    'perPage' => 3,
+                                    'perPage' => 4,
+                                    'columns' => ['id', 'title', 'slug'],
                                     'sort' => ['created_at', 'DESC']
                                    
                                 ]);
+                                // var_dump($posts_data);
                                 // Lấy dữ liệu từ key 'data'
                                 if (isset($posts_data['data']) && is_array($posts_data['data'])) {
                                     $posts_data = $posts_data['data'];
@@ -369,12 +371,9 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                     <!-- Categories and Tags -->
                     <div class=" ">
                         <div class="flex flex-wrap items-center gap-2">
-                          
-                            
                             <?php 
                             // Lấy tags của bài viết
                             $post_tags = get_tags($post['posttype'], $post['id']); 
-                         
                             ?>
                             <?php if (!empty($post_tags)): ?>
                                 <span class="text-sm text-gray-500 font-medium">Topics:</span>
