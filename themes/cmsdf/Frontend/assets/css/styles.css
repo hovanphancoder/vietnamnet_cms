@@ -1,0 +1,80 @@
+/* Optimized Font Loading - Local Noto Sans Fonts */
+
+/* Noto Sans Font Family - Local Files */
+@font-face {
+    font-family: 'Noto Sans';
+   
+    src: url('../fonts/NotoSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans';
+    src: url('../fonts/NotoSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans';
+    src: url('../fonts/NotoSans-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans';
+    src: url('../fonts/NotoSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Apply Noto Sans with system font fallbacks */
+* {
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    font-display: swap;
+}
+
+/* Touch targets optimization - Chỉ dùng cho accessibility, không ảnh hưởng giao diện */
+/* Loại bỏ CSS touch targets để giữ giao diện nguyên vẹn */
+
+/* Specific font weights */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+
+/* Performance optimizations */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Text truncation for headlines */
+h3 a {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mobile responsive adjustments */
+@media screen and (max-width: 425px) {
+    main {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+}
+
+.maincontent img{
+    margin-bottom: 16px;
+}

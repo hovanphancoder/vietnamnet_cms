@@ -5,14 +5,10 @@ return array (
     'value' => 'en_US',
     'valuelang' => array (
       'vi' => 'vi_VN',
-      'zh' => 'zh_CN',
-      'th' => 'th_TH',
-      'ko' => 'ko_KR',
-      'id' => 'id_ID',
     ),
   ),
   'rewrite_uri_lang' => array (
-    'value' => 1,
+    'value' => 0,
   ),
   'user_limit' => array (
     'value' => 10,
@@ -24,53 +20,37 @@ return array (
     'value' => 'https://vietnamnet2.vn',
   ),
   'site_desc' => array (
-    'value' => 'Vietnamnet - Trang tin tức Việt Nam cập nhật 24/7 với những thông tin mới nhất về thời sự, kinh tế, xã hội, thể thao, công nghệ và đời sống.',
+    'value' => 'VietNamNet - Change description at Admin',
     'valuelang' => array (
-      'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'th' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'ko' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
-      'id' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'vi' => 'VietNamNet - Đổi mô tả trong Admin',
     ),
   ),
   'site_title' => array (
-    'value' => 'Vietnamnet - Tin tức Việt Nam',
+    'value' => 'VietNamNet - Change title at Admin',
     'valuelang' => array (
-      'vi' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'zh' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'th' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
-      'ko' => 'CMS Full Form - Fast & Easy Vibe Code with AI',
-      'id' => 'CMS Full Form - Nhanh & Dễ Code bằng AI Framework',
+      'vi' => 'VietNamNet - Đổi tiêu đề trong Admin',
     ),
   ),
   'site_brand' => array (
-    'value' => 'Cms Full Form',
+    'value' => 'VietNamNEt',
     'valuelang' => array (
-      'vi' => 'Cms Full Form',
-      'zh' => 'Cms Full Form',
-      'th' => 'Cms Full Form',
-      'ko' => 'Cms Full Form',
-      'id' => 'Cms Full Form',
+      'vi' => 'VietNamNet',
     ),
   ),
   'seo_config' => array (
     'value' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
     'valuelang' => array (
       'vi' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
-      'zh' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
-      'th' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
-      'ko' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
-      'id' => '[{"function":"Frontend\\\\HomeController::index","seo_index":true,"follow":true,"seo_title":"Trang chủ - %site_title%","seo_desc":"%site_desc%"},{"function":"Frontend\\\\SearchController::index","seo_index":true,"follow":true,"seo_title":"Tìm kiếm - %site_title%","seo_desc":"%seo_desc%"}]',
     ),
   ),
   'url_rewrite' => array (
     'value' => '[{"url_function":"FrontendController::index:index","middleware":[""],"url_struct":"/"},{"url_function":"FrontendController::index","middleware":[],"url_struct":"/(:any)"}]',
   ),
   'cache' => array (
-    'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache_uri"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
+    'value' => '[{"cache_key":"cache_driver","cache_value":"cache_driver"},{"cache_key":"cache_host","cache_value":"127.0.0.1"},{"cache_key":"cache_port","cache_value":"6379"},{"cache_key":"cache_username","cache_value":"cache_username"},{"cache_key":"cache_password","cache_value":"cache_mobile"},{"cache_key":"cache_database","cache_value":"0"},{"cache_key":"cache_uri","cache_value":"cache"},{"cache_key":"cache_params","cache_value":"page,paged,limit,sortby,sort,sc,order,orderby,id"}]',
   ),
   'cache_config' => array (
-    'value' => '[{"cache_function":"index","cache_caching":false,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":"0"},{"cache_function":"search","cache_caching":false,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"taxonomy","cache_caching":false,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"single","cache_caching":false,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"author","cache_caching":false,"cache_mobile":false,"cache_login":false,"cache_level":"default","cache_type":"html","cache_clear_time":""}]',
+    'value' => '[{"cache_function":"index","cache_caching":0,"cache_mobile":0,"cache_login":0,"cache_level":"default","cache_type":"html","cache_clear_time":"0"},{"cache_function":"search","cache_caching":0,"cache_mobile":0,"cache_login":0,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"taxonomy","cache_caching":0,"cache_mobile":0,"cache_login":0,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"single","cache_caching":0,"cache_mobile":0,"cache_login":0,"cache_level":"default","cache_type":"html","cache_clear_time":""},{"cache_function":"author","cache_caching":0,"cache_mobile":0,"cache_login":0,"cache_level":"default","cache_type":"html","cache_clear_time":""}]',
   ),
   'cache_gzip' => array (
     'value' => 5,

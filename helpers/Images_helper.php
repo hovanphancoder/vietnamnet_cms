@@ -2,6 +2,52 @@
 if (!defined('PATH_ROOT')) {
     exit('No direct access allowed.');
 }
+
+// render img tag (lazy load).... title, alt, src, class, style
+if (!function_exists('_img')) {
+    function _img($src, $title = '', $lazy = true, $class = '', $style = '', $width = '', $height = '', $id = '')
+    {
+        // If no image source then return empty string
+        if (empty($src)) {
+            return '';
+        }
+
+        // Create attributes for alt and title, escape special characters
+        $attr_alt   = !empty($title) ? ' alt="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '"' : '';
+        $attr_title = !empty($title) ? ' title="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '"' : '';
+        $attr_id    = !empty($id)  ? ' id="' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '"' : '';
+
+        // Process class, style, width, height attributes (escape if needed)
+        $attr_class = !empty($class) ? ' class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '"' : '';
+        $attr_style = !empty($style) ? ' style="' . htmlspecialchars($style, ENT_QUOTES, 'UTF-8') . '"' : '';
+        $attr_width = !empty($width) ? ' width="' . htmlspecialchars($width, ENT_QUOTES, 'UTF-8') . '"' : '';
+        $attr_height = !empty($height) ? ' height="' . htmlspecialchars($height, ENT_QUOTES, 'UTF-8') . '"' : '';
+
+        if ($lazy) {
+            // If lazy load is enabled, add "lazyload" class
+            if (!empty($class)) {
+                $class .= ' lazyload';
+            } else {
+                $class = 'lazyload';
+            }
+            $attr_class = ' class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '"';
+
+            // Create img tag with data-src instead of src for lazy load
+            $img_tag = '<img data-src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '"'
+                . $attr_alt . $attr_title . $attr_class . $attr_style . $attr_width . $attr_height . $attr_id . '>';
+            // Create fallback with <noscript> tag so browsers without JS support can still display images
+            $noscript_tag = '<noscript><img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '"'
+                . $attr_alt . $attr_title . $attr_class . $attr_style . $attr_width . $attr_height . $attr_id . '></noscript>';
+            return $img_tag . $noscript_tag;
+        } else {
+            // If not using lazy load, create normal img tag with src
+            return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '"'
+                . $attr_alt . $attr_title . $attr_class . $attr_style . $attr_width . $attr_height . $attr_id . '>';
+        }
+    }
+}
+
+
 if (!function_exists('addSizeToPath')) {
     // Function to add size before file extension
     function addSizeToPath($path, $size)

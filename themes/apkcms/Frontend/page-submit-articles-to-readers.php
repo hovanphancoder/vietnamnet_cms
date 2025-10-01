@@ -54,9 +54,9 @@ get_template('_metas/meta_page', $meta_data);
                     <div class="lg:w-[760px] space-y-8">
                         <!-- Title -->
                         <div class="mb-6">
-                            <h1 class="text-2xl font-bold text-[#2d67ad] mb-4">GỬI BÀI VIẾT ĐẾN BÁO VIETNAMNET</h1>
+                            <h1 class="text-2xl font-bold text-sky-600 mb-4">GỬI BÀI VIẾT ĐẾN BÁO VIETNAMNET</h1>
                             <p class="text-gray-700 leading-relaxed text-sm">
-                                Báo VietNamNet mong nhận được những bài viết đóng góp của quý độc giả khắp nơi gửi cho chúng tôi. Nội dung gửi về sẽ được xác minh, chọn lọc biên tập và đăng tải nếu phù hợp với định hướng và tiêu chí của báo. VietNamNet giữ quyền biên tập và xuất bản bài viết của quý độc giả gửi tới. Mọi thắc mắc vui lòng liên hệ hotline <span class="font-semibold text-[#2d67ad]">0923 457 788</span>.
+                                Báo VietNamNet mong nhận được những bài viết đóng góp của quý độc giả khắp nơi gửi cho chúng tôi. Nội dung gửi về sẽ được xác minh, chọn lọc biên tập và đăng tải nếu phù hợp với định hướng và tiêu chí của báo. VietNamNet giữ quyền biên tập và xuất bản bài viết của quý độc giả gửi tới. Mọi thắc mắc vui lòng liên hệ hotline <span class="font-semibold text-sky-600">0923 457 788</span>.
                             </p>
                         </div>
 
@@ -139,7 +139,7 @@ get_template('_metas/meta_page', $meta_data);
                     <div class="lg:w-[300px]">
                         <!-- Title -->
                         <div class="mb-6">
-                            <h2 class="text-2xl font-bold text-[#2d67ad] mb-4">Thông tin tòa soạn</h2>
+                            <h2 class="text-2xl font-bold text-sky-600 mb-4">Thông tin tòa soạn</h2>
                         </div>
 
                         <!-- Editorial Office Illustration -->

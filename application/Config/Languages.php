@@ -11,26 +11,6 @@ define('APP_LANGUAGES', array (
     'name' => 'Tiếng Việt',
     'flag' => 'vn',
   ),
-  'zh' => 
-  array (
-    'name' => 'Chinese',
-    'flag' => 'cn',
-  ),
-  'th' => 
-  array (
-    'name' => 'Thailand',
-    'flag' => 'th',
-  ),
-  'ko' => 
-  array (
-    'name' => 'Korea',
-    'flag' => 'kr',
-  ),
-  'id' => 
-  array (
-    'name' => 'Indonesian',
-    'flag' => 'id',
-  ),
 ));
 
 $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

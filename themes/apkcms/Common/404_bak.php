@@ -250,7 +250,7 @@ get_header([
                                 <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
                             </svg>
                         </div>
-                        <h3 class="font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 transition-colors duration-300">
+                        <h3 class="font-semibold text-slate-800 dark:text-white group-hover:text-sky-600 transition-colors duration-300">
                             <?php echo $errorsLanguageData['navigation']['blog']; ?>
                         </h3>
                     </a>
@@ -290,7 +290,7 @@ get_header([
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                         </svg>
                     </div>
-                    <a href="mailto:support@cmsfullform.com" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">
+                    <a href="mailto:support@cmsfullform.com" class="text-slate-600 hover:text-sky-600 transition-colors font-medium">
                         support@cmsfullform.com
                     </a>
                 </div>
@@ -300,7 +300,7 @@ get_header([
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                         </svg>
                     </div>
-                    <a href="tel:+84123456789" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">
+                    <a href="tel:+84123456789" class="text-slate-600 hover:text-sky-600 transition-colors font-medium">
                         +84 123 456 789
                     </a>
                 </div>
@@ -311,7 +311,7 @@ get_header([
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
                     </div>
-                    <a href="#" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">
+                    <a href="#" class="text-slate-600 hover:text-sky-600 transition-colors font-medium">
                         Hà Nội, Việt Nam
                     </a>
                 </div>

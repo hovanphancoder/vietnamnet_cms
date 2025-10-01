@@ -27,7 +27,7 @@ class FrontendController extends BaseController
 
             Render::asset('js', 'js/lazysizes.min.js', ['area' => 'frontend', 'location' => 'head']);
             Render::asset('js', 'js/main.js', ['area' => 'frontend', 'location' => 'head']);
-            Render::asset('js', 'js/blaze-slider.min.js', ['area' => 'frontend', 'location' => 'head']);
+            // Render::asset('js', 'js/blaze-slider.min.js', ['area' => 'frontend', 'location' => 'head']);
 
             Flang::load('CMS', APP_LANG);
             $this->load_theme_functions();
@@ -159,8 +159,8 @@ class FrontendController extends BaseController
             return $this->getPageTemplate($firstSegment, $page);
         }
         
-        // Fallback
-        return 'index';
+        // 7. 404 Fallback - No matching route found
+        return $this->templateExists('404') ? '404' : 'index';
     }
     
     /**

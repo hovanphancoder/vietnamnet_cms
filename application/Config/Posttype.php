@@ -6,11 +6,7 @@ return array (
     'slug' => 'pages',
     'languages' => array (
       0 => 'en',
-      1 => 'id',
-      2 => 'ko',
-      3 => 'th',
-      4 => 'vi',
-      5 => 'zh',
+      1 => 'vi',
     ),
   ),
   'posts' => array (
@@ -18,11 +14,7 @@ return array (
     'slug' => 'posts',
     'languages' => array (
       0 => 'en',
-      1 => 'id',
-      2 => 'ko',
-      3 => 'th',
-      4 => 'vi',
-      5 => 'zh',
+      1 => 'vi',
     ),
   ),
   'comment' => array (

@@ -143,7 +143,7 @@ if (!function_exists('get_posts')) {
 
         /* ---------- 5. Sắp xếp ---------- */
         [$col, $dir] = $args['sort'] + [1 => 'DESC'];
-        if (strpos($col, '.') === false) {
+        if (strpos($col, '.') === false && strpos($col, '(') === false) {
             $col = "{$table}.{$col}";
         }
         $qb->orderBy($col, strtoupper($dir));

@@ -120,7 +120,7 @@ if (!function_exists('display_author_info')) {
         $html .= '<h4 class="' . $options['name_class'] . '">';
         $html .= '<a href="' . htmlspecialchars($author['url']) . '" ';
         $html .= 'title="Xem tất cả bài viết của ' . htmlspecialchars($author['name']) . '" ';
-        $html .= 'class="hover:text-blue-600 transition-colors">';
+        $html .= 'class="hover:text-sky-600 transition-colors">';
         $html .= htmlspecialchars($author['name']);
         $html .= '</a></h4>';
         
@@ -147,7 +147,7 @@ if (!function_exists('display_author_info')) {
             foreach ($author['socials'] as $platform => $url) {
                 if (!empty($url)) {
                     $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" ';
-                    $html .= 'class="text-gray-500 hover:text-blue-600 transition-colors">';
+                    $html .= 'class="text-gray-500 hover:text-sky-600 transition-colors">';
                     $html .= '<i class="fab fa-' . $platform . '"></i>';
                     $html .= '</a>';
                 }

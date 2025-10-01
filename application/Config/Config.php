@@ -36,6 +36,7 @@ return [
     'theme' => [
         'theme_path' => 'themes',
         'theme_name' => 'apkcms'
-    ]
+    ],
+    'backups' => true
     
 ];
