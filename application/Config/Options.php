@@ -32,7 +32,7 @@ return array (
     ),
   ),
   'site_brand' => array (
-    'value' => 'VietNamNEt',
+    'value' => 'VietNamNet',
     'valuelang' => array (
       'vi' => 'VietNamNet',
     ),

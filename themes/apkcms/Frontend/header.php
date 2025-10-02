@@ -7,6 +7,9 @@ require_once __DIR__ . '/functions.php';
 
 // Use global categories initialized in functions.php
 $categories_for_menu = function_exists('globals_categories') ? globals_categories() : ($GLOBALS['categories'] ?? []);
+$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+$path_parts = explode('/', trim($request_uri, '/'));
+$slug = end($path_parts);
 
 ?>
 <!DOCTYPE html>
@@ -46,7 +49,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                         <div class="text-sm text-gray-600 font-medium">
                             <!-- Desktop: Goback link -->
                             <a class="goback hidden lg:inline-flex items-center gap-2 px-2 py-0 border border-gray-300 rounded-full" href="/">
-                                <img src="https://static.vnncdn.net/v1/icon/return.png" class="w-4 h-4" alt="return icon">
+                                <?= _img(theme_assets('images/return.png'), 'return icon', false, 'w-4 h-4') ?>
                                 <span class="hidden sm:inline"><?php echo option('site_brand'); ?></span>
                             </a>
 
@@ -90,7 +93,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                                 <form class="search-small__form  flex items-center" action="/search/">
                                     <input id="searchInput" class="search-small__form-input w-0 h-[28px] px-0 pr-10 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out" name="q" type="text" placeholder="Type keywords....">
                                     <button id="searchToggleDesktop" class="search-small__form-btn absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="button">
-                                        <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon search" class="w-4 h-4">
+                                        <img src="<?php echo theme_assets('images/search.png'); ?>" alt="icon search" class="w-4 h-4">
                                     </button>
                                 </form>
                             </div>
@@ -98,7 +101,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                             <!-- Mobile: Search icon with dropdown -->
                             <div class="md:hidden">
                                 <button id="searchToggle" class="flex items-center space-x-1 text-gray-700 hover:text-sky-600">
-                                    <img src="https://static.vnncdn.net/v1/icon/search.svg" class="w-6 h-6" alt="search icon">
+                                    <?= _img(theme_assets('images/search.png'), 'icon search', false, '"w-6 h-6') ?>
                                 </button>
 
                                 <!-- Search Dropdown -->
@@ -107,7 +110,7 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                                         <div class="relative">
                                             <input class="w-full h-10 px-4 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="q" type="text" placeholder="Type keywords....">
                                             <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors" type="submit">
-                                                <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon search" class="w-4 h-4">
+                                                <?= _img(theme_assets('images/search.png'), 'icon search', false, 'w-4 h-4') ?>
                                             </button>
                                         </div>
                                     </form>
@@ -134,13 +137,17 @@ $categories_for_menu = function_exists('globals_categories') ? globals_categorie
                     <nav class="hidden lg:flex items-center space-x-2 text-sm font-medium whitespace-nowrap overflow-x-auto">
                         <?php if (!empty($categories_for_menu)): ?>
                             <?php foreach ($categories_for_menu as $index => $category): ?>
+                                <!-- active class if slug is the same as the category slug -->
+                                <?php $class = 'text-gray-800'; ?>
+                                <?php if ($slug == $category['slug']): ?>
+                                    <?php $class = 'text-[#447ec5]'; ?>
+                                <?php endif; ?>
                                 <a href="<?= link_cat($category['slug']) ?>" 
-                                   class="text-gray-800 hover:text-[#447ec5] <?= $index === 0 ? 'text-sky-600' : 'text-[#2a2a2a]' ?> whitespace-nowrap text-sm font-bold">
+                                   class="<?= $class ?> hover:text-[#447ec5] whitespace-nowrap text-sm font-bold">
                                     <?= htmlspecialchars($category['name']) ?>
                                 </a>
+                                
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <!-- No categories available -->
                         <?php endif; ?>
                     </nav>
                    

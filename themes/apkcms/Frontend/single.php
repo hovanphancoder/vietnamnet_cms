@@ -232,6 +232,11 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                         if (!empty($post['author'])) {
                             $author_info = getAuthor($post['author']);
                         }
+                        
+                        // Đảm bảo $author_info là array hoặc tạo array rỗng
+                        if (!is_array($author_info)) {
+                            $author_info = [];
+                        }
                         ?>
                         
                         <div class="author-info mt-4">
@@ -239,17 +244,17 @@ get_template('_metas/meta_single', ['locale' => $locale]);
                                 <!-- Avatar -->
                                 <div class="flex-shrink-0">
 
-                                    <?= _img( !empty($author_info['avatar']) ? $author_info['avatar'] : theme_assets('images/default-avatar.png'), $author_info['fullname'], true, 'w-8 h-8 rounded-full object-cover border-2 border-gray-200', ) ?>
+                                    <?= _img( !empty($author_info['avatar']) ? $author_info['avatar'] : theme_assets('images/default-avatar.png'), $author_info['fullname'] ?? '', true, 'w-8 h-8 rounded-full object-cover border-2 border-gray-200', ) ?>
                                 
                                 </div>
                                 
                                 <!-- Author Details -->
                                 <div class="flex-grow">
                                     <h4 class="notosans-bold font-bold text-lg hover:text-sky-600 ">
-                                        <a href="<?=link_author($author_info['username']) ?>" 
-                                           title="View all posts by <?= htmlspecialchars($author_info['fullname']) ?>"
+                                        <a href="<?=link_author($author_info['username'] ?? '') ?>" 
+                                           title="View all posts by <?= htmlspecialchars($author_info['fullname'] ?? '') ?>"
                                            class="hover:text-sky-600 transition-colors">
-                                            <?= htmlspecialchars($author_info['fullname']) ?>
+                                            <?= htmlspecialchars($author_info['fullname'] ?? '') ?>
                                         </a>
                                     </h4>
                                     

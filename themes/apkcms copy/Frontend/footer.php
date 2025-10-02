@@ -1,7 +1,15 @@
 <?php
 use App\Models\FastModel;
 
+$site_logo = option('site_logo');
+// Decode JSON string to array
+$site_logoData = json_decode($site_logo, true);
 
+if ($site_logoData && isset($site_logoData['path'])) {
+    $logoUrl ='/uploads/' . $site_logoData['path'];
+} else {
+    $logoUrl = theme_assets('/images/logo-icon.webp');
+}
 ?>
 
 </main>
@@ -17,7 +25,8 @@ use App\Models\FastModel;
                     </svg>
                 </button>
                 <div class="flex-1 flex justify-center">
-                    <img src="https://static.vnncdn.net/v1/icon/VietnamNet-bridge-vien-trang.svg" alt="VietnamNet" class="h-10">
+                    <?= _img( $logoUrl, 'VietnamNet', false, 'h-10') ?>
+                       
                 </div>
                 <div class="w-6"></div>
             </div>
@@ -92,15 +101,15 @@ use App\Models\FastModel;
                 <div class="footer-en__bottom-left flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-8 w-full lg:w-auto">
                     <a class="footer-en__bottom-logo flex-shrink-0" href="/en">
                             <?php
-                                    $site_logo = option('site_logo');
-                                    // Decode JSON string to array
-                                    $site_logoData = json_decode($site_logo, true);
+                                    // $site_logo = option('site_logo');
+                                    // // Decode JSON string to array
+                                    // $site_logoData = json_decode($site_logo, true);
                                     
-                                    if ($site_logoData && isset($site_logoData['path'])) {
-                                        $logoUrl ='/uploads/' . $site_logoData['path'];
-                                    } else {
-                                        $logoUrl = theme_assets('/images/logo-icon.webp');
-                                    }
+                                    // if ($site_logoData && isset($site_logoData['path'])) {
+                                    //     $logoUrl ='/uploads/' . $site_logoData['path'];
+                                    // } else {
+                                    //     $logoUrl = theme_assets('/images/logo-icon.webp');
+                                    // }
 
                                 ?>
                         <img src="<?= $logoUrl ?>" alt="VietnamNet Global" class="h-12 sm:h-16">

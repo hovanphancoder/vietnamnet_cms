@@ -50,7 +50,9 @@ if (!$author_info) {
                             <ul class="flex items-center space-x-2 text-sm">
                                 <li class="hidden lg:hidden">
                                     <a href="<?= base_url() ?>" class="flex items-center">
-                                        <img class="w-4" src="https://static.vnncdn.net/v1/icon/home_mobile.svg" alt="Home">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill="#2d67ad" d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                                        </svg>
                                     </a>
                                 </li>
                                 <li class="text-gray-500 hidden lg:hidden">></li>
@@ -388,7 +390,7 @@ if (!$author_info) {
                             <!-- <form action="/tac-gia" class="featured-author__form h-9.5 leading-7 mb-5 relative w-full h-[40px] max-w-66">
                                 <input type="text" name="q" placeholder="Search by author name" class="bg-[#efefef] border-none rounded-lg text-vnn-gray font-normal text-sm h-full outline-none pl-2.5 pr-9 w-full">
                                 <button type="submit" class="absolute right-2.5 top-1/2 transform -translate-y-1/2">
-                                    <img src="https://static.vnncdn.net/v1/icon/search.png" alt="icon" class="w-4 h-4">
+                                  
                                 </button>
                             </form> -->
 

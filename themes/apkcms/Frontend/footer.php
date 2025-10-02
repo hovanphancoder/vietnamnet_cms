@@ -75,7 +75,7 @@ use App\Models\FastModel;
                 <!-- Copyright Section -->
                 <div class="p-4 border-t border-gray-200">
                     <div class="text-center text-sm text-gray-600 space-y-1">
-                        <div class="font-medium">© Copyright of Vietnamnet Global.</div>
+                        <div class="font-medium">© Copyright of <?= option('site_brand') ?>.</div>
                         <div class="text-xs">Tel: 024 3772 7988 Fax: (024) 37722734</div>
                         <div class="text-xs">Email: evnn@vietnamnet.vn</div>
                     </div>

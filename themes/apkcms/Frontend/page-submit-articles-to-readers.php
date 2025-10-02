@@ -2,7 +2,6 @@
 App\Libraries\Fastlang::load('Homepage');
 //Render::asset('js', 'js/home-index.js', ['area' => 'frontend', 'location' => 'footer']);
 
-$slug = get_current_slug();
 
 // ===== LẤY THÔNG TIN PAGE =====
 // Lấy thông tin page theo slug sử dụng get_post function
@@ -145,7 +144,7 @@ get_template('_metas/meta_page', $meta_data);
                         <!-- Editorial Office Illustration -->
                         <div class="mb-6">
                             <div class="">
-                                <img src="https://static.vnncdn.net/v1/pictures/lien-he-toa-soan/lien-he-toa-soan.jpg" alt="Thông tin tòa soạn" class="w-full h-auto rounded">
+                                <!-- <img src="https://static.vnncdn.net/v1/pictures/lien-he-toa-soan/lien-he-toa-soan.jpg" alt="Thông tin tòa soạn" class="w-full h-auto rounded"> -->
                             </div>
                         </div>
 
